@@ -2,67 +2,69 @@
 
 Welcome to the **Inkwell specification repository**.
 
-This repository contains all the documentation required to understand, design, and build the Inkwell platform — an **AI-powered writing ecosystem**.
+This repository contains all the documentation required to understand, design, and build the Inkwell platform — an **AI-powered writing marketplace** connecting independent writers with magazine publishers.
 
 Each document covers a specific aspect of the system, from product vision to technical architecture.
 
 ---
 
+## 🎯 Project Snapshot (2026-05-21)
+
+Inkwell is a two-sided platform:
+
+- **Writers** produce articles with AI assistance (chat, voice, inline editing), and can list published articles for licensing
+- **Magazines** browse writers, evaluate them via decision-support analytics + AI-generated Portfolio Insights, then license articles for their curated library
+
+The defining differentiator is **RAG used twice**: once to help writers ("AI writes like me") and once to help magazines ("AI tells me what this writer is great at").
+
+---
+
 ## 🧭 How to Navigate
 
-Start from the **Product Overview** to understand the vision, then move progressively into deeper technical and functional specifications.
+Start from the **Product Overview** for vision, then move through Features and Flows, then dive into architecture and data layers.
+
+If you want to track build progress, see the **Phase Plan**.
 
 ---
 
 ## 📄 Specification Index
 
+### 🗺️ Build Plan
+- [00 - Phase Plan (checkboxes)](./0-phase-plan.md)
+
 ### 🧠 Product & Vision
+- [01 - Product Overview](./1-product-overview.md)
 
-- [01 - Product Overview](./01%20-%20Product%20Overview.md)
+### 📋 Features & User Experience
+- [02 - Features](./2-features.md)
+- [03 - User Flows](./3-user-flows.md)
 
----
+### 🏗️ Architecture & AI
+- [04 - System Architecture](./4-system-architecture.md)
+- [05 - AI Design](./5-ai-design.md)
 
-### 🧑‍💻 User Experience & Flows
-
-- [02 - User Flows](./02%20-%20User%20Flows.md)
-- [03 - Features](./03%20-%20Features.md)
-
----
-
-### 🎨 Design & AI
-
-- [04 - AI Design](./04%20-%20AI%20Design.md)
-
----
-
-### 🗄️ Data & Architecture
-
-- [05 - Database Schema](./05%20-%20Database%20Schema.md)
-- [06 - System Architecture](./06%20-%20System%20Architecture.md)
-
----
+### 🗄️ Data
+- [06 - Database Schema](./6-database-schema.md)
 
 ### 📊 Analytics
+- [07 - Analytics Model](./7-analytics-model.md)
 
-- [07 - Analytics Model](./07%20-%20Analytics%20Model.md)
-
----
-
-### 🚀 DevOps & Infrastructure
-
-- [08 - DevOps](./08%20-%20DevOps.md)
+### 🚀 DevOps
+- [08 - DevOps](./8-devops.md)
 
 ---
 
 ## 🧩 Repository Structure
 
 ```bash
-spec/
-├── 01 - Product Overview.md
-├── 02 - User Flows.md
-├── 03 - Features.md
-├── 04 - AI Design.md
-├── 05 - Database Schema.md
-├── 06 - System Architecture.md
-├── 07 - Analytics Model.md
-└── 08 - DevOps.md
+spec.inkwell.ai/
+├── 0-phase-plan.md
+├── 1-product-overview.md
+├── 2-features.md
+├── 3-user-flows.md
+├── 4-system-architecture.md
+├── 5-ai-design.md
+├── 6-database-schema.md
+├── 7-analytics-model.md
+└── 8-devops.md
+```

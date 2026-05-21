@@ -99,15 +99,20 @@ The system is composed of the following main components:
 
 ### Modular Structure
 
-- Auth Module  
-- Users Module  
-- Articles Module  
-- Comments Module  
-- Likes Module  
-- Follow Module  
-- Analytics Module  
-- Notifications Module  
-- AI Gateway Module  
+- Auth Module
+- Users Module (personal + magazine profiles)
+- Articles Module (incl. tags, slugs, soft deletes)
+- Comments Module
+- Likes Module
+- Follow Module
+- Reposts Module
+- **Marketplace Module** — listings, browsing, license purchase flow
+- **Transactions Module** — wallet ledger, atomic financial operations
+- Analytics Module (writer-facing + magazine-facing aggregation)
+- AI Gateway Module (chat, inline, voice, Portfolio Insights)
+- Storage Module (MinIO uploads)
+- Notifications Module (SSE delivery)
+- Moderation / Reports Module  
 
 ---
 

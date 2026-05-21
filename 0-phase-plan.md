@@ -1,8 +1,9 @@
 # 🗺️ Inkwell.ai — Phase Plan
 
 > **Target defense:** September 2026 (14-week timeline from May 21, 2026)
-> **Stack:** Next.js 15 · NestJS 11 · PostgreSQL + pgvector · Redis · MinIO · Groq · Gemini · Drizzle ORM
+> **Stack:** Next.js 15 · NestJS 11 · PostgreSQL + pgvector · Redis · MinIO · Groq · Gemini · Cohere · Drizzle ORM
 > **Repos:** `frontend.inkwell.ai` · `backend.inkwell.ai` · `docker.inkwell.ai` · `mobile.inkwell.ai` (deferred)
+> **Core pivot (post-mentor-review):** Inkwell is a **writer ↔ magazine marketplace**. Analytics is now decision support for magazine licensing decisions, not just writer vanity.
 
 ---
 
@@ -33,39 +34,43 @@
 
 ### Backend
 - [ ] Install Drizzle ORM + `drizzle-kit` + `pg` driver
-- [ ] Define full Drizzle schema (`src/db/schema.ts`):
-  - [ ] `users` — id, email, username, name, bio, avatar_url, role (reader/writer/admin), plan (free/premium), password_hash, provider, ai_tokens_remaining, deleted_at
-  - [ ] `articles` — id, author_id, title, slug (unique), excerpt, content (TipTap JSON), thumbnail_url, status (draft/published), visibility (free/premium), read_time, tags, deleted_at, published_at
-  - [ ] `tags` + `article_tags` join table
-  - [ ] `comments` — threaded (parent_id self-ref), deleted_at
-  - [ ] `likes` — unique(user_id, article_id)
-  - [ ] `follows` — unique(follower_id, following_id)
-  - [ ] `reposts` — unique(user_id, article_id)
-  - [ ] `notifications` — type enum, data JSON, is_read
-  - [ ] `reports` — target_type, target_id, status
-  - [ ] `ai_interactions` — action_type, tokens_used
-  - [ ] `user_ai_memory` — tone, style_examples, vocabulary JSON
-  - [ ] `article_chunks` — content, embedding vector(1024), chunk_index (for RAG)
-  - [ ] `analytics_events` — event_type, metadata JSON
-  - [ ] `article_metrics` — aggregated views, read_time, engagement_rate
+- [ ] Define full Drizzle schema per [`6-database-schema.md`](./6-database-schema.md):
+  - [ ] `users` (account_type: personal/magazine, role/plan orthogonal, username unique, wallet_balance, soft delete)
+  - [ ] `magazine_profiles` (1-to-1 with users where account_type = magazine)
+  - [ ] `articles` (slug, TipTap JSON, licensable + license_price, tsvector for search, soft delete)
+  - [ ] `tags` + `article_tags` join
+  - [ ] `comments` (threaded, soft delete)
+  - [ ] `likes`, `follows`, `reposts` (with unique constraints)
+  - [ ] `article_licenses` (article_id, magazine_id, price_paid, payout)
+  - [ ] `transactions` (atomic ledger, idempotency_key, status)
+  - [ ] `notifications` (incl. new types: article_licensed, license_earned, wallet_credited)
+  - [ ] `reports` (status, admin_notes, resolved_by)
+  - [ ] `ai_interactions` (incl. portfolio_insight action type)
+  - [ ] `user_ai_memory` (structured: tone, style, vocabulary, topics)
+  - [ ] `portfolio_insights` (cache table with expires_at)
+  - [ ] `article_chunks` (embedding vector(1024) + HNSW index)
+  - [ ] `analytics_events`, `article_metrics`
+  - [ ] `writer_audience_metrics`, `writer_content_metrics`, `writer_quality_metrics`
 - [ ] Run first migration with `drizzle-kit push`
 - [ ] `@nestjs/swagger` configured — Swagger UI at `/docs`
-- [ ] `@nestjs/config` — environment validation with Zod or `joi`
+- [ ] `@nestjs/config` — environment validation with Zod
 - [ ] Auth module:
-  - [ ] Email/password registration + login
-  - [ ] Google OAuth (Passport.js)
+  - [ ] Email/password registration + login (with account_type selection: personal or magazine)
+  - [ ] Magazine self-signup flow (extra fields: name, slug, website, description, logo)
+  - [ ] Google OAuth (Passport.js, personal accounts only)
   - [ ] JWT access token (15 min) + refresh token (7 days)
-  - [ ] `JwtAuthGuard` + `RolesGuard` + `PlansGuard`
-- [ ] Users module — GET /users/:username, PATCH /users/me, GET /users/me
+  - [ ] Guards: `JwtAuthGuard`, `RolesGuard`, `PlansGuard`, `AccountTypeGuard`
+- [ ] Users module — GET /u/:username, GET /m/:slug, PATCH /users/me
 - [ ] Articles module:
   - [ ] POST /articles (create draft)
   - [ ] PATCH /articles/:id (update)
   - [ ] POST /articles/:id/publish
   - [ ] DELETE /articles/:id (soft delete)
-  - [ ] GET /articles (feed — paginated, filtered by visibility/plan)
-  - [ ] GET /articles/:slug (single article)
-  - [ ] Slug auto-generation from title (slugify + unique suffix)
-- [ ] Tags module — GET /tags (list), POST /tags
+  - [ ] PATCH /articles/:id/listing — toggle licensable + set price
+  - [ ] GET /articles (feed — paginated)
+  - [ ] GET /articles/:slug (single article — respects visibility + licenses)
+  - [ ] Slug auto-generation from title
+- [ ] Tags module — GET /tags, POST /tags
 - [ ] `@nestjs/throttler` — basic rate limiting on all endpoints
 
 ### Frontend
@@ -74,15 +79,19 @@
 - [ ] Install Auth.js (NextAuth.js) — email + Google OAuth
 - [ ] Layout: navbar, footer, responsive shell
 - [ ] Feed page (`/`) — article cards, pagination, tag filter
-- [ ] Article reader page (`/articles/[slug]`) — full article, premium gate
-- [ ] Sign-up / Login pages
-- [ ] Profile page (`/u/[username]`) — articles, follow button, stats
+- [ ] Article reader page (`/articles/[slug]`) — full article, premium gate, "Licensed by" badge
+- [ ] Sign-up flow with **account type selection**: Personal | Magazine
+- [ ] Magazine sign-up form (additional fields)
+- [ ] Login page
+- [ ] Personal profile page (`/u/[username]`) — articles, follow button, stats
+- [ ] Magazine profile page (`/m/[slug]`) — library, branding (placeholder; library empty in Phase 1)
 - [ ] Editor page (`/editor/[id]`) — basic textarea (TipTap in Phase 2)
 - [ ] OpenAPI client codegen configured (`openapi-typescript` or `orval`)
 - [ ] Protected route wrapper for auth-required pages
 
 ### Exit criteria
-- [ ] Full sign-up → create article → publish → view on feed cycle works end-to-end
+- [ ] Personal sign-up → create article → publish → view on feed works
+- [ ] Magazine sign-up → see (empty) library page works
 - [ ] Premium article is gated for free users
 - [ ] OpenAPI spec is accessible and frontend client auto-generates from it
 
@@ -142,10 +151,16 @@
   - [ ] PATCH /notifications/:id/read
   - [ ] SSE endpoint GET /notifications/stream — live delivery
 
-### Analytics (Backend)
+### Analytics (Backend) — Writer-Facing
 - [ ] POST /analytics/events — batch event ingestion endpoint
-- [ ] BullMQ worker: aggregate raw events → `article_metrics` (runs every 15 min)
-- [ ] GET /articles/:id/analytics — writer-only stats endpoint
+- [ ] BullMQ worker `aggregate-article-metrics` (every 5 min) → `article_metrics`
+- [ ] BullMQ worker `aggregate-writer-audience` (every 15 min) → `writer_audience_metrics`
+- [ ] BullMQ worker `aggregate-writer-content` (every 15 min) → `writer_content_metrics`
+- [ ] BullMQ worker `aggregate-writer-quality` (every 15 min) → `writer_quality_metrics`
+- [ ] GET /articles/:id/analytics — writer-only endpoint (self-improvement)
+- [ ] GET /writers/:username/evaluation — magazine-only endpoint (decision support)
+  - Combines audience + content + quality rollups in one response
+  - Returns 403 if requester is not a magazine
 
 ### Social (Frontend)
 - [ ] Like button with optimistic UI
@@ -155,21 +170,30 @@
 - [ ] Notification bell — live SSE connection, unread count badge
 - [ ] Notification dropdown list
 
-### Analytics (Frontend)
+### Analytics (Frontend) — Writer-Facing
 - [ ] Analytics event capture on article pages:
-  - [ ] View event on load
+  - [ ] View event on load (with country detection from headers)
   - [ ] Scroll depth via `IntersectionObserver` (per paragraph)
-  - [ ] Time-on-page via `visibilitychange` + `beforeunload`
+  - [ ] Time-on-page via `visibilitychange` + `beforeunload` + `sendBeacon`
 - [ ] Writer analytics dashboard (`/dashboard`):
   - [ ] Views per article (chart)
   - [ ] Avg read time
   - [ ] Scroll depth heatmap (bar chart per paragraph)
   - [ ] Top performing articles
 
+### Analytics (Frontend) — Magazine-Facing
+- [ ] Writer evaluation page (`/u/[writer-username]?as=magazine` or `/discover/writers/[username]`)
+  - [ ] **Audience panel**: unique readers, returning rate, geo distribution, device split
+  - [ ] **Content panel**: topic distribution, posting frequency sparkline, consistency, avg length, top tags
+  - [ ] **Quality panel**: engagement rate, completion rate, repost rate, comment depth, retention curve
+  - [ ] **Portfolio Insights panel** (loaded async, see Phase 4 for AI implementation)
+- [ ] Magazine discover page (`/discover`) — browse writers with filters
+
 ### Exit criteria
 - [ ] Like/comment/follow/repost all work with correct notifications
 - [ ] Live notification arrives via SSE without page refresh
 - [ ] Writer dashboard shows real engagement data after a test read
+- [ ] Magazine can browse writers and view writer evaluation dashboard with real metrics
 
 ---
 
@@ -181,27 +205,49 @@
 - [ ] Article chunking on publish:
   - [ ] Split TipTap JSON into paragraph-level chunks
   - [ ] Each chunk embedded via Cohere `embed-multilingual-v3.0`
-  - [ ] Stored in `article_chunks` with `embedding vector(1024)`
+  - [ ] Stored in `article_chunks` with `embedding vector(1024)` + HNSW index
   - [ ] BullMQ job: `embed-article` triggered on publish/update
 - [ ] Retrieval service:
-  - [ ] `findSimilarChunks(userId, queryEmbedding, topK)` — cosine similarity with pgvector `<=>` operator
-  - [ ] Filter by `author_id = userId` (RAG over writer's own corpus only)
+  - [ ] `findSimilarChunks(authorId, queryEmbedding, topK)` — cosine similarity with pgvector `<=>` operator
+  - [ ] Filter by author for writer-facing RAG (writer's own corpus only)
+  - [ ] No author filter for cross-corpus search (Phase 4.4 search)
 - [ ] Prompt template update — inject top-K retrieved chunks as context
-- [ ] POST /ai/chat — enhanced with RAG retrieval
+
+### Writer-Facing RAG (Use Case #1)
+- [ ] POST /ai/chat — enhanced with RAG retrieval from the user's own articles
 - [ ] GET /ai/retrieval-debug — returns chunks used in last request (for demo/transparency)
-- [ ] Postgres full-text search — `tsvector` on `articles.title + content`
-- [ ] GET /search?q= — full-text + semantic hybrid search endpoint
+
+### Magazine-Facing RAG — Portfolio Insights (Use Case #2)
+- [ ] POST /ai/portfolio-insights/:writerUsername
+  - [ ] Auth guard: only magazine accounts can call
+  - [ ] Retrieves representative chunks from writer's full corpus
+  - [ ] Builds structured prompt (voice / topics / consistency / fit / strengths-gaps)
+  - [ ] LLM call with Zod-validated structured output
+  - [ ] Caches result in `portfolio_insights` table for 24h
+  - [ ] Invalidation: cache deleted when writer publishes a new article
+- [ ] GET /writers/:username/portfolio-insights — returns cached or triggers generation
+- [ ] Frontend: Portfolio Insights panel on writer evaluation page (`/u/[username]?as=magazine`)
+  - [ ] Loading state during async generation
+  - [ ] Cached result rendered with last-updated timestamp
+
+### Search
+- [ ] Postgres full-text search — `tsvector` on `articles.title + content + excerpt`
+- [ ] GET /search?q= — hybrid: full-text + semantic search
+- [ ] Frontend: search bar in navbar → search results page
 
 ### Frontend
 - [ ] Search bar in navbar → search results page
 - [ ] "Sources used" expandable section below AI responses (shows which past articles were referenced)
-- [ ] RAG demo notice: "AI trained on your X published articles"
+- [ ] RAG demo notice in writer chat: "AI trained on your X published articles"
+- [ ] Portfolio Insights panel renders structured report
 
 ### Exit criteria
 - [ ] Publish 5+ articles with distinct topics/vocabulary
-- [ ] AI chat generates a new article that demonstrably uses retrieved vocabulary and style
+- [ ] **Writer demo**: AI chat generates a new article that demonstrably uses retrieved vocabulary and style
+- [ ] **Magazine demo**: Magazine views a writer's profile → Portfolio Insights panel shows AI-generated voice/topics/score/fit
 - [ ] `/ai/retrieval-debug` shows correct chunk IDs pulled from the user's articles
 - [ ] Search returns relevant results for both keyword and semantic queries
+- [ ] Cache invalidation works (publish a new article → next insights request regenerates)
 
 ---
 
@@ -224,6 +270,36 @@
   - [ ] Upgrade modal / page with plan comparison
   - [ ] Payment mock (no real Stripe in MVP — just a button that confirms)
   - [ ] Premium badge on profile
+
+### Marketplace — Licensing Transactions
+- [ ] Backend marketplace module:
+  - [ ] PATCH /articles/:id/listing — toggle licensable + set price (writers)
+  - [ ] GET /discover/writers — magazine-only writer browse with filters/sort
+  - [ ] GET /discover/articles?listed=true — magazine-only browse of listed articles
+  - [ ] POST /licenses — purchase an article license (atomic DB transaction)
+    - [ ] Validates magazine wallet >= price
+    - [ ] Debits magazine wallet
+    - [ ] Credits writer wallet (price - platform_fee)
+    - [ ] Records platform_fee
+    - [ ] Inserts `article_licenses` + 3 `transactions` rows
+    - [ ] Uses idempotency key to prevent double-charge
+  - [ ] GET /magazines/me/library — magazine's licensed articles
+  - [ ] GET /me/earnings — writer's earnings summary
+- [ ] Wallet simulation:
+  - [ ] POST /wallet/topup — simulated top-up for magazines
+  - [ ] POST /wallet/withdraw — simulated payout for writers
+- [ ] Notifications:
+  - [ ] Writer notified when article licensed
+  - [ ] Writer notified when wallet credited
+- [ ] Frontend marketplace UI:
+  - [ ] "List for licensing" toggle + price input on article management
+  - [ ] Magazine Discover page with writer cards + filters
+  - [ ] Writer evaluation page with "License" buttons on listed articles
+  - [ ] License confirmation modal with wallet balance preview
+  - [ ] Magazine library page (curated licensed articles)
+  - [ ] Writer earnings dashboard
+  - [ ] Wallet pages (top-up for magazines, withdraw for writers)
+  - [ ] "Licensed by [Magazine]" badge on article pages
 
 ### Moderation
 - [ ] Reports module — POST /reports (article or user), admin GET /reports
@@ -253,6 +329,7 @@
 - [ ] Upgrade flow changes user plan and unlocks premium articles + AI features
 - [ ] Reported content appears in admin queue
 - [ ] Transactional emails send correctly (test with Resend dev mode)
+- [ ] **Marketplace end-to-end demo**: Writer lists article → Magazine browses → views evaluation + Portfolio Insights → licenses → article appears in magazine library + writer earnings reflect the sale
 
 ---
 
@@ -308,24 +385,35 @@
 ---
 
 ## Spec Fixes Backlog
-> Complete these before coding the relevant feature
+> Most addressed in the 2026-05-21 spec update pass
 
-- [ ] Fix subscription model in spec — `role` + `plan` (not mutex enum)
-- [ ] Add `slug` field to articles spec
-- [ ] Add `username` field to users spec
-- [ ] Commit to TipTap JSON as article content format
-- [ ] Add tags/categories to MVP feature list
-- [ ] Add search (full-text + semantic) to MVP feature list
-- [ ] Add soft deletes to database schema spec
-- [ ] Specify LLM providers (Groq primary, Gemini fallback)
-- [ ] Specify voice provider (Groq Whisper-large-v3-turbo)
-- [ ] Specify embeddings provider (Cohere embed-multilingual-v3.0)
-- [ ] Structured AI memory schema (not JSON blob)
-- [ ] Add SSE real-time strategy doc
-- [ ] Add billing flow documentation (simulated Stripe)
-- [ ] Add rate limiting strategy
+- [x] Fix subscription model in spec — `role` + `plan` (not mutex enum) + `account_type`
+- [x] Add `slug` field to articles spec
+- [x] Add `username` field to users spec
+- [x] Commit to TipTap JSON as article content format
+- [x] Add tags/categories to MVP feature list
+- [x] Add search (full-text + semantic) to MVP feature list
+- [x] Add soft deletes to database schema spec
+- [x] Specify LLM providers (Groq primary, Gemini fallback)
+- [x] Specify voice provider (Groq Whisper-large-v3-turbo)
+- [x] Specify embeddings provider (Cohere embed-multilingual-v3.0)
+- [x] Structured AI memory schema (not JSON blob)
+- [x] Add SSE real-time strategy doc *(referenced in flows + analytics)*
+- [ ] Add rate limiting strategy *(stub in features; expand in DevOps before Phase 1)*
 - [ ] Update DevOps spec with actual deployment plan (Hetzner + GitHub Actions + GHCR)
-- [ ] Mark mobile as deferred post-MVP
+- [ ] Mark mobile as deferred post-MVP *(noted in plan header; not yet in spec docs)*
+
+## Marketplace Pivot Backlog (2026-05-21)
+> Spec changes from the writer-magazine marketplace redesign
+
+- [x] Add Magazine account type to product overview + features
+- [x] Redesign analytics into writer-facing + magazine-facing surfaces
+- [x] Add article licensing flow (listings, purchases, library)
+- [x] Add Portfolio Insights as second RAG use case in AI design
+- [x] Add marketplace tables to database schema (licenses, transactions, magazine_profiles, writer rollup metrics)
+- [x] Add marketplace flows to user-flows.md
+- [x] Add Marketplace + Transactions modules to system architecture
+- [x] Distribute marketplace tasks across Phases 1, 3, 4, 5
 
 ---
 
