@@ -2,15 +2,21 @@
 
 ## 1. Overview
 
-This document defines the architecture, behavior, and integration of AI within the platform.
+This document defines the architecture, behavior, and integration of AI within Inkwell.
 
-The AI system is designed to act as an intelligent co-writer, editor, and assistant, integrated deeply into the content creation workflow.
+The AI system serves **two distinct audiences** with overlapping infrastructure:
 
-AI is not treated as a standalone feature but as a core system component that enhances:
+1. **Writer-facing AI** — co-writer, editor, and assistant integrated into the creation workflow
+2. **Magazine-facing AI** — generates Portfolio Insights reports that help magazines evaluate writers before licensing
+
+Both surfaces share the same RAG pipeline over each writer's published corpus — this is the technical leverage point that makes the AI investment justify itself twice.
+
+AI is not a bolt-on feature; it is a core system layer that enhances:
 - Writing
 - Editing
 - Structuring
 - Feedback
+- Writer evaluation (for the marketplace)
 
 ---
 
@@ -31,31 +37,26 @@ The AI system must:
 The AI operates in multiple roles depending on the context:
 
 ### 3.1 Writer
-
-- Generates content from prompts or voice input  
-- Produces structured articles (sections, paragraphs)  
-
----
+- Generates content from prompts or voice input
+- Produces structured articles (sections, paragraphs)
 
 ### 3.2 Editor
-
-- Improves existing content  
-- Rewrites, shortens, expands, or simplifies text  
-
----
+- Improves existing content
+- Rewrites, shortens, expands, or simplifies text
 
 ### 3.3 Assistant
-
-- Answers user questions  
-- Suggests ideas or improvements  
-- Helps with structure and flow  
-
----
+- Answers user questions
+- Suggests ideas or improvements
+- Helps with structure and flow
 
 ### 3.4 Coach (Basic in MVP)
+- Provides feedback on writing quality
+- Detects weak sections (e.g., long paragraphs, weak introduction)
 
-- Provides feedback on writing quality  
-- Detects weak sections (e.g., long paragraphs, weak introduction)  
+### 3.5 Evaluator (Magazine-Facing) — *New role*
+- Analyzes a writer's full corpus on demand
+- Produces a structured Portfolio Insights report (voice, expertise, consistency, fit, strengths/gaps)
+- Drives magazine licensing decisions  
 
 ---
 
@@ -88,9 +89,29 @@ Actions include:
 ### 4.3 Voice-to-Article
 
 Flow:
-- User records speech  
-- Speech is converted to text  
-- AI generates structured article draft  
+- User records speech
+- Speech is transcribed via **Groq Whisper-large-v3-turbo** (free tier, fast)
+- LLM structures the transcript into article sections
+- Result inserted into the TipTap editor
+
+---
+
+### 4.4 Portfolio Insights (Magazine-Facing) — *New*
+
+Triggered when a magazine opens a writer's evaluation page.
+
+Flow:
+- Backend retrieves the writer's `article_chunks` (RAG)
+- Constructs a structured prompt requesting voice / topics / consistency / fit / strengths-gaps
+- LLM generates a typed report (Zod-validated structure)
+- Report cached for 24 hours (`portfolio_insights` table) or invalidated on new publication
+
+Output format (structured):
+- `voice_summary` (string)
+- `topic_expertise` (string[])
+- `consistency_score` (0-100)
+- `suggested_use_cases` (string[])
+- `strengths_gaps` (string)  
 
 ---
 
@@ -184,23 +205,27 @@ The voice system follows this pipeline:
 ## 9. AI Memory System
 
 ### 9.1 Scope
+- Memory is stored per user with a **structured schema** (not a JSON blob)
 
-- Memory is stored per user  
-
----
-
-### 9.2 Stored Data
-
-- Preferred tone (formal, casual, etc.)  
-- Writing style patterns  
-- Common vocabulary  
-
----
+### 9.2 Stored Fields
+See [`6-database-schema.md`](./6-database-schema.md) section 5.3 — `user_ai_memory`:
+- `tone_preferences` (formality, energy, persona)
+- `style_examples` (array of representative excerpts from the writer's articles)
+- `vocabulary_patterns` (common terms, phrasing patterns)
+- `topics` (domains the writer covers)
 
 ### 9.3 Usage
+- Injected into prompts for writer-facing AI calls
+- Used as input to Portfolio Insights generation
+- Refreshed by a background job when the writer publishes a new article
 
-- Injected into prompts  
-- Used to personalize AI responses  
+### 9.4 RAG Layer (Article Chunks)
+- Articles are split into paragraph-level chunks on publish
+- Each chunk embedded with **Cohere `embed-multilingual-v3.0`** (1024 dimensions)
+- Stored in `article_chunks` with HNSW vector index in pgvector
+- Retrieved via cosine similarity for:
+  - Writer-facing chat (top-K chunks from the writer's own articles)
+  - Magazine-facing Portfolio Insights (representative chunks across writer's corpus)  
 
 ---
 
@@ -257,6 +282,20 @@ The voice system follows this pipeline:
 - Validate all user inputs  
 - Prevent prompt injection  
 - Filter harmful or inappropriate outputs  
+
+---
+
+## 13.5 AI Providers (Free-Tier First)
+
+| Capability | Primary Provider | Fallback | Notes |
+|------------|------------------|----------|-------|
+| LLM (chat, inline edit, Portfolio Insights) | **Groq** (Llama 3.3 70B) | **Gemini 2.0 Flash** | Both have generous free tiers |
+| Speech-to-text | **Groq Whisper-large-v3-turbo** | OpenAI Whisper API | Free, very fast |
+| Embeddings (RAG) | **Cohere `embed-multilingual-v3.0`** | OpenAI `text-embedding-3-small` | Cohere has free trial; OpenAI is cheap |
+| Content moderation | **OpenAI Moderation API** | — | Free |
+| Premium AI (optional) | **Anthropic Claude** | — | Small paid budget for higher-quality "premium" actions |
+
+Provider abstraction is implemented via **Vercel AI SDK** in the NestJS backend, allowing one-line provider swaps.
 
 ---
 

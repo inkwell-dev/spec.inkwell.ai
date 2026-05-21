@@ -214,16 +214,101 @@ User clicks "Repost"
 
 ---
 
+## 9.6 📦 Marketplace Flows
+
+### 9.6.1 Magazine Sign-Up
+
+Visitor clicks "Sign up as Magazine"
+→ Form: email, password, magazine name, slug, website, description, logo
+→ Submits
+→ System validates and creates `users` row with `account_type = 'magazine'`
+→ Creates `magazine_profiles` row
+→ Initial wallet_balance = 0
+→ Redirected to magazine dashboard
+
+### 9.6.2 List Article for Licensing (Writer)
+
+Writer opens article management
+→ Toggles "Available for licensing" on a published article
+→ Enters price (platform credits)
+→ Saves
+→ Article appears in marketplace browse for magazines
+
+### 9.6.3 Magazine Browses Writers
+
+Magazine logs in
+→ Opens "Discover" tab
+→ Browses paginated list of writers
+→ Filters by topic / tags / posting cadence / engagement rate
+→ Sorts by relevance
+→ Clicks into writer profile
+
+### 9.6.4 Magazine Views Writer Evaluation
+
+Magazine clicks a writer
+→ Lands on writer profile in **evaluation mode**
+→ Sees four panels:
+  - Audience Analytics
+  - Content Analytics
+  - Quality Signals
+  - AI Portfolio Insights (loaded async, cached if recent)
+→ Sees writer's listed articles with prices
+→ Sees full article previews
+
+### 9.6.5 License Article
+
+Magazine clicks "License this article" on a listed article
+→ Confirmation modal shows price + remaining wallet balance after purchase
+→ Magazine confirms
+→ Backend opens DB transaction:
+  - Validates magazine wallet >= price
+  - Debits magazine wallet
+  - Credits writer wallet (price - platform_fee)
+  - Records platform_fee
+  - Inserts `article_licenses` row
+  - Inserts 3 `transactions` rows (license_purchase, writer_payout, platform_fee)
+→ Commits transaction
+→ Notification to writer ("Your article was licensed by [Magazine]")
+→ Article gets "Licensed by [Magazine]" badge
+→ Article appears in magazine's library
+
+If wallet insufficient:
+→ Modal redirects to wallet top-up flow
+
+### 9.6.6 Wallet Top-Up (Magazine)
+
+Magazine opens Wallet page
+→ Clicks "Add credits"
+→ Selects amount
+→ Simulated payment confirmation
+→ Wallet credited
+→ Transaction logged
+
+### 9.6.7 Writer Earnings Review
+
+Writer opens Earnings dashboard
+→ Sees:
+  - Lifetime earnings
+  - Recent license transactions
+  - Top-earning articles
+  - Wallet balance
+→ Clicks "Withdraw" (simulated payout in MVP)
+
+---
+
 ## 10. 🔔 Notification Flow
 
 Trigger event occurs:
-- New follower  
-- New like  
-- New comment  
+- New follower
+- New like
+- New comment / reply
+- **Article licensed by magazine** (writer-facing)
+- **Wallet credited** (writer-facing — license payout)
 
-→ Notification created  
-→ Stored in system  
-→ Delivered to user interface  
+→ Notification created in DB
+→ Stored in system
+→ Delivered to active sessions via **Server-Sent Events (SSE)**
+→ Persisted for offline retrieval (bell icon dropdown)  
 
 ---
 

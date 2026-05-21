@@ -4,117 +4,141 @@
 
 ## 1. 🧠 Executive Summary
 
-This project introduces an **AI-powered writing platform** designed to enhance the way articles are created, improved, and consumed.
+Inkwell is an **AI-powered writing marketplace** that connects independent writers with magazine publishers.
 
-Unlike traditional blogging platforms, this system integrates **AI as a core collaborator** in the writing process. Writers can interact with an intelligent assistant through **chat, voice input, and inline editing tools**, enabling them to produce high-quality, credible content faster.
+The platform combines three pillars:
 
-The platform also provides **reader engagement analytics** and **controlled content access (free vs premium)**, making it suitable for both casual writers and professional content creators.
+1. **AI-collaborative writing** — Writers produce high-quality content with the help of an AI assistant integrated via chat, voice input, and inline editing tools.
+2. **Decision-support analytics** — Every published article generates rich engagement data (audience, content, quality signals) that feeds writer profile dashboards used by magazines to evaluate talent.
+3. **Article licensing marketplace** — Magazines (a distinct account type) browse writer profiles, consume AI-generated portfolio insights, and **license existing articles** for republication at writer-set prices. Writers earn from licensing; magazines build curated libraries of vetted content.
+
+This shifts Inkwell from a "blog with AI" to a **two-sided platform** where AI assists creation and analytics drives transactions.
 
 ---
 
 ## 2. 🎯 Problem Statement
 
-Modern content creation platforms suffer from several limitations:
+The independent writing ecosystem suffers from disconnects on both supply and demand sides:
 
-### 2.1 Writing Challenges
-- Writers struggle with:
-  - Structuring ideas
-  - Maintaining quality and clarity
-  - Writing efficiently
+### 2.1 Writing Challenges (Supply Side)
+- Independent writers struggle with structuring ideas, maintaining quality, and writing efficiently
+- Existing platforms provide limited or no AI assistance during the writing process
+- Writers have no clear path to monetize quality work beyond ad revenue or paid subscriptions
 
-### 2.2 Lack of Intelligent Assistance
-- Existing platforms provide limited or no AI support
-- No real-time, contextual editing assistance
+### 2.2 Discovery & Evaluation Gap (Demand Side)
+- Magazines and publishers struggle to discover quality independent writers
+- When they do find writers, they lack objective signals about audience, consistency, voice, and engagement quality
+- Evaluation is currently a manual, time-consuming process (reading samples, requesting portfolios, intuition-based decisions)
 
 ### 2.3 Weak Feedback Loops
-- Writers lack insight into:
-  - How readers interact with their content
-  - Where engagement drops
+- Writers lack insight into how readers interact with their content and where engagement drops
+- That same engagement data could power buyer decisions, but no platform exposes it for that purpose
 
-### 2.4 Content Accessibility Limitations
-- Platforms do not effectively balance:
-  - Free content
-  - Premium content access
+### 2.4 No Native Licensing Market
+- Existing platforms (Medium, Substack) are subscription-driven, not transactional
+- There is no marketplace where magazines can browse, evaluate, and license articles from independent writers in a self-serve way
 
 ---
 
 ## 3. 💡 Proposed Solution
 
-The system provides an **AI-native writing environment** where:
+Inkwell is an **AI-native writing marketplace** with three coordinated layers:
 
 ### 3.1 Writers Collaborate with AI
-- Generate content using:
-  - Chat-based assistant
-  - Voice input
-  - Inline editing tools
-- Improve writing quality with contextual suggestions
+- Generate content using a chat-based assistant, voice input, and inline editing tools
+- Improve writing quality with contextual, RAG-powered suggestions trained on the writer's own past articles ("writes like me")
 
 ### 3.2 Intelligent Editing Experience
 - Users can select any text and:
   - Reformulate
   - Simplify
   - Expand
+  - Shorten
   - Improve engagement
 
 ### 3.3 Voice-Driven Content Creation
-- Writers can describe ideas verbally
-- System converts speech into structured articles
+- Writers describe ideas verbally
+- System transcribes (Groq Whisper) and structures speech into article drafts
 
-### 3.4 Data-Driven Insights
-- Writers receive analytics such as:
-  - Views
-  - Read time
-  - Scroll depth
-  - Engagement signals
+### 3.4 Decision-Support Analytics
+Two distinct analytics surfaces:
+- **Writer-facing** — views, read time, scroll depth, drop-off points, engagement insights (self-improvement)
+- **Magazine-facing** — writer evaluation dashboard exposing audience composition, content patterns, quality signals, and AI-generated portfolio insights (purchase decision support)
 
-### 3.5 Controlled Content Access
+### 3.5 Article Licensing Marketplace
+- Writers mark published articles as **available for licensing** at a fixed price
+- Magazines browse, evaluate (with analytics + AI insights), and **license** articles to feature in their curated library
+- Licensing is simulated payment in MVP; in production this is the platform's primary revenue mechanism (transaction fee)
+
+### 3.6 Controlled Content Access
 - Articles can be:
-  - Free
-  - Premium (restricted to premium users)
+  - Free (visible to any authenticated user)
+  - Premium (restricted to premium plan users)
+- Licensing availability is orthogonal to free/premium — any published article can be marked licensable
 
 ---
 
 ## 4. 👥 Target Users
 
-### 4.1 General Writers
-- Individuals writing about personal interests or professions
+### 4.1 Independent Writers
+- Solo creators, bloggers, journalists, domain experts producing original content
+- Looking to grow audience and monetize quality work
 
-### 4.2 Professional Content Creators
-- Bloggers, educators, domain experts
+### 4.2 Magazines & Publishers
+- Editorial teams sourcing content for their publications
+- Want to discover independent talent without going through agencies
+- Need objective signals (analytics, AI portfolio insights) to make confident purchase decisions
 
 ### 4.3 Readers
-- Users consuming content across various domains
+- General audience consuming articles across topics
+- Free readers access free articles; premium readers access all
 
 ---
 
-## 5. 🧑‍💼 User Roles
+## 5. 🧑‍💼 Account Model
 
-| Role   | Description |
-|--------|------------|
-| Guest  | Can browse feed but cannot access full articles |
-| Reader | Can read full articles, like, comment, follow |
-| Writer | Can create, edit, and publish articles |
-| Admin  | Manages platform, moderates users and content |
+Inkwell uses an **account type** + **role** + **plan** model to cleanly separate identity, capability, and entitlement.
+
+### 5.1 Account Types
+
+| Account Type | Description |
+|--------------|-------------|
+| **Personal** | Individual users — can be readers, writers, or both |
+| **Magazine** | Organizations licensing content — branded profile, wallet, curated library |
+
+### 5.2 Roles (Personal accounts)
+
+| Role | Description |
+|------|-------------|
+| Reader | Default — can read articles, like, comment, follow |
+| Writer | Reader + can create, edit, publish, list articles for licensing |
+| Admin | Platform administration, moderation, reports |
+
+Roles are additive — every writer is also a reader. Magazine accounts have their own capability set (browse writers, view evaluation analytics, license articles) and do not use the personal-account role enum.
+
+### 5.3 Guest Access
+
+Unauthenticated visitors can browse the public feed (titles, excerpts, thumbnails) but cannot access full article content. They are prompted to sign up to read.
 
 ---
 
 ## 6. 🔐 Access & Subscription Model
 
-### 6.1 User Types
+### 6.1 Plans (Personal accounts)
 
-- **Free Reader**
-  - Access to free articles only
+Plans are orthogonal to role — a user can be a `writer` with `free` plan or `premium` plan.
 
-- **Premium Reader**
-  - Access to all content
+| Plan | Reading Access | Writing Capability |
+|------|----------------|---------------------|
+| **Free** | Free articles only | Can write, but no AI assistance |
+| **Premium** | All articles (free + premium) | Full AI assistance with daily token quota |
 
-- **Free Writer**
-  - Can write articles
-  - No AI features
+### 6.2 Magazine Accounts
 
-- **Premium Writer**
-  - Full AI access
-  - Token-based usage
+- Magazines do not use the personal free/premium plan
+- They maintain a **wallet balance** denominated in platform credits (simulated currency)
+- Wallet credits are spent on article licenses
+- Magazines can read any article they have licensed regardless of free/premium status
 
 ---
 
@@ -145,28 +169,38 @@ Each article can be:
 The platform is divided into the following domains:
 
 ### 8.1 Content Creation
-- Editor
-- Draft system
-- Publishing workflow
+- TipTap-based rich text editor
+- Auto-saving draft system
+- Publishing workflow (status, visibility, tags, slug)
 
 ### 8.2 AI Assistance
-- Chat assistant
-- Voice processing
-- Inline editing
+- Chat assistant (RAG over writer's own corpus)
+- Voice processing (Groq Whisper → structured draft)
+- Inline editing actions (reformulate / shorten / expand / simplify / improve)
+- Portfolio Insights for magazines (RAG-generated writer evaluation)
 
 ### 8.3 Social Interaction
-- Likes
-- Comments (threaded)
-- Follows
+- Likes / reactions
+- Threaded comments
+- Follow system
 - Reposts
 
 ### 8.4 Analytics
-- Reader engagement tracking
-- Writer dashboards
+Two surfaces, sharing the same underlying event pipeline:
+- **Writer-facing** — self-improvement metrics
+- **Magazine-facing** — writer evaluation (audience, content, quality, AI portfolio insights)
 
-### 8.5 Moderation
-- Reporting system
-- Admin controls
+### 8.5 Licensing Marketplace
+- Article listings (writer-set prices)
+- Magazine browsing and search
+- License purchase flow (simulated payment)
+- Magazine curated library
+- Writer wallet & earnings
+
+### 8.6 Moderation
+- Article and user reporting
+- Admin queue, content moderation (OpenAI moderation API)
+- Soft delete + audit trail
 
 ---
 
