@@ -53,8 +53,7 @@ If you want to track build progress, see the **Phase Plan**.
 - [08 - DevOps](./8-devops.md)
 
 ### 🎨 Design
-
-- - [09 - Design](./9-design.md)
+- [09 - Design](./9-design.md)
 
 ---
 
@@ -70,5 +69,6 @@ spec.inkwell.ai/
 ├── 5-ai-design.md
 ├── 6-database-schema.md
 ├── 7-analytics-model.md
-└── 8-devops.md
+├── 8-devops.md
+└── 9-design.md
 ```
