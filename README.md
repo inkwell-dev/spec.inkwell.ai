@@ -52,6 +52,10 @@ If you want to track build progress, see the **Phase Plan**.
 ### 🚀 DevOps
 - [08 - DevOps](./8-devops.md)
 
+### 🎨 Design
+
+- - [09 - Design](./9-design.md)
+
 ---
 
 ## 🧩 Repository Structure
