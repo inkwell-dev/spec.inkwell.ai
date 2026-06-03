@@ -13,11 +13,14 @@ every screen prompt to keep the design language consistent.
 
 | Setting | Value |
 |---------|-------|
-| Visual direction | Modern SaaS clean (Linear / Notion / shadcn defaults) |
-| Primary / brand color | Violet `#7c3aed` |
-| Typeface | Inter |
+| Visual direction | Restrained editorial SaaS — Linear / Notion-adjacent, anti-generic |
+| Primary / brand color | Violet `#7c3aed` (singular accent, saturation < 80%) |
+| Typeface | Geist Sans + Geist Mono |
+| Icons | Phosphor Icons (regular weight) |
+| Canvas | `#F8FAFC` cool off-white (never pure white for backgrounds) |
 | Form factors | Desktop (1440px) + Mobile (375px) |
 | Scope | Full platform — writer, reader, magazine, and marketplace flows |
+| Design philosophy | Informed by emil-design-eng, minimalist-ui, stitch-design-taste, high-end-visual-design |
 
 ---
 

@@ -2,7 +2,7 @@
 
 **Route:** `/marketplace` · **Role:** Magazine (active subscription) · **Stitch mode:** Standard
 
-The dedicated discovery interface for subscribed magazines to find eligible writers.
+Dedicated discovery interface for subscribed magazines to find eligible writers.
 
 > Paste [`00-design-system.md`](./00-design-system.md) first, then the block below.
 
@@ -12,27 +12,61 @@ The dedicated discovery interface for subscribed magazines to find eligible writ
 Screen: Marketplace Browse for magazines, route "/marketplace".
 Only accessible to magazines with an active subscription.
 
-Layout: top navigation bar, then a dashboard layout with a left sidebar and main content.
-- Left sidebar (magazine dashboard nav): Marketplace (active, violet highlight), Library,
-  Subscription & Credits, Notifications, Settings.
-- Main area:
-  - Page header: "Marketplace" title with a subtitle "Discover writers and source content".
-  - A search bar: "Search writers by name, topic, or keyword…" with a magnifying-glass icon.
-  - A horizontal row of filter chips: All Topics, Technology, Culture, Business, Science,
-    Design, Politics — "All Topics" selected in violet.
-  - Sort dropdown on the right: "Sort by: Engagement" with options: Engagement, Posting
-    frequency, Topic relevance, Newest.
-  - A grid of writer cards (3 columns on desktop):
-    Each writer card shows:
-    - Writer avatar (circular, medium) + name (bold) + a violet "View profile" link.
-    - A short bio line (1 line, truncated).
-    - Topic tags as small pills (e.g., "Technology", "AI", "Culture").
-    - Stats row: "12.4K readers · 3.2K reactions · 47 articles".
-    - Number of marketplace-listed articles: "8 articles for sale" in muted text.
-    - A small emerald "Eligible" badge (all writers here are eligible by definition).
-  - Vary the cards with different writers, topics, stats to look realistic.
-  - Pagination at the bottom (1, 2, 3, … Next).
+Layout: top navigation bar, then dashboard layout with sidebar + main on #F8FAFC canvas.
 
-Mobile (375px): sidebar collapses into bottom tab bar. Writer cards become a single-column
-list. Filter chips scroll horizontally. Search bar is full-width under a sticky top bar.
+LEFT SIDEBAR (240px, magazine dashboard nav):
+  Nav items with Phosphor icons: Marketplace (active — Violet-50 bg, Violet-700 text),
+  Library, Subscription & Credits, Notifications, Settings.
+
+MAIN AREA:
+
+  PAGE HEADER:
+    "Marketplace" (text-2xl font-semibold Slate-900) + "Discover writers and source content"
+    (text-sm Slate-500, 4px below).
+    Credit balance indicator in the header row, right-aligned: Phosphor Coins icon
+    (Violet-500) + "342 credits" (text-sm font-medium Slate-700 Geist Mono). Small
+    pill-shaped display, Slate-100 background, rounded-full. This gives the magazine
+    constant awareness of their budget.
+
+  SEARCH + FILTERS ROW (20px below header):
+    Search input (flex-1): Phosphor MagnifyingGlass icon, "Search writers by name, topic,
+    or keyword..." placeholder, Slate-200 border, rounded-lg.
+    Sort dropdown (right, 160px): "Sort by: Engagement" (Slate-200 border, rounded-lg,
+    text-sm, Phosphor SortAscending icon).
+
+  TOPIC FILTER CHIPS (12px below search):
+    Horizontal row: "All Topics" (selected — Violet-600 fill, white text), "Technology",
+    "Culture", "Business", "Science", "Design", "Politics".
+    Unselected: Slate-200 border, Slate-600 text, rounded-full, text-sm.
+
+  WRITER GRID (24px below filters, 2-column grid on desktop, NOT 3-column):
+    Each writer card: white fill, 1px Slate-200 border, rounded-xl, padding 20px.
+    Hover: border Slate-300, shadow 0 2px 8px rgba(0,0,0,0.06).
+    
+    Card contents:
+      Top: circular avatar (48px) + name (text-base font-semibold Slate-900) + small
+      Emerald-50 "Eligible" badge (text-xs Emerald-700) on the same line.
+      Bio: text-sm Slate-500, 1 line, truncated with ellipsis.
+      Topic tags: 2-3 small pills (text-xs, Slate-100 background, Slate-600 text, rounded-full).
+      12px gap.
+      Stats row (Geist Mono, text-xs Slate-500, tabular-nums):
+        "12.4K readers · 3.2K reactions · 47 articles"
+      Marketplace line: "8 articles for sale" (text-xs Violet-600).
+      16px gap.
+      "View profile" button: outline, Slate-200 border, text-sm Slate-700, rounded-lg,
+      full width. Hover: Slate-100 fill.
+
+    Use 6 cards (3 rows of 2) with diverse, realistic writers:
+      "Amira Okafor" — AI & Technology / "Luca Hernandez" — Narrative Journalism /
+      "Priya Nair" — Digital Culture / "Tomoko Sato" — Science Communication /
+      "Marcus Webb" — Business Strategy / "Elif Aydin" — Design & Craft.
+    Different avatar placeholder colors. Different stat numbers (not round).
+
+  PAGINATION (32px below grid):
+    "1" (Violet-600 fill, white text, 32px square, rounded-lg), "2", "3", "..." , "Next"
+    (Slate-600 text). Simple, understated.
+
+Mobile (375px): sidebar collapses to bottom tab bar. Writer cards single column, full-width.
+Search bar full-width under sticky top bar. Filter chips scroll horizontally. Credit
+balance moves into the top bar next to the avatar.
 ```
