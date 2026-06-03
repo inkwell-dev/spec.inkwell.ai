@@ -83,8 +83,14 @@ User clicks "Create Article"
 - Publish  
 
 IF publish:  
-→ Select visibility (Free / Premium)  
-→ Article appears in feed  
+→ Select **placement**:
+  - **Public** → select visibility (Free / Premium)
+    - Premium option is only available if writer is marketplace-eligible (5K readers + 1K reactions)
+    - Article appears in public feed
+  - **Marketplace** → only available if writer is marketplace-eligible
+    - Set article price (platform credits)
+    - Preview price shown automatically (10% of price)
+    - Article does NOT appear in public feed; visible only to subscribed magazines  
 
 ---
 
@@ -216,34 +222,50 @@ User clicks "Repost"
 
 ## 9.6 📦 Marketplace Flows
 
-### 9.6.1 Magazine Sign-Up
+### 9.6.1 Magazine Sign-Up & Subscribe
 
 Visitor clicks "Sign up as Magazine"
 → Form: email, password, magazine name, slug, website, description, logo
 → Submits
 → System validates and creates `users` row with `account_type = 'magazine'`
 → Creates `magazine_profiles` row
-→ Initial wallet_balance = 0
-→ Redirected to magazine dashboard
+→ **Subscription wall**: redirected to subscription selection screen
+  - Select plan (MVP: single tier, price TBD)
+  - Simulated payment confirmation
+  - `subscription_status` set to `active`
+  - `credit_balance` initialized to monthly allowance (e.g. 500 credits)
+→ Redirected to magazine dashboard / marketplace
 
-### 9.6.2 List Article for Licensing (Writer)
+If magazine account exists but subscription is inactive:
+→ Any attempt to access marketplace → redirected to subscription screen
 
-Writer opens article management
-→ Toggles "Available for licensing" on a published article
-→ Enters price (platform credits)
-→ Saves
-→ Article appears in marketplace browse for magazines
+### 9.6.2 Publish to Marketplace (Writer)
+
+Writer opens publish flow on a drafted article
+→ System checks writer eligibility (`is_marketplace_eligible`)
+
+IF not eligible:
+→ Marketplace option is greyed out
+→ Progress bar shown: "X / 5,000 readers · Y / 1,000 reactions to unlock marketplace"
+
+IF eligible:
+→ Writer selects placement: **Marketplace**
+→ Enters article price (platform credits, min enforced)
+→ Preview price shown automatically (10% of price, read-only)
+→ Confirms → article published with `placement = 'marketplace'`
+→ Article is invisible in the public feed
+→ Article appears in marketplace browse for subscribed magazines
 
 ### 9.6.3 Magazine Browses Writers
 
-Magazine logs in
-→ Opens "Discover" tab
-→ Browses paginated list of writers
+Magazine logs in (active subscription required)
+→ Opens "Marketplace" tab
+→ Browses paginated list of marketplace-eligible writers
 → Filters by topic / tags / posting cadence / engagement rate
 → Sorts by relevance
 → Clicks into writer profile
 
-### 9.6.4 Magazine Views Writer Evaluation
+### 9.6.4 Magazine Views Writer Profile
 
 Magazine clicks a writer
 → Lands on writer profile in **evaluation mode**
@@ -252,47 +274,72 @@ Magazine clicks a writer
   - Content Analytics
   - Quality Signals
   - AI Portfolio Insights (loaded async, cached if recent)
-→ Sees writer's listed articles with prices
-→ Sees full article previews
+→ Sees writer's marketplace-listed articles with titles, excerpts, prices, and preview prices
+→ Can initiate preview or purchase from this view
 
-### 9.6.5 License Article
+### 9.6.5 Preview Article (Stage 2)
 
-Magazine clicks "License this article" on a listed article
-→ Confirmation modal shows price + remaining wallet balance after purchase
+Magazine clicks "Preview article" on a marketplace article
+→ Confirmation modal shows:
+  - Preview price (10% of article price)
+  - Current credit balance and balance after deduction
 → Magazine confirms
 → Backend opens DB transaction:
-  - Validates magazine wallet >= price
-  - Debits magazine wallet
-  - Credits writer wallet (price - platform_fee)
-  - Records platform_fee
-  - Inserts `article_licenses` row
-  - Inserts 3 `transactions` rows (license_purchase, writer_payout, platform_fee)
+  - Validates `credit_balance >= preview_price`
+  - Debits `credit_balance` by preview price
+  - Credits writer `earnings_balance` by `preview_price − platform_fee`
+  - Inserts `article_purchases` row with `stage = 'preview_unlock'`
+  - Inserts transaction rows (`preview_unlock`, `writer_payout`)
 → Commits transaction
-→ Notification to writer ("Your article was licensed by [Magazine]")
-→ Article gets "Licensed by [Magazine]" badge
-→ Article appears in magazine's library
+→ Magazine can now read the full article
+→ Notification to writer ("Your article was previewed by [Magazine]")
 
-If wallet insufficient:
-→ Modal redirects to wallet top-up flow
+If credit balance insufficient:
+→ Modal offers "Top up credits" option
 
-### 9.6.6 Wallet Top-Up (Magazine)
+### 9.6.6 Purchase Article (Stage 3)
 
-Magazine opens Wallet page
-→ Clicks "Add credits"
-→ Selects amount
-→ Simulated payment confirmation
-→ Wallet credited
-→ Transaction logged
+Magazine has previewed the article and clicks "Purchase article"
+→ Confirmation modal shows:
+  - Remaining amount due (90% of price — preview credit already paid)
+  - Total price paid across both stages = 100%
+  - Current credit balance and balance after deduction
+→ Magazine confirms
+→ Backend opens DB transaction:
+  - Looks up existing `article_purchases` preview row for `(article_id, magazine_id)`
+  - Validates `credit_balance >= remaining_amount`
+  - Debits `credit_balance` by remaining amount
+  - Credits writer `earnings_balance` by `remaining_amount − platform_fee`
+  - Inserts `article_purchases` row with `stage = 'full_purchase'` and `parent_purchase_id` pointing to preview row
+  - Inserts transaction rows (`article_full_purchase`, `writer_payout`)
+→ Commits transaction
+→ Article appears in magazine's **curated library** with republish rights
+→ Attribution badge "In [Magazine]'s library" appears on article
+→ Notification to writer ("Your article was purchased by [Magazine]")
 
-### 9.6.7 Writer Earnings Review
+If magazine skips preview and purchases directly:
+→ Same flow but `remaining_amount = 100%` (no prior preview credit to subtract)
+
+### 9.6.7 Magazine Subscription Management
+
+Magazine opens Settings → Subscription
+→ Sees current plan, renewal date, credit balance, monthly allowance
+→ Options:
+  - Renew early
+  - Cancel (access continues until end of billing cycle)
+  - Top up credits (optional, simulated payment, adds to current balance)
+→ Monthly renewal: cron job credits `monthly_credit_allowance` to `credit_balance` and inserts `monthly_credit_grant` transaction row
+
+### 9.6.8 Writer Earnings Review
 
 Writer opens Earnings dashboard
 → Sees:
-  - Lifetime earnings
-  - Recent license transactions
-  - Top-earning articles
-  - Wallet balance
+  - Lifetime earnings (preview payouts + purchase payouts combined)
+  - Recent transactions (previews and purchases separately itemized)
+  - Articles ranked by total revenue
+  - Earnings balance
 → Clicks "Withdraw" (simulated payout in MVP)
+→ Writer sees progress toward marketplace eligibility if not yet unlocked
 
 ---
 

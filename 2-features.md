@@ -57,26 +57,41 @@ Users can:
 
 ---
 
-### 2.4 Article Visibility
+### 2.4 Article Placement & Visibility
 
-Each article must have a visibility level:
+When publishing, a writer first chooses a **placement**:
+
+| Placement | Audience | Description |
+|-----------|----------|-------------|
+| **Public** | Free/premium readers | Appears in the public feed. Subject to free/premium visibility rules below. |
+| **Marketplace** | Magazine subscribers only | Not listed in the public feed or on the writer's public profile. Accessible only to magazines with an active subscription. |
+
+For **public** articles, a visibility level further restricts access:
 
 - **Free Access** → Accessible by all authenticated users
-- **Premium Access** → Accessible only by premium-plan users
+- **Premium Access** → Accessible only by premium-plan users (requires writer eligibility — see section 4.5.2)
 
-> Note: Articles are always publicly listed in the feed, but full access requires authentication. Magazine accounts can access any article they have licensed regardless of visibility.
+> Articles are always publicly listed in the feed by title/excerpt, but full access requires authentication. Magazine accounts can access any article they have fully purchased regardless of its original visibility.
+
+#### Placement Rules
+- Placement is chosen at publish time and defaults to **public**.
+- **Marketplace → Public** switch is allowed at any time (writer abandons the sale and makes the article public).
+- **Public → Marketplace** switch is **blocked** (an article that has already been read by the public audience has no marketplace exclusivity value).
 
 ---
 
-### 2.4.1 Article Licensing State
+### 2.4.1 Marketplace Article State
 
-Independent of free/premium visibility, every published article carries a **licensing state**:
+For articles with `placement = marketplace`, the following state applies:
 
-- `not_listed` (default) — article is read-only, not available for purchase
-- `listed` — article is available for licensing at a fixed price set by the writer
-- `licensed` — at least one magazine has licensed the article (writer retains the ability to keep it listed for additional licenses)
+- `price` — writer-set price in platform credits (required)
+- `preview_price` — derived automatically as 10% of price (platform constant, not editable)
+- No free/premium subdivision — marketplace articles have a single access path through the magazine purchase flow
 
-Writers can toggle listing state and price from their article management dashboard.
+State per magazine–article pair:
+- **Not previewed** — magazine has not unlocked this article yet
+- **Previewed** — magazine paid the preview fee (10%) and can read the full article; credits are held toward the purchase
+- **Purchased** — magazine paid the remaining 90%; article is in their library with republish rights
 
 ---
 
@@ -106,6 +121,7 @@ Articles, comments, and users use **soft deletes** (`deleted_at` timestamp). Del
 - **Search** — MVP feature combining:
   - Postgres full-text search (`tsvector`) over title + excerpt + content
   - Semantic search via pgvector (queries embedded, matched against article chunks)
+  - **Reciprocal Rank Fusion (RRF)** merges lexical and semantic result sets: `score = Σ 1/(k + rank_i)` with k=60
   - Hybrid ranking returns relevant results for both keyword and conceptual queries
 
 ---
@@ -258,76 +274,101 @@ Both surfaces share the same event pipeline:
 
 ---
 
-## 4.5 📦 Licensing Marketplace
+## 4.5 📦 Marketplace
 
-The marketplace is Inkwell's defining commercial layer.
+The marketplace is Inkwell's defining commercial layer — a gated space where eligible writers sell exclusive content to magazine subscribers.
 
-### 4.5.1 Magazine Accounts
+### 4.5.1 Magazine Subscription
 
 - Self-signup, instant (no admin approval in MVP)
 - Distinct `account_type` = `magazine`
+- **A subscription is mandatory** before any marketplace access is granted — no free magazine tier
+- Subscription includes a **monthly credit budget** (e.g. 500 credits/month, platform-configurable)
 - Profile fields: name, logo, website, description, contact email
-- Maintains a **wallet balance** in platform credits (simulated currency)
-- Wallets can be topped up via simulated payment
+- Magazines can top up credits manually if the monthly budget is exhausted (simulated payment)
 
 ---
 
-### 4.5.2 Article Listings
+### 4.5.2 Writer Eligibility Gate
 
-- Writers mark a published article as **available for licensing** with a fixed price (set in platform credits)
-- Can be toggled on/off
-- Price is editable
-- An article can be licensed by multiple magazines (non-exclusive)
+Before a writer can list articles on the marketplace or create premium articles, they must reach:
+
+- **5,000 lifetime unique readers** across all their published public articles
+- **1,000 lifetime reactions** (likes + comments) across all their published public articles
+
+Rules:
+- The threshold is computed as a **lifetime sum** — once reached, it stays unlocked permanently
+- Only **public** articles contribute to the count (marketplace articles are magazine-only and do not generate reader/reaction events from the public)
+- **Admin bypass** — admins can manually grant marketplace eligibility for demo seeding or promotional purposes
+- Writers can see their progress toward the threshold on their dashboard (e.g. "3,200 / 5,000 readers · 780 / 1,000 reactions")
 
 ---
 
-### 4.5.3 Magazine Discovery & Browsing
+### 4.5.3 Marketplace Browsing (Magazine Side)
 
-Magazines have a dedicated discovery interface:
+Magazines have a dedicated discovery interface (requires active subscription):
 
-- Browse all writers (paginated, filterable by topic/tag)
+- Browse all eligible writers (paginated, filterable by topic/tag)
 - Search writers by name, topic expertise, or keyword
 - Sort by engagement, posting frequency, or topic relevance
 - Click into any writer's profile → see full evaluation dashboard (section 4.2) and Portfolio Insights (section 3.6)
-- View a writer's listed articles + prices
+- View a writer's marketplace-listed articles with titles, excerpts, and prices
+- See per-writer stats (per-article stats deferred to post-MVP)
 
 ---
 
-### 4.5.4 License Purchase Flow
+### 4.5.4 Three-Stage Article Flow (Magazine Side)
 
-1. Magazine views a writer's listed article
-2. Clicks "License this article" → confirmation modal showing price
-3. Magazine confirms → wallet balance debited (validated server-side)
-4. License record created (`article_licenses` table)
-5. Article appears in magazine's **curated library** with a "Licensed by [Magazine]" badge on the writer's original page
-6. Writer's wallet credited with the price (minus platform fee, configurable)
-7. Notification sent to writer
+Magazines interact with marketplace articles through three stages:
+
+#### Stage 1 — Free Browse
+- Visible without spending credits
+- What magazines see: title, excerpt, writer profile stats, price
+
+#### Stage 2 — Preview Unlock (10% of price)
+- Magazine clicks "Preview article" → confirmation modal shows preview price (10%)
+- Credits debited from magazine credit balance (validated server-side)
+- Magazine can now read the full article
+- Writer receives payout: `preview_credits − platform_fee`
+- **One-time per magazine**: once unlocked, the magazine can re-read the article anytime without paying again
+- Preview is tracked per `(article_id, magazine_id)` pair
+
+#### Stage 3 — Full Purchase (remaining 90%)
+- After previewing, magazine clicks "Purchase article" → confirmation modal shows remaining amount (90% of original price)
+- Credits debited for the remaining amount (total paid = 100% of price across both stages)
+- Article added to magazine's **curated library** with republish rights
+- Writer receives payout: `purchase_credits − platform_fee`
+- Article gets a "In [Magazine]'s library" attribution badge on the writer's profile
+
+If a magazine skips preview and goes straight to purchase, they pay 100% in one step (no credit for a prior preview).
 
 ---
 
 ### 4.5.5 Magazine Library
 
-- Each magazine has a public library page showing all articles they have licensed
-- Library is the magazine's "portfolio" — analogous to a writer's profile
+- Each magazine has a library page showing all articles they have **fully purchased**
+- Library is the magazine's content portfolio — analogous to a writer's profile for readers
 - Articles in library link back to the original writer (attribution preserved)
+- Previewed-only articles are not in the library
 
 ---
 
 ### 4.5.6 Writer Earnings
 
-- Writers see a **Earnings** section in their dashboard:
-  - Total earnings (lifetime)
-  - Recent license transactions
-  - Articles ranked by license revenue
-  - Wallet balance + simulated withdraw button
+- Writers see an **Earnings** section in their dashboard:
+  - Total earnings (lifetime, including preview payouts + purchase payouts)
+  - Recent transactions (previews and purchases separately itemized)
+  - Articles ranked by total revenue
+  - Earnings balance + simulated withdraw button
 
 ---
 
 ### 4.5.7 Transaction Safety
 
-- All purchases are atomic database transactions (debit + credit + license record in single tx)
-- Insufficient balance → graceful rejection with clear UX
+- All credit movements are atomic database transactions (debit magazine + credit writer + record purchase in single tx)
+- Insufficient credit balance → graceful rejection with clear UX and prompt to top up
 - All transactions logged with idempotency keys to prevent double-charging on retry
+- Preview fees are tracked and subtracted from final purchase cost at purchase time (server-computed, never trusted from client)
 
 ---
 
@@ -425,18 +466,22 @@ Plan is orthogonal to role. A free-plan user can be a writer (just without AI). 
 
 ### 7.3 Magazine Accounts
 
-- Wallet-based access (not free/premium tier)
-- Can read any article they have licensed
-- Cannot create or publish original articles (magazines license, they do not write)
+- Subscription-based access (no free magazine tier)
+- Subscription unlocks: marketplace browsing, writer evaluation dashboards, Portfolio Insights, and the ability to preview/purchase marketplace articles
+- Can read any marketplace article they have **previewed** (preview unlock) or **purchased** (full purchase)
+- Cannot create or publish original articles (magazines source content, they do not write)
 
 ---
 
 ### 7.4 Content Access Rules
 
-- **Guests**: feed only, no full articles
-- **Free plan**: free articles
-- **Premium plan**: all articles
-- **Magazines**: licensed articles unconditionally; free articles like any reader; premium-marked articles only if licensed
+| Actor | Public free articles | Public premium articles | Marketplace articles |
+|-------|---------------------|------------------------|----------------------|
+| Guest | Title/excerpt only | Title/excerpt only | Not visible |
+| Free reader | Full access | Blocked (upgrade prompt) | Not visible |
+| Premium reader | Full access | Full access | Not visible |
+| Magazine (no sub) | No marketplace access at all | No marketplace access at all | Not visible |
+| Magazine (active sub) | Full access | Full access | Browse free; preview unlock with credits; full content after purchase |
 
 ---
 

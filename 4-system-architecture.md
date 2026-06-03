@@ -10,7 +10,7 @@ The system is designed to be:
 - Maintainable  
 - AI-ready  
 
-It follows a hybrid microservices architecture, separating core business logic from AI processing.
+It follows a **modular monolith** architecture: all business logic — including AI orchestration — lives inside the NestJS backend, structured as independent modules communicating through well-defined interfaces. AI calls to external providers (Groq, Gemini, OpenAI) are made directly from the backend via the Vercel AI SDK — no separate AI service exists.
 
 ---
 
@@ -18,40 +18,60 @@ It follows a hybrid microservices architecture, separating core business logic f
 
 The system is composed of the following main components:
 
-- Frontend Application  
-- Backend API (Core System)  
-- AI Processing Service  
-- Database Layer  
-- Caching & Queue System  
-- External Services  
+- Frontend Application (Next.js 15)
+- Backend API + AI Gateway (NestJS 11)
+- Background Worker (shares backend image, runs BullMQ jobs)
+- Database Layer (PostgreSQL 16 + pgvector)
+- Caching & Queue System (Redis + BullMQ)
+- Object Storage (MinIO, S3-compatible)
+- Reverse Proxy (Nginx)
+- External AI APIs (Groq, Gemini, OpenAI)
 
 ---
 
 ## 3. Architecture Diagram
 
+```
 [ Client (Browser) ]
         |
         v
-[ Frontend (Next.js) ]
+[ Nginx (Reverse Proxy + TLS) ]
+        |
+   ---------------------
+   |                   |
+   v                   v
+[ Frontend          [ Backend API
+  (Next.js 15) ]      (NestJS 11) ]
+                       |
+          -----------------------------------------
+          |          |           |          |      |
+          v          v           v          v      v
+       [Auth]   [Core API]  [AI Gateway] [SSE]  [REST]
+                                |
+                    --------------------------
+                    |          |             |
+                    v          v             v
+                 [Groq]    [Gemini]     [OpenAI]
+                 (LLM +    (LLM         (Embeddings)
+                  Whisper)  fallback)
+
+[ Worker (BullMQ) ] ← shares backend image
         |
         v
-[ Backend API (NestJS) ]
-        |
-   -------------------------
-   |           |           |
-   v           v           v
-[Auth]     [Core API]   [Notifications]
-                    |
-                    v
-            [ AI Service (Python) ]
-                    |
-        -------------------------
-        |                       |
-        v                       v
-[ PostgreSQL (Main DB) ]   [ Vector Storage ]
-        |
-        v
-[ Redis (Cache + Queue) ]
+   -----------------------------------------
+   |              |              |          |
+   v              v              v          v
+[Embed        [Aggregate     [Renew      [Send
+ Articles]     Metrics]       Subs]       Email]
+
+        ------- Data Layer -------
+        |            |           |
+        v            v           v
+[ PostgreSQL ]   [ Redis ]   [ MinIO ]
+  (relational      (cache      (images
+   + pgvector      + queues)    + media)
+   + tsvector)
+```
 
 ---
 
@@ -60,31 +80,33 @@ The system is composed of the following main components:
 ### Responsibilities
 
 - User interface rendering  
-- Rich text editor integration  
-- AI interaction (chat, inline editing)  
-- State management  
-- API communication  
+- Rich text editor integration (TipTap)
+- AI interaction (chat panel, inline editing popup)
+- Analytics event capture (view, scroll, time-on-page)
+- State management (Zustand + TanStack Query)
+- API communication (auto-generated OpenAPI client)
 
 ---
 
 ### Key Modules
 
 - Authentication UI  
-- Article Editor  
-- AI Assistant Panel  
-- Analytics Dashboard  
+- Article Editor (TipTap)
+- AI Assistant Panel (chat + inline editing)
+- Analytics Dashboard (writer-facing + magazine-facing)
 - Feed & Article Viewer  
+- Marketplace UI (discover, preview, purchase, library)
 
 ---
 
 ### Communication
 
 - REST API calls to backend  
-- WebSocket support (optional for future real-time features)  
+- SSE for AI streaming responses and live notifications
 
 ---
 
-## 5. Backend Layer (Core API)
+## 5. Backend Layer (Core API + AI Gateway)
 
 ### Responsibilities
 
@@ -92,8 +114,10 @@ The system is composed of the following main components:
 - Authentication & authorization  
 - Article management  
 - Social features (likes, comments, follows)  
-- Analytics processing  
-- Communication with AI service  
+- Analytics event ingestion and aggregation orchestration
+- **AI orchestration** — prompt construction, context injection, structured memory, RAG retrieval, provider calls via Vercel AI SDK
+- Marketplace transactions (atomic ledger operations)
+- Magazine subscription management
 
 ---
 
@@ -106,10 +130,18 @@ The system is composed of the following main components:
 - Likes Module
 - Follow Module
 - Reposts Module
-- **Marketplace Module** — listings, browsing, license purchase flow
-- **Transactions Module** — wallet ledger, atomic financial operations
-- Analytics Module (writer-facing + magazine-facing aggregation)
-- AI Gateway Module (chat, inline, voice, Portfolio Insights)
+- **AI Module** — provider abstraction (Vercel AI SDK), prompt builder, token quota
+  - ChatService — contextual chat with RAG retrieval
+  - InlineEditService — reformulate/shorten/expand/simplify/improve
+  - VoiceService — Groq Whisper transcription → structured article generation
+  - RagService — chunk retrieval via pgvector cosine similarity
+  - EmbeddingService — OpenAI `text-embedding-3-small` (1536 dimensions)
+  - MemoryService — structured writer memory extraction and injection
+  - PortfolioInsightsService — magazine-facing writer evaluation via RAG
+- **Marketplace Module** — writer eligibility gating, marketplace article browsing, preview unlock + full purchase flow
+- **Subscriptions Module** — magazine subscription activation, renewal, credit management
+- **Transactions Module** — atomic financial ledger (credit/debit, idempotency, row locking)
+- Analytics Module (event ingestion, writer-facing + magazine-facing aggregation)
 - Storage Module (MinIO uploads)
 - Notifications Module (SSE delivery)
 - Moderation / Reports Module  
@@ -121,78 +153,70 @@ The system is composed of the following main components:
 - RESTful API  
 - JSON-based communication  
 - JWT-secured endpoints  
+- SSE endpoints for AI streaming and notifications
 
 ---
 
-## 6. AI Service Layer
+## 6. AI Integration Layer
 
-### Purpose
+### Architecture Decision
 
-The AI service is separated from the core backend to:
-- Isolate AI complexity  
-- Improve scalability  
-- Allow independent deployment  
+AI orchestration is consolidated inside the NestJS backend rather than separated into a dedicated Python service. This decision was made because:
 
----
+- All AI functionality consists of API calls to external providers (Groq, Gemini, OpenAI) — no custom ML training or local model hosting
+- The Vercel AI SDK provides a unified TypeScript interface for all providers with built-in SSE streaming
+- A single codebase eliminates inter-service HTTP hops, reduces deployment complexity, and keeps the type system end-to-end (Zod-validated structured outputs flow directly into Drizzle)
+- For a solo engineer, one language and one deploy unit is significantly easier to maintain and debug
 
-### Responsibilities
-
-- Process AI requests (chat, inline editing, generation)  
-- Handle prompt construction  
-- Manage user context and memory  
-- Perform speech-to-text processing  
-- Communicate with external AI APIs  
-
----
-
-### Communication
-
-- Backend → AI Service via HTTP (REST)  
-- AI Service → External AI APIs  
+A separate AI service should only be introduced if: local models are hosted, fine-tuning is added, or heavy NLP pipelines are required.
 
 ---
 
 ### Key Pipelines
 
 Text Processing:
-- Input text + context → Prompt → AI model → Output  
+- User action → Backend enriches with article context + structured memory + RAG chunks → Prompt built → Vercel AI SDK `streamText` → SSE response to frontend
 
 Voice Processing:
-- Audio → Transcription → Prompt → AI model → Structured content  
+- Audio blob → Groq Whisper transcription → LLM structures transcript → TipTap JSON article draft
+
+RAG Retrieval:
+- Query embedded via OpenAI → pgvector cosine similarity search (`<=>`) → top-K chunks returned → injected into prompt context
+
+Portfolio Insights:
+- Magazine requests evaluation → representative chunks retrieved from writer's corpus → structured prompt → LLM generates Zod-validated report → cached in `portfolio_insights` for 24h
+
+---
+
+### Provider Abstraction
+
+LLM provider switching is handled by the Vercel AI SDK — changing from Groq to Gemini requires a one-line config change, not a code rewrite. The `EmbeddingService` uses OpenAI `text-embedding-3-small` directly (1536 dimensions, $0.02/1M tokens) — no provider abstraction needed for embeddings since there is a single stable paid provider.
 
 ---
 
 ## 7. Data Layer
 
-### Primary Database (PostgreSQL)
+### Primary Database (PostgreSQL 16 + pgvector)
 
-Stores:
-- Users  
-- Articles  
-- Comments  
-- Likes  
-- Follows  
-- Analytics events  
-- AI interactions  
+A single PostgreSQL instance serves as the sole data, search, and vector layer:
 
----
+- **Relational data** — users, articles, comments, likes, follows, transactions, subscriptions
+- **Full-text search** — `tsvector` + GIN index on article title/content/excerpt
+- **Vector storage** — `pgvector` extension with HNSW index on `article_chunks.embedding` for RAG retrieval
+- **Hybrid search** — combined full-text + semantic search using Reciprocal Rank Fusion (RRF) to merge lexical and vector results
 
-### Vector Storage (Optional / Future)
-
-Used for:
-- Semantic search  
-- Advanced AI context retrieval  
+No additional search engine (Elasticsearch) or vector database (Pinecone, Weaviate) is needed at this scale.
 
 ---
 
 ### Data Consistency
 
-- Strong consistency for core entities  
-- Eventual consistency for analytics  
+- Strong consistency for core entities and financial transactions (row-level locking on balance operations)
+- Eventual consistency for analytics (batch aggregation every 5–15 minutes)
 
 ---
 
-## 8. Caching & Queue Layer (Redis)
+## 8. Caching & Queue Layer (Redis + BullMQ)
 
 ### Purpose
 
@@ -204,17 +228,30 @@ Used for:
 
 ### Use Cases
 
-- AI request queue  
-- Rate limiting  
-- Caching frequently accessed data  
-- Notification dispatching  
+- Rate limiting (`@nestjs/throttler`)
+- Caching frequently accessed data (portfolio insights, article metrics)
+- Analytics aggregation (article metrics, writer rollups)
+- Writer eligibility computation (runs after each analytics batch)
+- Magazine subscription renewal (monthly cron — grant credits + update subscription state)
+- Article embedding on publish (OpenAI API calls)
+- Email dispatch (transactional emails via Resend)
 
 ---
 
-### Queue Processing
+### Scheduled Jobs
 
-- AI tasks are processed asynchronously  
-- Prevents blocking main API  
+| Job | Frequency | Description |
+|-----|-----------|-------------|
+| `aggregate-article-metrics` | Every 5 min | Raw events → `article_metrics` |
+| `aggregate-writer-audience` | Every 15 min | → `writer_audience_metrics` |
+| `aggregate-writer-content` | Every 15 min | → `writer_content_metrics` |
+| `aggregate-writer-quality` | Every 15 min | → `writer_quality_metrics` |
+| `check-writer-eligibility` | After each aggregation | Flip eligible writers |
+| `renew-magazine-subscriptions` | Monthly | Credit grant + renewal row |
+| `reset-ai-tokens` | Daily | Reset daily AI token quotas |
+| `embed-article` | On publish/update | Generate/refresh article chunks |
+| `extract-writer-memory` | On publish | LLM extracts structured memory |
+| `send-email` | On trigger | Transactional email via Resend |
 
 ---
 
@@ -222,23 +259,25 @@ Used for:
 
 ### Event Collection
 
-Frontend sends events:
-- Page view  
-- Scroll tracking  
-- Time spent  
+Frontend captures and batches events (bursts of 10 or every 5 seconds):
+- Page view (with country detection from headers)
+- Scroll tracking (per paragraph via `IntersectionObserver`)
+- Time spent (`visibilitychange` + `beforeunload` + `sendBeacon`)
 
 ---
 
 ### Processing Flow
 
-Client Event → Backend → Database → Aggregation → Dashboard  
+Client Event → Batched POST `/analytics/events` → `analytics_events` table (raw) → BullMQ aggregation workers → Metrics tables → Dashboards
 
 ---
 
 ### Aggregation Strategy
 
-- Periodic aggregation (batch jobs)  
-- Metrics computed per article  
+- Per-article aggregation every 5 minutes
+- Per-writer rollups every 15 minutes
+- Writer eligibility check after each aggregation run
+- Portfolio Insights on-demand with 24-hour cache
 
 ---
 
@@ -247,22 +286,24 @@ Client Event → Backend → Database → Aggregation → Dashboard
 ### Authentication
 
 - JWT-based authentication  
-- Access token + refresh token  
+- Access token (15 min) + refresh token (7 days)
 
 ---
 
 ### Authorization
 
-- Role-based access control (RBAC)  
-- Permission checks per endpoint  
+- Role-based access control (RBAC)
+- Guards: `JwtAuthGuard`, `RolesGuard`, `PlansGuard`, `AccountTypeGuard`
+- Subscription guard for magazine marketplace endpoints
 
 ---
 
 ### Data Protection
 
-- Input validation  
-- Sanitization of user-generated content  
-- Secure file uploads  
+- Input validation (Zod schemas)
+- Sanitization of user-generated content (XSS prevention)
+- Secure file uploads (signed MinIO URLs)
+- Idempotency keys on financial transactions
 
 ---
 
@@ -270,15 +311,16 @@ Client Event → Backend → Database → Aggregation → Dashboard
 
 ### Image Handling
 
-- Uploaded by users  
-- Stored in object storage (S3-compatible)  
+- Uploaded by users (article thumbnails, inline images, avatars, magazine logos)
+- Stored in MinIO (S3-compatible object storage)
+- Upload via signed POST URLs to avoid routing media through the backend
 
 ---
 
 ### Access
 
-- Public URLs for rendering  
-- Controlled upload endpoints  
+- Public read URLs for rendering  
+- Controlled upload endpoints (authenticated)
 
 ---
 
@@ -286,7 +328,7 @@ Client Event → Backend → Database → Aggregation → Dashboard
 
 ### Flow
 
-Event Trigger → Backend → Notification Created → Stored → Delivered  
+Event Trigger → Backend → Notification Created → Stored → Delivered via SSE
 
 ---
 
@@ -294,60 +336,96 @@ Event Trigger → Backend → Notification Created → Stored → Delivered
 
 - Follow notifications  
 - Likes  
-- Comments  
+- Comments / replies
+- Article previewed by magazine (writer-facing)
+- Article purchased by magazine (writer-facing)
+- Earnings credited (writer-facing)
+- Subscription renewed (magazine-facing)
 
 ---
 
-## 13. Deployment Architecture
+## 13. Observability
 
-### Services
+### Health Checks
 
-- Frontend (Next.js)  
-- Backend (NestJS)  
-- AI Service (Python)  
-- PostgreSQL  
-- Redis  
+- `GET /health` — liveness probe (returns 200 if the process is running). Used by Docker Compose healthcheck and Nginx upstream checks.
+- `GET /ready` — readiness probe (checks PostgreSQL + Redis connectivity). Used for dependency ordering in compose and for demo confidence.
+
+### Error Tracking
+
+- Sentry (free tier) for error tracking and alerting in both backend and frontend.
+
+### Logging
+
+- Structured JSON logging from NestJS
+- Request/response logging on API endpoints
+- BullMQ job success/failure logging
+
+---
+
+## 14. Deployment Architecture
+
+### Services (Docker Compose)
+
+7 containers in a single `docker-compose.yml`:
+
+| Service | Image | Port |
+|---------|-------|------|
+| `nginx` | nginx:alpine | 80, 443 |
+| `web` | frontend (multi-stage build) | 3000 |
+| `api` | backend (multi-stage build) | 3001 |
+| `worker` | backend (same image, `node dist/worker`) | — |
+| `db` | postgres:16 + pgvector | 5432 |
+| `redis` | redis:7-alpine | 6379 |
+| `minio` | minio/minio | 9000 |
 
 ---
 
 ### Containerization
 
-- Each service runs in a Docker container  
-- Services communicate over an internal network  
+- Multi-stage Docker builds for frontend and backend (deps → build → runner)
+- Worker shares backend image with different entrypoint
+- All services communicate over an internal Docker network
+- Health checks defined for all services
 
 ---
 
 ### Reverse Proxy
 
-- Nginx routes incoming traffic to services  
+- Nginx routes `/` to frontend, `/api` to backend
+- SSE support configured (proxy buffering disabled)
+- HTTPS termination via Let's Encrypt (certbot)
 
 ---
 
-## 14. Scalability Considerations
+## 15. Scalability Considerations
 
-- Horizontal scaling for backend and AI services  
-- Stateless API design  
-- Queue-based AI processing  
-- Database indexing and optimization  
-
----
-
-## 15. Failure Handling
-
-- Retry mechanism for AI requests  
-- Graceful degradation if AI service fails  
-- Logging and monitoring for errors  
+- Stateless API design (JWT, no server-side sessions)
+- Queue-based async processing for AI calls and analytics aggregation
+- Database indexing strategy (see `6-database-schema.md` §11)
+- Horizontal scaling: add more API/worker containers behind Nginx
 
 ---
 
-## 16. Testing Strategy (High-Level)
+## 16. Failure Handling
 
-- Unit tests for backend modules  
-- Integration tests for APIs  
-- Basic validation for AI responses  
+- Retry mechanism for AI API calls (Vercel AI SDK built-in retry)
+- Provider fallback chain: Groq → Gemini for LLM; OpenAI for embeddings (single provider, paid tier)
+- Graceful degradation if AI providers are unavailable (non-AI features continue working)
+- BullMQ job retry with exponential backoff
+- Health check endpoints for container orchestration
+
+---
+
+## 17. Testing Strategy (High-Level)
+
+- Unit tests for backend modules (NestJS testing utilities)
+- **Ledger invariant tests** — assert `earnings_balance == sum(writer_payout)` and `credit_balance == grants + topups − debits` after every transaction test
+- Integration tests for critical API flows (auth → publish → purchase → verify ledger)
+- E2E tests with Playwright for frontend flows (Phase 6)
 
 ---
 
 ## Summary
 
-The system architecture ensures scalability, modularity, and strong AI integration.
+The system architecture consolidates all logic — including AI orchestration — into a single NestJS backend with a dedicated worker process for background jobs. PostgreSQL serves as the sole data, search, and vector layer. This keeps the deployment footprint minimal (7 Docker containers) while supporting the full feature set: AI-assisted writing, RAG-powered personalization, decision-support analytics, and a transactional marketplace with a locked financial ledger.

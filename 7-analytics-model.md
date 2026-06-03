@@ -87,9 +87,11 @@ Captured data:
 - `follow` — follower_id, following_id
 
 ### 4.5 Transaction Events (Marketplace)
-- `article_listed` — article_id, price
-- `article_licensed` — article_id, magazine_id, price, license_id
+- `article_published_marketplace` — article_id, price (writer publishes to marketplace)
+- `article_preview_unlocked` — article_id, magazine_id, preview_price, purchase_id
+- `article_purchased` — article_id, magazine_id, total_price, purchase_id
 - Stored in a separate `transactions` table (not in `analytics_events`)
+- These events also feed the **writer eligibility computation** (see section 9.3)
 
 ---
 
@@ -144,16 +146,19 @@ Writers see their own metrics on the **Writer Dashboard** at `/dashboard`.
 - AI feedback summary ("Your intros could be stronger", etc.)
 
 ### 6.3 Earnings View (writers only)
-- Total earnings (lifetime)
-- Per-article license revenue
-- Recent license transactions
-- Wallet balance + simulated withdraw
+- Total earnings (lifetime — preview payouts + purchase payouts combined)
+- Per-article revenue (preview payouts + purchase payouts per article)
+- Recent transactions (previews and full purchases separately itemized)
+- Earnings balance + simulated withdraw
+- **Eligibility progress** — if writer is not yet eligible: "X / 5,000 readers · Y / 1,000 reactions to unlock marketplace"
 
 ---
 
 ## 7. Magazine-Facing Analytics (Buyer Decision Support)
 
 Magazines see writer evaluation dashboards on each writer's profile. **This is the system's defining differentiator.**
+
+**Access requirement**: active magazine subscription. Unauthenticated visitors and non-subscribed magazine accounts cannot view writer evaluation dashboards or Portfolio Insights.
 
 Magazines view: `/u/[writer-username]?as=magazine` → renders the evaluation view rather than the standard public profile.
 
@@ -219,6 +224,12 @@ Used by:
 
 ## 9. Aggregation Strategy
 
+### 9.0 Event Capture Timing
+
+Analytics event capture (the `/analytics/events` endpoint + frontend instrumentation) should be implemented in **Phase 2** alongside the editor — not deferred to Phase 3. This ensures weeks of real engagement data accumulate before the September defense, making demo dashboards show genuine usage patterns rather than synthetic data.
+
+The aggregation workers and dashboard UI remain in Phase 3; Phase 2 only adds the raw event ingestion pipeline.
+
 ### 9.1 Frequency
 
 - **Real-time counters** (views, likes) — increment on event capture
@@ -235,6 +246,30 @@ Used by:
   - `aggregate-writer-quality` job
 - Each job is idempotent and resumable
 - Aggregation reads incrementally (only events since `last_aggregated_at`)
+
+### 9.3 Writer Eligibility Computation
+
+A writer becomes marketplace-eligible when their **lifetime public article metrics** cross both thresholds simultaneously:
+- ≥ 5,000 **unique readers** (distinct `viewer_user_id` across all published public articles, guests excluded)
+- ≥ 1,000 **reactions** (likes + comments, counted from the `likes` and `comments` tables)
+
+**Computation trigger**: after each aggregation run, the worker queries writers whose current metrics are above threshold but whose `is_marketplace_eligible` is still `FALSE`. For each match:
+1. Sets `users.is_marketplace_eligible = TRUE`
+2. Sets `users.marketplace_eligible_at = NOW()`
+3. Sets `users.marketplace_eligible_source = 'threshold'`
+4. Inserts a row into `writer_eligibility_audit_log` with metric snapshots
+
+**Admin grant path**: Admin sets eligibility directly via the admin panel → same fields updated + `marketplace_eligible_source = 'admin_grant'` + `granted_by = admin_user_id` in audit log.
+
+**Immutability**: once granted, eligibility is never automatically revoked (lifetime threshold, not rolling window). Manual revocation is possible only through an explicit admin action (not modeled in MVP).
+
+### 9.4 Demo Threshold Configuration
+
+The 5,000-reader / 1,000-reaction thresholds are impossible to reach organically during a PFE demo. To ensure the data-driven differentiator can be demonstrated live:
+
+- A `DEMO_MODE=true` environment flag lowers thresholds to configurable values (e.g., 5 readers + 2 reactions)
+- A seed script pre-populates demo writers, articles, and analytics events
+- This allows a writer to *actually cross the eligibility line* during the defense, rather than relying solely on admin-grant bypass
 
 ---
 

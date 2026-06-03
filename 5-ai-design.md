@@ -56,7 +56,7 @@ The AI operates in multiple roles depending on the context:
 ### 3.5 Evaluator (Magazine-Facing) — *New role*
 - Analyzes a writer's full corpus on demand
 - Produces a structured Portfolio Insights report (voice, expertise, consistency, fit, strengths/gaps)
-- Drives magazine licensing decisions  
+- Drives magazine preview and purchase decisions  
 
 ---
 
@@ -98,7 +98,9 @@ Flow:
 
 ### 4.4 Portfolio Insights (Magazine-Facing) — *New*
 
-Triggered when a magazine opens a writer's evaluation page.
+**Access requirement**: active magazine subscription. The endpoint returns 403 for non-subscribed or unauthenticated requests.
+
+Triggered when a subscribed magazine opens a writer's evaluation page.
 
 Flow:
 - Backend retrieves the writer's `article_chunks` (RAG)
@@ -117,18 +119,19 @@ Output format (structured):
 
 ## 5. AI Request Lifecycle
 
-Each AI request follows a structured pipeline:
+All AI orchestration runs inside the NestJS backend — there is no separate AI service. The Vercel AI SDK provides a unified TypeScript interface for all providers.
+
+Each AI request follows this pipeline:
 
 1. User action (chat, selection, voice)  
 2. Frontend sends request to backend  
 3. Backend enriches request with:
-   - Article context  
-   - User data  
-4. Request sent to AI service  
-5. AI service builds prompt  
-6. External AI model processes request  
-7. Response returned to backend  
-8. Backend sends result to frontend  
+   - Article context (current content)
+   - Structured memory (tone, style, vocabulary, topics from `user_ai_memory`)
+   - RAG retrieval (top-K relevant chunks from writer's published articles, capped at 5)
+4. Backend builds prompt (ROLE + CONTEXT + TASK + INPUT)
+5. Vercel AI SDK calls external provider (Groq primary, Gemini fallback)
+6. Response streamed back to frontend via SSE (`streamText`)  
 
 ---
 
@@ -215,17 +218,39 @@ See [`6-database-schema.md`](./6-database-schema.md) section 5.3 — `user_ai_me
 - `topics` (domains the writer covers)
 
 ### 9.3 Usage
-- Injected into prompts for writer-facing AI calls
+- Injected into prompts for writer-facing AI calls as a compact system-prompt block
 - Used as input to Portfolio Insights generation
 - Refreshed by a background job when the writer publishes a new article
 
+### 9.3.1 Memory Extraction Pipeline
+
+Structured memory is **not user-entered** — it is extracted automatically by an LLM job:
+
+1. Writer publishes or updates an article
+2. BullMQ triggers `extract-writer-memory` job
+3. Job retrieves the writer's full published corpus (or a representative sample)
+4. LLM call with a structured prompt requesting tone/style/vocabulary/topics analysis
+5. Response validated via Zod schema matching `user_ai_memory` fields
+6. Upsert into `user_ai_memory` table (creates on first publish, updates on subsequent)
+
+The extraction runs asynchronously — it does not block the publish flow. If the LLM call fails, the existing memory (or empty memory for first-time writers) is used until the next successful extraction.
+
+### 9.3.2 Prompt Size Management
+
+To avoid token overflow from double-injecting memory and RAG chunks:
+- Structured memory is injected as a **compact system-prompt block** (< 200 tokens)
+- RAG retrieval is capped at **top-K ≤ 5 chunks**
+- Total injected context (memory + chunks) should not exceed ~2000 tokens
+
 ### 9.4 RAG Layer (Article Chunks)
 - Articles are split into paragraph-level chunks on publish
-- Each chunk embedded with **Cohere `embed-multilingual-v3.0`** (1024 dimensions)
+- Each chunk embedded with **OpenAI `text-embedding-3-small`** (1536 dimensions)
 - Stored in `article_chunks` with HNSW vector index in pgvector
 - Retrieved via cosine similarity for:
-  - Writer-facing chat (top-K chunks from the writer's own articles)
-  - Magazine-facing Portfolio Insights (representative chunks across writer's corpus)  
+  - Writer-facing chat (top-K chunks from the writer's own articles, K ≤ 5)
+  - Magazine-facing Portfolio Insights (representative chunks across writer's corpus)
+- **Chunk lifecycle**: on article publish or update, existing chunks for that article are **deleted and re-created** (the `(article_id, chunk_index)` unique constraint requires delete-before-insert on updates)
+- **Cache invalidation**: publishing or updating an article also invalidates the writer's `portfolio_insights` cache (if one exists)  
 
 ---
 
@@ -255,17 +280,20 @@ See [`6-database-schema.md`](./6-database-schema.md) section 5.3 — `user_ai_me
 
 ### 11.1 Failure Cases
 
-- AI service unavailable  
+- External AI provider unavailable or rate-limited
 - Timeout from external API  
-- Invalid responses  
+- Invalid or malformed LLM responses (fails Zod validation)
+- Embedding provider quota exhausted (Cohere free trial expiry)
 
 ---
 
 ### 11.2 Handling Strategy
 
-- Retry failed requests  
-- Return fallback message  
-- Log errors for monitoring  
+- Retry failed requests (Vercel AI SDK built-in retry)
+- **Provider fallback chain**: Groq → Gemini for LLM; OpenAI `text-embedding-3-small` is the sole embedding provider (no fallback needed — paid tier, no expiry)
+- Return user-facing fallback message ("AI is temporarily unavailable")
+- Log errors to Sentry for monitoring
+- Non-AI features continue working during AI provider outages  
 
 ---
 
@@ -291,7 +319,7 @@ See [`6-database-schema.md`](./6-database-schema.md) section 5.3 — `user_ai_me
 |------------|------------------|----------|-------|
 | LLM (chat, inline edit, Portfolio Insights) | **Groq** (Llama 3.3 70B) | **Gemini 2.0 Flash** | Both have generous free tiers |
 | Speech-to-text | **Groq Whisper-large-v3-turbo** | OpenAI Whisper API | Free, very fast |
-| Embeddings (RAG) | **Cohere `embed-multilingual-v3.0`** | OpenAI `text-embedding-3-small` | Cohere has free trial; OpenAI is cheap |
+| Embeddings (RAG) | **OpenAI `text-embedding-3-small`** | — | $0.02/1M tokens (~$0.10 total at PFE scale). No trial expiry risk. 1536 dimensions. |
 | Content moderation | **OpenAI Moderation API** | — | Free |
 | Premium AI (optional) | **Anthropic Claude** | — | Small paid budget for higher-quality "premium" actions |
 
