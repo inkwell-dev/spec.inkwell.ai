@@ -20,6 +20,7 @@ It defines:
 | Tool | Purpose |
 |------|---------|
 | **Figma** | Primary UI design tool — wireframes, mockups, prototypes |
+| **Google Stitch** | Rapid AI-generated high-fidelity screens (exported to Figma for prototyping) |
 | **shadcn/ui Figma Kit** | Community component library (maps 1:1 to code components) |
 | **Inter** | Primary typeface (matches shadcn/ui defaults) |
 
@@ -43,10 +44,11 @@ In Figma, the **shadcn/ui community kit** is used as the base component library.
 |-------|-------|
 | `--background` | Page backgrounds |
 | `--foreground` | Primary text |
-| `--primary` | Brand accent (CTAs, links) |
+| `--primary` | Brand accent — violet `#7c3aed` (CTAs, links) |
 | `--secondary` | Secondary actions |
 | `--muted` | Subtle text, placeholders |
-| `--destructive` | Errors, delete actions |
+| `--destructive` | Errors, delete actions — red `#ef4444` |
+| `--success` | Positive states — emerald `#10b981` |
 | `--border` | Dividers, input borders |
 | `--ring` | Focus rings |
 
@@ -91,7 +93,7 @@ All frames live on a **single Figma page**, organized into 11 sections flowing t
 05 — Writer Profile
 06 — Magazine Profile
 07 — Article Editor
-08 — Discover Writers
+08 — Marketplace (Magazine)
 09 — Writer Dashboard
 10 — Magazine Dashboard
 11 — Admin
@@ -109,8 +111,10 @@ Each section contains frames for **both breakpoints** side by side:
 
 Examples:
 - `[GUEST] Login — Desktop`
-- `[READER FREE] Article — Premium — Mobile`
+- `[READER FREE] Article — Premium Locked — Mobile`
 - `[MAGAZINE] Writer Profile — Evaluation — Desktop`
+- `[MAGAZINE] Marketplace Browse — Desktop`
+- `[WRITER] Publish Modal — Eligible — Desktop`
 
 ### 5.3 Roles
 
@@ -120,7 +124,9 @@ Examples:
 | `[READER FREE]` | Violet | Authenticated, free plan |
 | `[READER PREMIUM]` | Deep violet | Authenticated, premium plan |
 | `[WRITER]` | Emerald | Personal account with writer role |
-| `[MAGAZINE]` | Amber | Magazine account |
+| `[WRITER ELIGIBLE]` | Emerald + gold | Writer who has crossed marketplace eligibility threshold |
+| `[MAGAZINE]` | Amber | Magazine account (active subscription) |
+| `[MAGAZINE UNSUB]` | Amber (muted) | Magazine account (no active subscription) |
 | `[ADMIN]` | Red | Platform administrator |
 | `[ANY AUTH]` | Blue | Any authenticated user |
 
@@ -128,7 +134,7 @@ Examples:
 
 | Breakpoints | Variants | Total frames |
 |-------------|----------|-------------|
-| Desktop + Mobile | 43 role/page variants | **86 frames** |
+| Desktop + Mobile | 52 role/page variants | **104 frames** |
 
 ---
 
@@ -145,23 +151,24 @@ Examples:
 | Frame | Role | Route | Notes |
 |-------|------|-------|-------|
 | Home Feed | GUEST | `/` | Excerpts only, click to login gate |
-| Home Feed | READER FREE | `/` | Full feed, free articles |
-| Home Feed | READER PREMIUM | `/` | Full feed, all articles |
+| Home Feed | READER FREE | `/` | Full feed, free articles (public only — no marketplace articles) |
+| Home Feed | READER PREMIUM | `/` | Full feed, all public articles |
 | Home Feed | WRITER | `/` | + Create Article CTA |
-| Home Feed | MAGAZINE | `/` | + Discover CTA |
+| Home Feed | MAGAZINE | `/` | + Marketplace CTA |
 
 ### Article `/articles/[slug]`
 | Frame | Role | Notes |
 |-------|------|-------|
 | Article | GUEST | Preview, login gate |
 | Article — Free | READER FREE | Full content |
-| Article — Premium | READER FREE | Locked, upgrade gate |
+| Article — Premium Locked | READER FREE | Locked, upgrade gate |
 | Article — Free | READER PREMIUM | Full content |
 | Article — Premium | READER PREMIUM | Full content |
 | Article (own) | WRITER | Full content + edit button |
 | Article (others) | WRITER | Access by plan |
-| Article — Licensed | MAGAZINE | Full content + Licensed badge |
-| Article — Unlicensed | MAGAZINE | Preview + License CTA |
+| Marketplace Article — Not Previewed | MAGAZINE | Title + excerpt + price, preview CTA (10%), purchase CTA (100%) |
+| Marketplace Article — Previewed | MAGAZINE | Full content + "Purchase remaining 90%" CTA |
+| Marketplace Article — Purchased | MAGAZINE | Full content + "In library" badge |
 | Article | ADMIN | Full content + moderate controls |
 
 ### Search & Discovery
@@ -177,15 +184,15 @@ Examples:
 | Writer Profile | GUEST | Articles + stats, follow gate |
 | Writer Profile | READER FREE | + Follow button |
 | Writer Profile | READER PREMIUM | + Follow button |
-| Writer Profile (own) | WRITER | + Edit profile |
+| Writer Profile (own) | WRITER | + Edit profile + eligibility progress |
 | Writer Profile (others) | WRITER | + Follow button |
-| Writer Profile — Evaluation | MAGAZINE | Audience, Content, Quality, AI Portfolio Insights + listed articles |
+| Writer Profile — Evaluation | MAGAZINE | Audience, Content, Quality, AI Portfolio Insights + marketplace articles with preview/purchase CTAs |
 | Writer Profile | ADMIN | + Ban / moderate controls |
 
 ### Magazine Profile `/m/[slug]`
 | Frame | Role | Notes |
 |-------|------|-------|
-| Magazine Profile (Library) | GUEST | Licensed articles, read-only |
+| Magazine Profile (Library) | GUEST | Purchased articles, read-only |
 | Magazine Profile (Library) | READER FREE | + Follow |
 | Magazine Profile (Library) | READER PREMIUM | + Follow |
 | Magazine Profile (own) | MAGAZINE | + Manage library |
@@ -198,17 +205,20 @@ Examples:
 | Editor + AI Chat | WRITER | AI chat panel overlay (premium) |
 | Editor + Inline Popup | WRITER | Inline editing popup on text select (premium) |
 | Editor + Voice Input | WRITER | Voice-to-article overlay (premium) |
+| Publish Modal — Eligible | WRITER ELIGIBLE | Placement choice (public/marketplace) + pricing |
+| Publish Modal — Not Eligible | WRITER | Public only, marketplace greyed out + progress |
 
-### Discover Writers
-| Frame | Role | Route |
-|-------|------|-------|
-| Discover Writers | MAGAZINE | `/discover` |
+### Marketplace (Magazine)
+| Frame | Role | Route | Notes |
+|-------|------|-------|-------|
+| Subscription Wall | MAGAZINE UNSUB | `/m/subscribe` | Mandatory before marketplace access |
+| Marketplace Browse | MAGAZINE | `/marketplace` | Writer discovery, filterable grid |
 
 ### Writer Dashboard `/dashboard`
 | Frame | Role | Route |
 |-------|------|-------|
 | My Articles | WRITER | `/dashboard/articles` |
-| Analytics | WRITER | `/dashboard/analytics` |
+| Analytics + Eligibility | WRITER | `/dashboard/analytics` |
 | Earnings | WRITER | `/dashboard/earnings` |
 | Notifications | ANY AUTH | `/dashboard/notifications` |
 | Settings | ANY AUTH | `/dashboard/settings` |
@@ -217,8 +227,8 @@ Examples:
 | Frame | Role | Route |
 |-------|------|-------|
 | Library | MAGAZINE | `/m/dashboard/library` |
-| Wallet | MAGAZINE | `/m/dashboard/wallet` |
-| Wallet Top-Up | MAGAZINE | `/m/dashboard/wallet/topup` |
+| Subscription & Credits | MAGAZINE | `/m/dashboard/subscription` |
+| Credit Top-Up Modal | MAGAZINE | `/m/dashboard/subscription` (modal overlay) |
 | Notifications | MAGAZINE | `/m/dashboard/notifications` |
 | Settings | MAGAZINE | `/m/dashboard/settings` |
 
@@ -234,7 +244,7 @@ Examples:
 
 ## 7. 🔧 Figma Plugin
 
-A one-time Figma plugin script (`inkwell-sitemap-plugin.js`) auto-generates all 86 empty frames with:
+A one-time Figma plugin script (`inkwell-sitemap-plugin.js`) auto-generates all 104 empty frames with:
 - Role-colored top accent bars
 - Frame names following the `[ROLE] Page Name — Breakpoint` convention
 - Section labels and route annotations
@@ -247,6 +257,7 @@ A one-time Figma plugin script (`inkwell-sitemap-plugin.js`) auto-generates all 
 
 1. Import **shadcn/ui community Figma kit** into the project
 2. Remap color variables to Inkwell brand tokens
-3. Design shared layout components (Navbar, Footer, Sidebar)
-4. Work through sections in order: Auth > Feed > Article > Profiles > Editor > Dashboards > Admin
-5. Hand off to frontend once a section is complete (Figma to Next.js)
+3. Design shared layout components (Navbar, Footer, Sidebar, Magazine sidebar)
+4. Work through sections in order: Auth > Feed > Article > Profiles > Editor > Marketplace > Dashboards > Admin
+5. Use Stitch prompts (`stitch-prompts/`) for rapid screen generation, then export to Figma for prototyping
+6. Hand off to frontend once a section is complete (Figma to Next.js)

@@ -25,6 +25,10 @@ Layout: top navigation bar, then a centered content column with a left/right rai
 - Right rail: a "Suggested writers to follow" card (3 writers, each avatar + name + topic +
   small outline "Follow" button), and a "Trending tags" card.
 
+Note: marketplace articles (placement = "marketplace") are NEVER shown in this feed — they
+are invisible to regular readers and only appear in the dedicated magazine marketplace browse.
+Only public articles (free or premium) appear here.
+
 Mobile (375px): single column, no side rails. Tag chips scroll horizontally under a sticky
 top bar. Feed cards stack with the thumbnail on top, content below. Bottom tab bar with
 Home / Search / Write / Notifications / Profile icons.

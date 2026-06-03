@@ -16,6 +16,13 @@ Layout: top navigation bar, then a dashboard with a LEFT sidebar and a main cont
 - Left sidebar (writer dashboard nav): My Articles, Analytics (active, violet highlight),
   Earnings, Notifications, Settings.
 - Main area:
+  - **Eligibility progress banner** (shown only if the writer is NOT yet marketplace-eligible):
+    a full-width card at the top with a violet progress bar and text:
+    "3,200 / 5,000 unique readers · 780 / 1,000 reactions — unlock marketplace & premium"
+    Two progress bars side by side (readers and reactions), each showing current / target.
+    A muted note: "Keep publishing to reach eligibility."
+    If the writer IS eligible, this banner is replaced by a small emerald badge:
+    "✓ Marketplace eligible since Mar 15, 2026".
   - Page header: "Analytics" title + a date-range dropdown ("Last 30 days") and an article
     selector dropdown ("All articles").
   - A row of 4 KPI stat cards: Total Views (with a small up-trend % and sparkline),
