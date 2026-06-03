@@ -71,10 +71,10 @@ Two distinct analytics surfaces:
 - Licensing is simulated payment in MVP; in production this is the platform's primary revenue mechanism (transaction fee)
 
 ### 3.6 Controlled Content Access
-- Articles can be:
+- Public articles have a visibility level:
   - Free (visible to any authenticated user)
-  - Premium (restricted to premium plan users)
-- Licensing availability is orthogonal to free/premium — any published article can be marked licensable
+  - Premium (restricted to premium plan users — requires writer eligibility)
+- Marketplace articles are a distinct placement — not visible to regular readers; accessible only through the magazine subscription + preview/purchase flow
 
 ---
 
@@ -104,7 +104,7 @@ Inkwell uses an **account type** + **role** + **plan** model to cleanly separate
 | Account Type | Description |
 |--------------|-------------|
 | **Personal** | Individual users — can be readers, writers, or both |
-| **Magazine** | Organizations licensing content — branded profile, wallet, curated library |
+| **Magazine** | Organizations sourcing content — branded profile, paid subscription, curated library. **No free magazine tier** — a subscription is required before any marketplace access is granted. |
 
 ### 5.2 Roles (Personal accounts)
 
@@ -136,9 +136,12 @@ Plans are orthogonal to role — a user can be a `writer` with `free` plan or `p
 ### 6.2 Magazine Accounts
 
 - Magazines do not use the personal free/premium plan
-- They maintain a **wallet balance** denominated in platform credits (simulated currency)
-- Wallet credits are spent on article licenses
-- Magazines can read any article they have licensed regardless of free/premium status
+- They pay a **monthly subscription** (priced above the premium personal plan) to access the marketplace
+- The subscription includes a **monthly credit budget** (e.g. 500 credits/month) used to preview and purchase articles
+- Credits are spent in two stages per article: a small preview unlock fee (10% of article price) to read the full article, then a full purchase (the remaining 90%) to acquire republish rights
+- The preview fee is **credited toward the purchase** — paying to read does not cost extra on top of buying
+- Magazines can top up credits manually if their monthly budget is exhausted
+- Magazines can read any article they have fully purchased regardless of its original visibility status
 
 ---
 
@@ -190,12 +193,13 @@ Two surfaces, sharing the same underlying event pipeline:
 - **Writer-facing** — self-improvement metrics
 - **Magazine-facing** — writer evaluation (audience, content, quality, AI portfolio insights)
 
-### 8.5 Licensing Marketplace
-- Article listings (writer-set prices)
-- Magazine browsing and search
-- License purchase flow (simulated payment)
-- Magazine curated library
-- Writer wallet & earnings
+### 8.5 Marketplace
+- **Writer eligibility gate** — writers must reach 5K lifetime unique readers + 1K lifetime reactions (likes + comments) across their public articles before they can list on the marketplace or publish premium articles. Admins can grant eligibility manually.
+- **Article placement** — at publish time, writers choose: *public* (readable by free/premium users) or *marketplace* (magazine-only, invisible to regular readers). One-way switch: marketplace → public is allowed (writer abandons sale); public → marketplace is blocked (already-burnt content).
+- **Three-stage magazine flow** — (1) free browse: title, excerpt, writer stats; (2) preview unlock: spend 10% of price in credits to read the full article; (3) full purchase: spend remaining 90% to acquire republish rights and add the article to the magazine's curated library
+- Magazine browsing and search (subscription required)
+- Writer earnings — credited on both the preview unlock and the full purchase
+- Magazine curated library of fully purchased articles
 
 ### 8.6 Moderation
 - Article and user reporting
@@ -217,9 +221,9 @@ AI is not an add-on; it is integrated into:
 - Fast interactions (especially AI)
 
 ### 9.3 Scalable Architecture
-- Modular backend
-- Separate AI service
+- Modular backend (NestJS with AI orchestration consolidated via Vercel AI SDK)
 - Event-driven analytics
+- Single data layer (PostgreSQL + pgvector + tsvector)
 
 ### 9.4 Security & Access Control
 - Role-based permissions

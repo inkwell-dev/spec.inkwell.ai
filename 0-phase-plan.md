@@ -1,7 +1,7 @@
 # 🗺️ Inkwell.ai — Phase Plan
 
 > **Target defense:** September 2026 (14-week timeline from May 21, 2026)
-> **Stack:** Next.js 15 · NestJS 11 · PostgreSQL + pgvector · Redis · MinIO · Groq · Gemini · Cohere · Drizzle ORM
+> **Stack:** Next.js 15 · NestJS 11 · PostgreSQL + pgvector · Redis · MinIO · Groq · Gemini · OpenAI (embeddings) · Drizzle ORM
 > **Repos:** `frontend.inkwell.ai` · `backend.inkwell.ai` · `docker.inkwell.ai` · `mobile.inkwell.ai` (deferred)
 > **Core pivot (post-mentor-review):** Inkwell is a **writer ↔ magazine marketplace**. Analytics is now decision support for magazine licensing decisions, not just writer vanity.
 
@@ -35,20 +35,22 @@
 ### Backend
 - [ ] Install Drizzle ORM + `drizzle-kit` + `pg` driver
 - [ ] Define full Drizzle schema per [`6-database-schema.md`](./6-database-schema.md):
-  - [ ] `users` (account_type: personal/magazine, role/plan orthogonal, username unique, wallet_balance, soft delete)
-  - [ ] `magazine_profiles` (1-to-1 with users where account_type = magazine)
-  - [ ] `articles` (slug, TipTap JSON, licensable + license_price, tsvector for search, soft delete)
+  - [ ] `users` (account_type: personal/magazine, role/plan orthogonal, username unique, earnings_balance, is_marketplace_eligible + eligibility fields, soft delete)
+  - [ ] `magazine_profiles` (1-to-1 with users; subscription_status, credit_balance, monthly_credit_allowance, subscription timestamps)
+  - [ ] `magazine_subscriptions` (renewal history per billing cycle)
+  - [ ] `articles` (slug, TipTap JSON, placement + marketplace_price, tsvector for search, soft delete)
   - [ ] `tags` + `article_tags` join
   - [ ] `comments` (threaded, soft delete)
   - [ ] `likes`, `follows`, `reposts` (with unique constraints)
-  - [ ] `article_licenses` (article_id, magazine_id, price_paid, payout)
-  - [ ] `transactions` (atomic ledger, idempotency_key, status)
-  - [ ] `notifications` (incl. new types: article_licensed, license_earned, wallet_credited)
+  - [ ] `article_purchases` (two-stage: preview_unlock + full_purchase, parent_purchase_id self-ref)
+  - [ ] `transactions` (updated types: subscription_charge, monthly_credit_grant, credit_topup, preview_unlock, article_full_purchase, writer_payout, platform_fee, refund)
+  - [ ] `writer_eligibility_audit_log` (threshold + admin_grant entries with snapshots)
+  - [ ] `notifications` (incl. new types: article_previewed, article_purchased, earnings_credited)
   - [ ] `reports` (status, admin_notes, resolved_by)
   - [ ] `ai_interactions` (incl. portfolio_insight action type)
   - [ ] `user_ai_memory` (structured: tone, style, vocabulary, topics)
   - [ ] `portfolio_insights` (cache table with expires_at)
-  - [ ] `article_chunks` (embedding vector(1024) + HNSW index)
+  - [ ] `article_chunks` (embedding vector(1536) + HNSW index)
   - [ ] `analytics_events`, `article_metrics`
   - [ ] `writer_audience_metrics`, `writer_content_metrics`, `writer_quality_metrics`
 - [ ] Run first migration with `drizzle-kit push`
@@ -56,7 +58,7 @@
 - [ ] `@nestjs/config` — environment validation with Zod
 - [ ] Auth module:
   - [ ] Email/password registration + login (with account_type selection: personal or magazine)
-  - [ ] Magazine self-signup flow (extra fields: name, slug, website, description, logo)
+  - [ ] Magazine self-signup flow (extra fields: name, slug, website, description, logo) + mandatory subscription wall before dashboard access
   - [ ] Google OAuth (Passport.js, personal accounts only)
   - [ ] JWT access token (15 min) + refresh token (7 days)
   - [ ] Guards: `JwtAuthGuard`, `RolesGuard`, `PlansGuard`, `AccountTypeGuard`
@@ -64,14 +66,18 @@
 - [ ] Articles module:
   - [ ] POST /articles (create draft)
   - [ ] PATCH /articles/:id (update)
-  - [ ] POST /articles/:id/publish
+  - [ ] POST /articles/:id/publish (includes placement choice: public or marketplace; eligibility guard on marketplace)
   - [ ] DELETE /articles/:id (soft delete)
-  - [ ] PATCH /articles/:id/listing — toggle licensable + set price
-  - [ ] GET /articles (feed — paginated)
-  - [ ] GET /articles/:slug (single article — respects visibility + licenses)
+  - [ ] PATCH /articles/:id/placement — switch marketplace → public (one-way only)
+  - [ ] GET /articles (feed — paginated, public articles only)
+  - [ ] GET /articles/:slug (single article — respects visibility + purchase state for marketplace)
   - [ ] Slug auto-generation from title
 - [ ] Tags module — GET /tags, POST /tags
 - [ ] `@nestjs/throttler` — basic rate limiting on all endpoints
+- [ ] **Ledger invariant tests** — first tests in the project:
+  - [ ] `earnings_balance == SUM(completed writer_payout)` for every writer
+  - [ ] `credit_balance == grants + topups − debits` for every magazine
+  - [ ] Run after every transaction-related test
 
 ### Frontend
 - [ ] Install shadcn/ui + configure components
@@ -129,11 +135,28 @@
   - [ ] Replace / Insert below / Cancel actions
 - [ ] Token quota warning + "upgrade" prompt when tokens depleted
 
+### Analytics Event Capture (Early — data accrual starts here)
+- [ ] Backend: POST /analytics/events — batch event ingestion endpoint
+- [ ] Frontend analytics event capture on article pages:
+  - [ ] View event on load (with country detection from headers)
+  - [ ] Scroll depth via `IntersectionObserver` (per paragraph)
+  - [ ] Time-on-page via `visibilitychange` + `beforeunload` + `sendBeacon`
+- [ ] Events stored in `analytics_events` table (raw, no aggregation yet)
+
+> **Rationale:** Starting event capture in Phase 2 (instead of Phase 3) ensures weeks of real engagement data accumulate before the September defense. Aggregation workers and dashboards are still built in Phase 3.
+
+### Observability
+- [ ] `GET /health` — liveness probe (process running)
+- [ ] `GET /ready` — readiness probe (DB + Redis connectivity)
+- [ ] Sentry integration (free tier) — backend + frontend error tracking
+
 ### Exit criteria
 - [ ] Writer can edit with TipTap and upload images
 - [ ] AI chat streams tokens in real-time (SSE visible in UI)
 - [ ] Inline popup works on text selection with all 5 actions
 - [ ] Token counter decrements correctly per AI action
+- [ ] Analytics events are being captured and stored on article page visits
+- [ ] `/health` and `/ready` endpoints respond correctly
 
 ---
 
@@ -151,8 +174,8 @@
   - [ ] PATCH /notifications/:id/read
   - [ ] SSE endpoint GET /notifications/stream — live delivery
 
-### Analytics (Backend) — Writer-Facing
-- [ ] POST /analytics/events — batch event ingestion endpoint
+### Analytics (Backend) — Aggregation + Dashboards
+> Note: event ingestion endpoint and frontend capture moved to Phase 2 (early data accrual).
 - [ ] BullMQ worker `aggregate-article-metrics` (every 5 min) → `article_metrics`
 - [ ] BullMQ worker `aggregate-writer-audience` (every 15 min) → `writer_audience_metrics`
 - [ ] BullMQ worker `aggregate-writer-content` (every 15 min) → `writer_content_metrics`
@@ -170,11 +193,8 @@
 - [ ] Notification bell — live SSE connection, unread count badge
 - [ ] Notification dropdown list
 
-### Analytics (Frontend) — Writer-Facing
-- [ ] Analytics event capture on article pages:
-  - [ ] View event on load (with country detection from headers)
-  - [ ] Scroll depth via `IntersectionObserver` (per paragraph)
-  - [ ] Time-on-page via `visibilitychange` + `beforeunload` + `sendBeacon`
+### Analytics (Frontend) — Dashboards
+> Note: frontend event capture moved to Phase 2 (early data accrual).
 - [ ] Writer analytics dashboard (`/dashboard`):
   - [ ] Views per article (chart)
   - [ ] Avg read time
@@ -201,11 +221,11 @@
 > Weeks 8–9 · Jul 10–23
 
 ### RAG Pipeline (Backend)
-- [ ] Install Cohere SDK (embeddings) + pgvector Drizzle helpers
+- [ ] Install OpenAI SDK (embeddings) + pgvector Drizzle helpers
 - [ ] Article chunking on publish:
   - [ ] Split TipTap JSON into paragraph-level chunks
-  - [ ] Each chunk embedded via Cohere `embed-multilingual-v3.0`
-  - [ ] Stored in `article_chunks` with `embedding vector(1024)` + HNSW index
+  - [ ] Each chunk embedded via OpenAI `text-embedding-3-small`
+  - [ ] Stored in `article_chunks` with `embedding vector(1536)` + HNSW index
   - [ ] BullMQ job: `embed-article` triggered on publish/update
 - [ ] Retrieval service:
   - [ ] `findSimilarChunks(authorId, queryEmbedding, topK)` — cosine similarity with pgvector `<=>` operator
@@ -233,6 +253,9 @@
 ### Search
 - [ ] Postgres full-text search — `tsvector` on `articles.title + content + excerpt`
 - [ ] GET /search?q= — hybrid: full-text + semantic search
+  - [ ] Lexical results via `ts_rank` on `tsvector`
+  - [ ] Semantic results via pgvector cosine similarity (`<=>`) on query embedding
+  - [ ] **Reciprocal Rank Fusion (RRF)** to merge both result sets: `score = Σ 1/(k + rank_i)` with k=60
 - [ ] Frontend: search bar in navbar → search results page
 
 ### Frontend
@@ -271,35 +294,47 @@
   - [ ] Payment mock (no real Stripe in MVP — just a button that confirms)
   - [ ] Premium badge on profile
 
-### Marketplace — Licensing Transactions
+### Marketplace — Subscription + Preview/Purchase Transactions
+- [ ] Backend subscription module:
+  - [ ] POST /subscriptions/magazine — activate magazine subscription (simulated payment, sets subscription_status + initial credit_balance)
+  - [ ] BullMQ cron job `renew-magazine-subscriptions` — monthly credit grant + renewal row insert
+  - [ ] POST /credits/topup — optional extra credits for magazines (simulated)
+  - [ ] Subscription guard middleware — 403 if magazine subscription inactive on marketplace endpoints
 - [ ] Backend marketplace module:
-  - [ ] PATCH /articles/:id/listing — toggle licensable + set price (writers)
-  - [ ] GET /discover/writers — magazine-only writer browse with filters/sort
-  - [ ] GET /discover/articles?listed=true — magazine-only browse of listed articles
-  - [ ] POST /licenses — purchase an article license (atomic DB transaction)
-    - [ ] Validates magazine wallet >= price
-    - [ ] Debits magazine wallet
-    - [ ] Credits writer wallet (price - platform_fee)
-    - [ ] Records platform_fee
-    - [ ] Inserts `article_licenses` + 3 `transactions` rows
-    - [ ] Uses idempotency key to prevent double-charge
-  - [ ] GET /magazines/me/library — magazine's licensed articles
-  - [ ] GET /me/earnings — writer's earnings summary
-- [ ] Wallet simulation:
-  - [ ] POST /wallet/topup — simulated top-up for magazines
-  - [ ] POST /wallet/withdraw — simulated payout for writers
+  - [ ] Writer eligibility BullMQ worker `check-writer-eligibility` — runs after each analytics aggregation, flips eligible writers
+  - [ ] GET /discover/writers — magazine-only writer browse with filters/sort (subscription required)
+  - [ ] GET /discover/marketplace — magazine-only browse of marketplace-listed articles
+  - [ ] POST /purchases/preview — preview unlock (atomic DB transaction):
+    - [ ] Validates `subscription_status = active` + `credit_balance >= preview_price`
+    - [ ] Debits magazine `credit_balance`
+    - [ ] Credits writer `earnings_balance` (preview_price - platform_fee)
+    - [ ] Inserts `article_purchases` row (`stage = preview_unlock`)
+    - [ ] Inserts transaction rows (preview_unlock + writer_payout)
+    - [ ] Idempotency key prevents double-charge
+  - [ ] POST /purchases/buy — full purchase (atomic DB transaction):
+    - [ ] Looks up prior preview row for (article_id, magazine_id)
+    - [ ] Validates credit_balance >= remaining amount (price - preview_paid)
+    - [ ] Debits magazine, credits writer, inserts full_purchase row with parent_purchase_id
+    - [ ] Idempotency key
+  - [ ] GET /magazines/me/library — magazine's fully purchased articles
+  - [ ] GET /me/earnings — writer's earnings summary (preview payouts + purchase payouts)
+  - [ ] Admin: POST /admin/eligibility/:writerId — grant eligibility manually + audit log entry
 - [ ] Notifications:
-  - [ ] Writer notified when article licensed
-  - [ ] Writer notified when wallet credited
+  - [ ] Writer notified when article previewed by a magazine
+  - [ ] Writer notified when article purchased by a magazine
+  - [ ] Writer notified when earnings credited
 - [ ] Frontend marketplace UI:
-  - [ ] "List for licensing" toggle + price input on article management
+  - [ ] Marketplace placement option + price input in publish flow (greyed + eligibility progress if not eligible)
+  - [ ] Magazine subscription screen (sign-up wall and settings)
   - [ ] Magazine Discover page with writer cards + filters
-  - [ ] Writer evaluation page with "License" buttons on listed articles
-  - [ ] License confirmation modal with wallet balance preview
-  - [ ] Magazine library page (curated licensed articles)
-  - [ ] Writer earnings dashboard
-  - [ ] Wallet pages (top-up for magazines, withdraw for writers)
-  - [ ] "Licensed by [Magazine]" badge on article pages
+  - [ ] Writer evaluation page: marketplace article list with "Preview" / "Purchase" buttons
+  - [ ] Preview confirmation modal (shows 10% cost + credit balance)
+  - [ ] Purchase confirmation modal (shows remaining 90% + credit balance + preview-credit note)
+  - [ ] Magazine library page (fully purchased articles)
+  - [ ] Writer earnings dashboard (preview + purchase transactions itemized)
+  - [ ] Magazine credit balance display + top-up flow
+  - [ ] Writer eligibility progress bar on dashboard
+  - [ ] Admin: eligibility grant UI in admin panel
 
 ### Moderation
 - [ ] Reports module — POST /reports (article or user), admin GET /reports
@@ -329,7 +364,7 @@
 - [ ] Upgrade flow changes user plan and unlocks premium articles + AI features
 - [ ] Reported content appears in admin queue
 - [ ] Transactional emails send correctly (test with Resend dev mode)
-- [ ] **Marketplace end-to-end demo**: Writer lists article → Magazine browses → views evaluation + Portfolio Insights → licenses → article appears in magazine library + writer earnings reflect the sale
+- [ ] **Marketplace end-to-end demo**: Admin grants eligibility to demo writer → Writer publishes article to marketplace → Magazine (with active subscription) browses → views writer evaluation + Portfolio Insights → previews article (credits debited 10%) → purchases full (credits debited remaining 90%) → article appears in magazine library → writer earnings reflect both the preview payout and the purchase payout
 
 ---
 
@@ -353,6 +388,13 @@
 - [ ] Sitemap (`/sitemap.xml`) — auto-generated from published articles
 - [ ] Structured data (JSON-LD `Article` schema on article pages)
 - [ ] `<meta>` description from article excerpt
+
+### Demo & Seed Mode
+- [ ] `DEMO_MODE=true` environment flag:
+  - [ ] Lowered eligibility thresholds (e.g., 5 readers + 2 reactions)
+  - [ ] Seed script: pre-populate demo writers, 10+ substantive articles, analytics events, magazine account
+  - [ ] Demo scenario: writer crosses eligibility live → publishes to marketplace → magazine previews + purchases
+- [ ] `reconcile-balances` background job — asserts snapshot == ledger sum, alerts on drift
 
 ### Production Deploy
 - [ ] Provision VPS (Hetzner CX22 or Oracle Cloud free tier)
@@ -396,11 +438,18 @@
 - [x] Add soft deletes to database schema spec
 - [x] Specify LLM providers (Groq primary, Gemini fallback)
 - [x] Specify voice provider (Groq Whisper-large-v3-turbo)
-- [x] Specify embeddings provider (Cohere embed-multilingual-v3.0)
+- [x] Specify embeddings provider (OpenAI text-embedding-3-small, 1536-dim) *(switched from Cohere 2026-05-29 — trial expiry risk)*
 - [x] Structured AI memory schema (not JSON blob)
 - [x] Add SSE real-time strategy doc *(referenced in flows + analytics)*
 - [ ] Add rate limiting strategy *(stub in features; expand in DevOps before Phase 1)*
-- [ ] Update DevOps spec with actual deployment plan (Hetzner + GitHub Actions + GHCR)
+- [x] Update DevOps spec with actual deployment plan (Hetzner + GitHub Actions + GHCR) *(updated 2026-05-29)*
+- [x] Remove stale Python AI service references from system architecture + DevOps specs *(updated 2026-05-29)*
+- [x] Add ledger integrity & concurrency section to database schema *(updated 2026-05-29)*
+- [x] Specify AI memory extraction pipeline in AI design *(updated 2026-05-29)*
+- [x] Add hybrid search fusion (RRF) specification *(updated 2026-05-29)*
+- [x] Add demo/seed mode tasks to Phase 6 *(updated 2026-05-29)*
+- [x] Move analytics event capture to Phase 2 *(updated 2026-05-29)*
+- [x] Add observability tasks (/health, /ready, Sentry) to Phase 2 *(updated 2026-05-29)*
 - [ ] Mark mobile as deferred post-MVP *(noted in plan header; not yet in spec docs)*
 
 ## Marketplace Pivot Backlog (2026-05-21)
@@ -415,12 +464,43 @@
 - [x] Add Marketplace + Transactions modules to system architecture
 - [x] Distribute marketplace tasks across Phases 1, 3, 4, 5
 
+## Subscription + Preview Model Pivot (2026-05-25)
+> Spec changes from the magazine subscription + three-stage article flow redesign
+
+- [x] Replace per-article wallet licensing with subscription + monthly credit budget model
+- [x] Add three-stage magazine article flow (free browse → preview unlock 10% → full purchase 90%)
+- [x] Add writer eligibility gating (5K readers + 1K reactions, lifetime, admin bypass)
+- [x] Add article placement (public vs marketplace, mutually exclusive, one-way switch)
+- [x] Replace `article_licenses` table with `article_purchases` (two-stage, parent_purchase_id self-ref)
+- [x] Add `magazine_subscriptions` renewal history table
+- [x] Add `writer_eligibility_audit_log` table
+- [x] Update `magazine_profiles` with subscription state fields
+- [x] Update `users` with earnings_balance + eligibility fields (replace wallet_balance)
+- [x] Update transaction types for new money flows
+- [x] Add eligibility computation section to analytics model
+- [x] Gate Portfolio Insights behind magazine subscription in ai-design.md
+- [x] Update all user flows (sign-up wall, publish flow, preview/purchase flows)
+- [x] Update Phase 1 schema tasks and Phase 5 marketplace tasks in phase plan
+
 ---
 
 ## Notes
 
-- **AI providers used:** Groq (LLM + Whisper, free tier), Gemini 2.0 Flash (free tier), Cohere (embeddings, free trial)
+- **AI providers used:** Groq (LLM + Whisper, free tier), Gemini 2.0 Flash (free tier), OpenAI (embeddings, $0.02/1M tokens)
 - **Shared types strategy:** Backend OpenAPI → auto-generated TS client in frontend CI + `@inkwell/shared` package for non-API types
 - **Worker container** shares the backend image but runs `node dist/worker` — handles BullMQ jobs for embedding, analytics aggregation, email
 - **RAG scope:** Only the writer's own articles (not platform-wide) — makes the demo story "it writes like *me*"
 - **Mobile decision point:** Phase 5, week 10 — only if web is fully stable
+
+## Droppable Features (Priority Order)
+> If time pressure builds, drop features in this order (top = first to cut):
+
+1. **Mobile app** (already deferred)
+2. **Voice-to-article** — architecturally isolated, pure additive feature
+3. **Reposts** — one quality signal, low demo value
+4. **Transactional email** — nice-to-have polish, not a differentiator
+5. **Dynamic OG images** — SEO polish, not load-bearing
+6. **Follows / follower-growth chart** — vanity metrics
+7. **Advanced moderation** (beyond basic report queue)
+
+**Never cut:** Editor, AI chat/inline, RAG (write-like-me + Portfolio Insights), Analytics (event capture + dashboards), Marketplace (preview/purchase + locked ledger), Likes + Comments (feed eligibility computation)
