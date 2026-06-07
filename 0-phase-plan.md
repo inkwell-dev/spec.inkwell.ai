@@ -24,8 +24,8 @@
 - [x] `frontend.inkwell.ai` — GitHub Actions CI (lint + typecheck + build + push image to GHCR)
 - [x] `.nvmrc` added to backend and frontend repos
 - [x] Push all repos to GitHub remotes
-- [ ] Verify `docker compose up --build` brings up all 7 containers locally
-- [ ] Confirm Swagger UI accessible at `http://localhost/api/docs`
+- [x] Verify `docker compose up --build` brings up all 7 containers locally
+- [x] Confirm Swagger UI accessible at `http://localhost/api/docs`
 
 ---
 
@@ -53,7 +53,7 @@
   - [x] `article_chunks` (embedding vector(1536) + HNSW index)
   - [x] `analytics_events`, `article_metrics`
   - [x] `writer_audience_metrics`, `writer_content_metrics`, `writer_quality_metrics`
-- [ ] Run first migration with `drizzle-kit push`
+- [x] Run first migration with `drizzle-kit push`
 - [x] `@nestjs/swagger` configured — Swagger UI at `/docs`
 - [x] `@nestjs/config` — environment validation with Zod
 - [x] Auth module:

@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(git commit*)",
+            "command": "jq -r '.tool_input.command' | grep -q '^git commit' && echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"REMINDER: A git commit was just made. Check if this commit completes any task in 0-phase-plan.md (in the spec.inkwell.ai repo). If so, update the corresponding checkbox from [ ] to [x]. Read the file first to see current progress.\"}}' || true",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
