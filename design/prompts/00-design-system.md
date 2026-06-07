@@ -1,4 +1,4 @@
-# 00 — Design System Preamble
+# 00 — Design System Preamble [GENERATED]
 
 **Paste this block at the top of _every_ screen prompt** before the screen-specific section.
 It locks Stitch into Inkwell's design language so all generated screens stay consistent.

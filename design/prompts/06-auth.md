@@ -1,4 +1,4 @@
-# 06 — Auth Screens
+# 06 — Auth Screens [GENERATED]
 
 **Routes:** `/login`, `/signup`, `/signup/magazine` · **Role:** Guest · **Stitch mode:** Standard
 

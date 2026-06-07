@@ -1,4 +1,4 @@
-# 12 — Writer Earnings Dashboard
+# 12 — Writer Earnings Dashboard [GENERATED]
 
 **Route:** `/dashboard/earnings` · **Role:** Writer · **Stitch mode:** Standard
 

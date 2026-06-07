@@ -1,4 +1,4 @@
-# 08 — Marketplace Browse (Magazine View)
+# 08 — Marketplace Browse (Magazine View) [GENERATED]
 
 **Route:** `/marketplace` · **Role:** Magazine (active subscription) · **Stitch mode:** Standard
 

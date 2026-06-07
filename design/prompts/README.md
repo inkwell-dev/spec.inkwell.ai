@@ -42,6 +42,12 @@ every screen prompt to keep the design language consistent.
 | [`11-magazine-subscription-dashboard.md`](./11-magazine-subscription-dashboard.md) | Subscription management + credit balance + transactions (`/m/dashboard/subscription`) | Standard |
 | [`12-writer-earnings.md`](./12-writer-earnings.md) | Writer Earnings dashboard — payouts + eligibility progress (`/dashboard/earnings`) | Standard |
 | [`13-publish-flow.md`](./13-publish-flow.md) | Article Publish modal — placement choice + pricing (`/editor/[id]` overlay) | Standard |
+| [`14-writer-profile.md`](./14-writer-profile.md) | Writer public profile — articles, bio, followers (`/u/[username]`) | Standard |
+| [`15-magazine-profile.md`](./15-magazine-profile.md) | Magazine public profile — articles, writers, subscribe (`/m/[slug]`) | Standard |
+| [`16-settings.md`](./16-settings.md) | Settings — profile, account, notifications, danger zone (`/settings`) | Standard |
+| [`17-notifications.md`](./17-notifications.md) | Notification center — grouped, read/unread, filters (`/notifications`) | Standard |
+| [`DESKTOP-PROMPTS.md`](./DESKTOP-PROMPTS.md) | Desktop (1440px) expansions for screens 01–13 | — |
+| [`desktop-refinement.md`](./desktop-refinement.md) | Desktop for bonus screens + new screens 14–17 | — |
 
 ---
 
@@ -65,17 +71,16 @@ every screen prompt to keep the design language consistent.
 
 - **Stitch produces static high-fidelity screens** (+ exportable HTML/CSS and a Figma export),
   not clickable multi-screen prototypes. For clickable flow-linking, export to Figma and wire
-  the prototype there — this matches the Figma-primary plan in [`../9-design.md`](../9-design.md).
+  the prototype there — this matches the Figma-primary plan in [`../../9-design.md`](../../9-design.md).
 - Not yet generated (ask to add):
   - **Admin** — moderation queue, user/article management.
-  - **Magazine Profile** (public page showing purchased articles).
 
 ---
 
 ## 🔗 Source spec
 
 These prompts are derived from:
-- [`../1-product-overview.md`](../1-product-overview.md) — vision, account model, subscription + credits
-- [`../2-features.md`](../2-features.md) — editor, AI features, marketplace, eligibility gate
-- [`../3-user-flows.md`](../3-user-flows.md) — user journeys, 3-stage purchase flow
-- [`../9-design.md`](../9-design.md) — design system, page inventory, breakpoints
+- [`../../1-product-overview.md`](../../1-product-overview.md) — vision, account model, subscription + credits
+- [`../../2-features.md`](../../2-features.md) — editor, AI features, marketplace, eligibility gate
+- [`../../3-user-flows.md`](../../3-user-flows.md) — user journeys, 3-stage purchase flow
+- [`../../9-design.md`](../../9-design.md) — design system, page inventory, breakpoints

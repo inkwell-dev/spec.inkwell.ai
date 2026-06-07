@@ -1,4 +1,4 @@
-# 01 — Home Feed
+# 01 — Home Feed [GENERATED]
 
 **Route:** `/` · **Role:** Reader / Writer (logged in) · **Stitch mode:** Standard
 

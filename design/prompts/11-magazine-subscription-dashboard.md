@@ -1,4 +1,4 @@
-# 11 — Magazine Subscription & Credits Dashboard
+# 11 — Magazine Subscription & Credits Dashboard [GENERATED]
 
 **Route:** `/m/dashboard/subscription` · **Role:** Magazine (active subscription) · **Stitch mode:** Standard
 
