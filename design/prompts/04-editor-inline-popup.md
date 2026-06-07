@@ -1,4 +1,4 @@
-# 04 — Editor: Inline AI Selection Popup
+# 04 — Editor: Inline AI Selection Popup [GENERATED]
 
 **Route:** `/editor/[id]` · **Role:** Writer (premium) · **Stitch mode:** Experimental
 

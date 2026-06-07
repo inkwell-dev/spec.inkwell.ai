@@ -1,4 +1,4 @@
-# 10 — Magazine Library
+# 10 — Magazine Library [GENERATED]
 
 **Route:** `/m/dashboard/library` · **Role:** Magazine (active subscription) · **Stitch mode:** Standard
 

@@ -1,4 +1,4 @@
-# 05 — Writer Analytics Dashboard
+# 05 — Writer Analytics Dashboard [GENERATED]
 
 **Route:** `/dashboard/analytics` · **Role:** Writer · **Stitch mode:** Standard
 

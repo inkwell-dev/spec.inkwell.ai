@@ -1,4 +1,4 @@
-# 09 — Writer Profile: Evaluation Mode (Magazine View)
+# 09 — Writer Profile: Evaluation Mode (Magazine View) [GENERATED]
 
 **Route:** `/u/[username]?as=magazine` · **Role:** Magazine (active subscription) · **Stitch mode:** Standard
 

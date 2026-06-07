@@ -9,7 +9,7 @@ to expand it to the full desktop layout.
 
 ---
 
-## 01 — Home Feed Desktop
+## 01 — Home Feed Desktop [GENERATED]
 
 ```
 Generate the DESKTOP (1440px) version of the Home Feed screen.
@@ -44,7 +44,7 @@ No bottom tab bar on desktop — that is mobile only.
 
 ---
 
-## 02 — Article Read View Desktop
+## 02 — Article Read View Desktop [GENERATED]
 
 ```
 Generate the DESKTOP (1440px) version of the Article reading page.
@@ -87,7 +87,7 @@ Emerald-50 badge next to title.
 
 ---
 
-## 03 — Editor + AI Chat Desktop
+## 03 — Editor + AI Chat Desktop [GENERATED]
 
 ```
 Generate the DESKTOP (1440px) version of the Editor with AI Chat panel.
@@ -126,7 +126,7 @@ main event.
 
 ---
 
-## 04 — Editor Inline Popup Desktop
+## 04 — Editor Inline Popup Desktop [GENERATED]
 
 ```
 Generate the DESKTOP (1440px) version of the Editor with inline AI selection popup.
@@ -158,7 +158,7 @@ editing canvas, not a modal. Token-quota chip visible in top bar.
 
 ---
 
-## 05 — Writer Analytics Desktop
+## 05 — Writer Analytics Desktop [GENERATED]
 
 ```
 Generate the DESKTOP (1440px) version of the Writer Analytics dashboard.
@@ -196,7 +196,7 @@ MAIN AREA on #F8FAFC canvas:
 
 ---
 
-## 06 — Auth Screens Desktop
+## 06 — Auth Screens Desktop [GENERATED]
 
 ```
 Generate the DESKTOP (1440px) versions of all three auth screens.
@@ -226,7 +226,7 @@ VARIANT 3 — MAGAZINE SIGN UP (max-width 560px centered card):
 
 ---
 
-## 07 — Magazine Subscription Wall Desktop
+## 07 — Magazine Subscription Wall Desktop [GENERATED]
 
 ```
 Generate the DESKTOP (1440px) version of the Magazine Subscription Wall.
@@ -252,7 +252,7 @@ Centered container (max-width 520px):
 
 ---
 
-## 08 — Marketplace Browse Desktop
+## 08 — Marketplace Browse Desktop [GENERATED]
 
 ```
 Generate the DESKTOP (1440px) version of the Marketplace Browse screen.
@@ -281,7 +281,7 @@ MAIN AREA:
 
 ---
 
-## 09 — Writer Evaluation Desktop
+## 09 — Writer Evaluation Desktop [GENERATED]
 
 ```
 Generate the DESKTOP (1440px) version of the Writer Profile Evaluation screen.
@@ -322,7 +322,7 @@ TAB 5 — ARTICLES FOR SALE (generate fully):
 
 ---
 
-## 10 — Magazine Library Desktop
+## 10 — Magazine Library Desktop [GENERATED]
 
 ```
 Generate the DESKTOP (1440px) version of the Magazine Library.
@@ -352,7 +352,7 @@ MAIN AREA:
 
 ---
 
-## 11 — Subscription & Credits Desktop
+## 11 — Subscription & Credits Desktop [GENERATED]
 
 ```
 Generate the DESKTOP (1440px) version of the Magazine Subscription & Credits dashboard.
@@ -388,7 +388,7 @@ MAIN AREA:
 
 ---
 
-## 12 — Writer Earnings Desktop
+## 12 — Writer Earnings Desktop [GENERATED]
 
 ```
 Generate the DESKTOP (1440px) version of the Writer Earnings dashboard.
@@ -421,7 +421,7 @@ MAIN AREA:
 
 ---
 
-## 13 — Publish Flow Desktop
+## 13 — Publish Flow Desktop [GENERATED]
 
 ```
 Generate the DESKTOP (1440px) version of the Article Publish modal.

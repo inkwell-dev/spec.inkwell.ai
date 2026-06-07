@@ -1,4 +1,4 @@
-# 03 — Article Editor + AI Chat Panel
+# 03 — Article Editor + AI Chat Panel [GENERATED]
 
 **Route:** `/editor/[id]` · **Role:** Writer (premium) · **Stitch mode:** Experimental
 

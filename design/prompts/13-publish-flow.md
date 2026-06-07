@@ -1,4 +1,4 @@
-# 13 — Article Publish Flow (Writer)
+# 13 — Article Publish Flow (Writer) [GENERATED]
 
 **Route:** `/editor/[id]` (publish modal) · **Role:** Writer · **Stitch mode:** Standard
 

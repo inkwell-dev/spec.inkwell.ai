@@ -1,4 +1,4 @@
-# 02 — Article Read View
+# 02 — Article Read View [GENERATED]
 
 **Route:** `/articles/[slug]` · **Role:** Reader / Magazine · **Stitch mode:** Standard
 

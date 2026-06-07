@@ -1,4 +1,4 @@
-# 07 — Magazine Subscription Wall
+# 07 — Magazine Subscription Wall [GENERATED]
 
 **Route:** `/m/subscribe` · **Role:** Magazine (no active subscription) · **Stitch mode:** Standard
 
