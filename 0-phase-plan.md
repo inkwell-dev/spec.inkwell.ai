@@ -23,7 +23,7 @@
 - [x] `backend.inkwell.ai` — GitHub Actions CI (lint + typecheck + test + push image to GHCR)
 - [x] `frontend.inkwell.ai` — GitHub Actions CI (lint + typecheck + build + push image to GHCR)
 - [x] `.nvmrc` added to backend and frontend repos
-- [ ] Push all repos to GitHub remotes
+- [x] Push all repos to GitHub remotes
 - [ ] Verify `docker compose up --build` brings up all 7 containers locally
 - [ ] Confirm Swagger UI accessible at `http://localhost/api/docs`
 
@@ -33,47 +33,47 @@
 > Weeks 2–3 · May 29–Jun 11
 
 ### Backend
-- [ ] Install Drizzle ORM + `drizzle-kit` + `pg` driver
-- [ ] Define full Drizzle schema per [`6-database-schema.md`](./6-database-schema.md):
-  - [ ] `users` (account_type: personal/magazine, role/plan orthogonal, username unique, earnings_balance, is_marketplace_eligible + eligibility fields, soft delete)
-  - [ ] `magazine_profiles` (1-to-1 with users; subscription_status, credit_balance, monthly_credit_allowance, subscription timestamps)
-  - [ ] `magazine_subscriptions` (renewal history per billing cycle)
-  - [ ] `articles` (slug, TipTap JSON, placement + marketplace_price, tsvector for search, soft delete)
-  - [ ] `tags` + `article_tags` join
-  - [ ] `comments` (threaded, soft delete)
-  - [ ] `likes`, `follows`, `reposts` (with unique constraints)
-  - [ ] `article_purchases` (two-stage: preview_unlock + full_purchase, parent_purchase_id self-ref)
-  - [ ] `transactions` (updated types: subscription_charge, monthly_credit_grant, credit_topup, preview_unlock, article_full_purchase, writer_payout, platform_fee, refund)
-  - [ ] `writer_eligibility_audit_log` (threshold + admin_grant entries with snapshots)
-  - [ ] `notifications` (incl. new types: article_previewed, article_purchased, earnings_credited)
-  - [ ] `reports` (status, admin_notes, resolved_by)
-  - [ ] `ai_interactions` (incl. portfolio_insight action type)
-  - [ ] `user_ai_memory` (structured: tone, style, vocabulary, topics)
-  - [ ] `portfolio_insights` (cache table with expires_at)
-  - [ ] `article_chunks` (embedding vector(1536) + HNSW index)
-  - [ ] `analytics_events`, `article_metrics`
-  - [ ] `writer_audience_metrics`, `writer_content_metrics`, `writer_quality_metrics`
+- [x] Install Drizzle ORM + `drizzle-kit` + `pg` driver
+- [x] Define full Drizzle schema per [`6-database-schema.md`](./6-database-schema.md):
+  - [x] `users` (account_type: personal/magazine, role/plan orthogonal, username unique, earnings_balance, is_marketplace_eligible + eligibility fields, soft delete)
+  - [x] `magazine_profiles` (1-to-1 with users; subscription_status, credit_balance, monthly_credit_allowance, subscription timestamps)
+  - [x] `magazine_subscriptions` (renewal history per billing cycle)
+  - [x] `articles` (slug, TipTap JSON, placement + marketplace_price, tsvector for search, soft delete)
+  - [x] `tags` + `article_tags` join
+  - [x] `comments` (threaded, soft delete)
+  - [x] `likes`, `follows`, `reposts` (with unique constraints)
+  - [x] `article_purchases` (two-stage: preview_unlock + full_purchase, parent_purchase_id self-ref)
+  - [x] `transactions` (updated types: subscription_charge, monthly_credit_grant, credit_topup, preview_unlock, article_full_purchase, writer_payout, platform_fee, refund)
+  - [x] `writer_eligibility_audit_log` (threshold + admin_grant entries with snapshots)
+  - [x] `notifications` (incl. new types: article_previewed, article_purchased, earnings_credited)
+  - [x] `reports` (status, admin_notes, resolved_by)
+  - [x] `ai_interactions` (incl. portfolio_insight action type)
+  - [x] `user_ai_memory` (structured: tone, style, vocabulary, topics)
+  - [x] `portfolio_insights` (cache table with expires_at)
+  - [x] `article_chunks` (embedding vector(1536) + HNSW index)
+  - [x] `analytics_events`, `article_metrics`
+  - [x] `writer_audience_metrics`, `writer_content_metrics`, `writer_quality_metrics`
 - [ ] Run first migration with `drizzle-kit push`
-- [ ] `@nestjs/swagger` configured — Swagger UI at `/docs`
-- [ ] `@nestjs/config` — environment validation with Zod
-- [ ] Auth module:
-  - [ ] Email/password registration + login (with account_type selection: personal or magazine)
-  - [ ] Magazine self-signup flow (extra fields: name, slug, website, description, logo) + mandatory subscription wall before dashboard access
-  - [ ] Google OAuth (Passport.js, personal accounts only)
-  - [ ] JWT access token (15 min) + refresh token (7 days)
-  - [ ] Guards: `JwtAuthGuard`, `RolesGuard`, `PlansGuard`, `AccountTypeGuard`
-- [ ] Users module — GET /u/:username, GET /m/:slug, PATCH /users/me
-- [ ] Articles module:
-  - [ ] POST /articles (create draft)
-  - [ ] PATCH /articles/:id (update)
-  - [ ] POST /articles/:id/publish (includes placement choice: public or marketplace; eligibility guard on marketplace)
-  - [ ] DELETE /articles/:id (soft delete)
-  - [ ] PATCH /articles/:id/placement — switch marketplace → public (one-way only)
-  - [ ] GET /articles (feed — paginated, public articles only)
-  - [ ] GET /articles/:slug (single article — respects visibility + purchase state for marketplace)
-  - [ ] Slug auto-generation from title
-- [ ] Tags module — GET /tags, POST /tags
-- [ ] `@nestjs/throttler` — basic rate limiting on all endpoints
+- [x] `@nestjs/swagger` configured — Swagger UI at `/docs`
+- [x] `@nestjs/config` — environment validation with Zod
+- [x] Auth module:
+  - [x] Email/password registration + login (with account_type selection: personal or magazine)
+  - [x] Magazine self-signup flow (extra fields: name, slug, website, description, logo) + mandatory subscription wall before dashboard access
+  - [x] Google OAuth (Passport.js, personal accounts only)
+  - [x] JWT access token (15 min) + refresh token (7 days)
+  - [x] Guards: `JwtAuthGuard`, `RolesGuard`, `PlansGuard`, `AccountTypeGuard`
+- [x] Users module — GET /u/:username, GET /m/:slug, PATCH /users/me
+- [x] Articles module:
+  - [x] POST /articles (create draft)
+  - [x] PATCH /articles/:id (update)
+  - [x] POST /articles/:id/publish (includes placement choice: public or marketplace; eligibility guard on marketplace)
+  - [x] DELETE /articles/:id (soft delete)
+  - [x] PATCH /articles/:id/placement — switch marketplace → public (one-way only)
+  - [x] GET /articles (feed — paginated, public articles only)
+  - [x] GET /articles/:slug (single article — respects visibility + purchase state for marketplace)
+  - [x] Slug auto-generation from title
+- [x] Tags module — GET /tags, POST /tags
+- [x] `@nestjs/throttler` — basic rate limiting on all endpoints
 - [ ] **Ledger invariant tests** — first tests in the project:
   - [ ] `earnings_balance == SUM(completed writer_payout)` for every writer
   - [ ] `credit_balance == grants + topups − debits` for every magazine
