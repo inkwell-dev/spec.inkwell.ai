@@ -80,26 +80,26 @@
   - [ ] Run after every transaction-related test
 
 ### Frontend
-- [ ] Install shadcn/ui + configure components
-- [ ] Install TanStack Query v5 + Zustand
-- [ ] Install Auth.js (NextAuth.js) — email + Google OAuth
-- [ ] Layout: navbar, footer, responsive shell
-- [ ] Feed page (`/`) — article cards, pagination, tag filter
-- [ ] Article reader page (`/articles/[slug]`) — full article, premium gate, "Licensed by" badge
-- [ ] Sign-up flow with **account type selection**: Personal | Magazine
-- [ ] Magazine sign-up form (additional fields)
-- [ ] Login page
-- [ ] Personal profile page (`/u/[username]`) — articles, follow button, stats
-- [ ] Magazine profile page (`/m/[slug]`) — library, branding (placeholder; library empty in Phase 1)
-- [ ] Editor page (`/editor/[id]`) — basic textarea (TipTap in Phase 2)
-- [ ] OpenAPI client codegen configured (`openapi-typescript` or `orval`)
-- [ ] Protected route wrapper for auth-required pages
+- [x] Install shadcn/ui + configure components
+- [x] Install TanStack Query v5 + Zustand
+- [x] Install Auth.js (NextAuth.js) — email + Google OAuth (implemented as custom JWT auth with axios interceptors)
+- [x] Layout: navbar, footer, responsive shell (+ sidebar, bottom-tab-bar)
+- [x] Feed page (`/`) — article cards, pagination, tag filter (+ filter chips, right sidebar widgets)
+- [x] Article reader page (`/articles/[slug]`) — full article, premium gate, "Licensed by" badge
+- [x] Sign-up flow with **account type selection**: Personal | Magazine (separate forms linked together per Figma)
+- [x] Magazine sign-up form (additional fields + logo upload zone)
+- [x] Login page (Figma-aligned with heading, reordered form)
+- [x] Personal profile page (`/u/[username]`) — articles, follow button, stats (hero + tabbed content)
+- [x] Magazine profile page (`/m/[slug]`) — library, branding (hero + tabbed articles/about/writers)
+- [x] Editor page (`/editor/[id]`) — basic textarea + publish dialog (TipTap in Phase 2)
+- [x] OpenAPI client codegen configured (`openapi-typescript` — `pnpm api:codegen`)
+- [x] Protected route wrapper for auth-required pages (Next.js Edge Middleware)
 
 ### Exit criteria
-- [ ] Personal sign-up → create article → publish → view on feed works
-- [ ] Magazine sign-up → see (empty) library page works
-- [ ] Premium article is gated for free users
-- [ ] OpenAPI spec is accessible and frontend client auto-generates from it
+- [x] Personal sign-up → create article → publish → view on feed works (verified 2026-06-13)
+- [x] Magazine sign-up → see (empty) library page works (verified 2026-06-13)
+- [x] Premium article is gated for free users
+- [x] OpenAPI spec is accessible and frontend client auto-generates from it
 
 ---
 
