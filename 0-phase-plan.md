@@ -15,7 +15,7 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
 | Sprint | Dates | Sprint goal (phase mapping) | Status |
 |--------|-------|-----------------------------|--------|
 | **S0** | May 22 – May 28 | Phase 0 — Foundation (repos, Docker, CI/CD) | ✅ Done |
-| **S1** | May 29 – Jun 11 | Phase 1 — Schema, Auth, Core CRUD | ✅ Done (exit criteria verified Jun 13) |
+| **S1** | May 29 – Jun 11 | Phase 1 — Schema, Auth, Core CRUD | ✅ Done (exit criteria verified Jun 13; the deferred ledger invariant tests closed 2026-07-30) |
 | **S2** | Jun 12 – Jun 25 | Phase D — Design system + mobile (375px) screen set | ✅ Done |
 | **S3** | Jun 26 – Jul 9 | Phase D — Desktop (1440px) screen set + refinement | ✅ Done |
 | **S4** | Jul 10 – Jul 26 | Phase D — Figma audit, design QA, spec alignment + re-baseline | ✅ Done |
@@ -94,10 +94,55 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
   - [x] Slug auto-generation from title
 - [x] Tags module — GET /tags, POST /tags
 - [x] `@nestjs/throttler` — basic rate limiting on all endpoints
-- [ ] **Ledger invariant tests** — first tests in the project:
-  - [ ] `earnings_balance == SUM(completed writer_payout)` for every writer
-  - [ ] `credit_balance == grants + topups − debits` for every magazine
-  - [ ] Run after every transaction-related test
+- [x] **Ledger invariant tests** — first tests in the project *(completed 2026-07-30)*:
+  - [x] `earnings_balance == SUM(completed writer_payout)` for every writer
+  - [x] `credit_balance == grants + topups − debits` for every magazine
+  - [x] Run after every transaction-related test — exposed as
+    `expectLedgerConsistent(tx)` in `test/support/ledger.ts`, which Phase 5's
+    purchase specs call at the end of each case
+
+> **What this actually required.** The item is written as two queries; it was
+> not. There was no working test infrastructure at all — `pnpm test` collected
+> zero specs, CI passed on `--passWithNoTests`, and *no* test could import from
+> `src` because 242 relative imports end in `.js` and jest-resolve has no
+> `extensionAlias`. And because nothing writes `transactions`,
+> `article_purchases` or `magazine_subscriptions` yet, the invariants were
+> vacuously true: they would have passed while proving nothing.
+>
+> So the deliverable is a harness plus **27 tests, most of them negative** —
+> fixtures build a coherent purchase, then corrupt one column at a time and
+> assert the right invariant fires. The suite was validated by sabotage rather
+> than by passing: deleting `status = 'completed'` from the earnings query fails
+> exactly the pending-payout test, and dropping `preview_unlock` from the debit
+> list fails seven. That exercise found a genuine coverage gap (nothing pinned
+> the *grant* type filter), which was then closed.
+>
+> **A third invariant was added:** `credits_paid == platform_fee + writer_payout`
+> per purchase row. No constraint enforces it, and it is the arithmetic that
+> makes the other two meaningful.
+>
+> **The ledger's sign convention is now defined and enforced.** `amount` is
+> always positive; direction comes from `type` plus `from_user_id`/`to_user_id`.
+> Nothing had ever written the table, so no convention existed — these tests set
+> it, backed by a `transactions_amount_positive` CHECK.
+>
+> **The seed was inconsistent and is fixed.** It set `credit_balance = 500` with
+> no transaction behind it — exactly the drift the invariant exists to catch.
+> It now writes a subscription and a completed `monthly_credit_grant`.
+>
+> The queries live in `src/database/ledger-invariants.ts`, not the test tree,
+> because [`6-database-schema.md`](./6-database-schema.md) specifies a nightly
+> `reconcile-balances` job asserting the same properties — one definition, two
+> callers, so the tests remain evidence about the job.
+>
+> **CI now enforces tests**: a `pgvector/pgvector:pg16` service was added and
+> `--passWithNoTests` removed, so a green build finally means something.
+>
+> Two constraints this places on Phase 5, both deliberate: services must accept
+> `DbOrTx` and thread it (rollback isolation depends on `withTx` joining rather
+> than nesting), and the `credits_paid = platform_fee + writer_payout` CHECK is
+> deliberately **not** added, because it would make that invariant untestable at
+> the application level.
 
 ### Frontend
 - [x] Install shadcn/ui + configure components
