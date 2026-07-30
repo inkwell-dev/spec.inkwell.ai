@@ -20,7 +20,7 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
 | **S3** | Jun 26 – Jul 9 | Phase D — Desktop (1440px) screen set + refinement | ✅ Done |
 | **S4** | Jul 10 – Jul 26 | Phase D — Figma audit, design QA, spec alignment + re-baseline | ✅ Done |
 | **S5** | Jul 27 – Aug 9 | Phase 2 — Editor + AI + event capture · Phase 3 (start) — likes/comments · **Q — codebase quality pass** | 🚧 In progress — editor, social + notifications verified end-to-end; **AI streaming unblocked and verified 2026-07-30**; a cross-repo quality pass (Phase Q) landed mid-sprint |
-| **S6** | Aug 10 – Aug 23 | Phase 3 — Aggregation + dashboards · Phase 4 — RAG + Insights + Search | 🔜 |
+| **S6** | Aug 10 – Aug 23 | ~~Phase 3 — Aggregation + dashboards~~ *(pulled forward into S5)* · Phase 4 — RAG + Insights + Search | 🔜 — enters with Phase 3 largely done, so S6 is effectively Phase 4 only |
 | **S7** | Aug 24 – Sep 6 | Phase 5 — Marketplace + Premium · Phase 6 — Deploy + Defense prep | 🔜 |
 
 > Sprints S5–S7 compress the original Phases 2–6 (10 planned weeks) into 6 weeks. This assumes increased weekly effort and the scope freeze below. **Contingency rule (decided 2026-07-26):** if S6 runs late, the magazine-facing BI dashboard panels (audience / content / quality charts) are reduced to summary cards and documented as future work in the report — but **event capture, article metrics, and the eligibility counters always ship**, because the marketplace gate and the demo narrative depend on them.
@@ -219,6 +219,11 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
 
 **Delivered early (ticked in their own phases above):** the Phase 3 follow button, and the article-tag loop end to end — publish accepts `tagIds`, `article_tags` is finally written, and `?tag=` filters for real. That last one matters beyond the feed: Phase 3's `writer_content_metrics` aggregates `topicDistribution` and `topTags` from `article_tags`, a table **no code had ever written to**.
 
+**Also delivered unplanned, because Phase 3 could not be demonstrated without them:**
+
+- [x] **Demo seed** (`pnpm db:seed`) — 5 writers / 12 published articles / a subscribed magazine / 3 readers / 12 one-off visitors / 8 tags / ~1,250 analytics events spread day by day. The dev database held 2 articles and engagement on one of them, so every dashboard would have rendered empty and the Phase 4 RAG comparison would have been untestable. The writers have deliberately non-overlapping vocabularies (tides and tackle, inference latency, zoning setbacks, koji and brine, tempo and orchestration) because Phase 4's exit criterion requires showing that retrieval *demonstrably* borrows a writer's voice — on a homogeneous corpus, retrieval is indistinguishable from no retrieval. Idempotent and non-destructive; hand-made accounts survive.
+- [x] **`GET /articles/me`** — no endpoint returned a writer's own articles including drafts (the public feed filters to published + public). The dashboard needs it, and it is why the profile tabs still render placeholder arrays.
+
 **Verification:** both repos typecheck clean under `strict: true` with zero lint errors; a 24-check integration suite passes against the live stack; the feed was confirmed rendering live API data in a real browser.
 
 > **Cost/benefit for the report:** ~2 days of S5. The counter-argument is that it consumed schedule in the tightest sprint; the argument for is that four of the defects (dead sessions, inert rate limiting, silent AI failure, unreachable browser API) would each have been demo-stopping, and Phase 3's dashboards and Phase 5's marketplace UI now assemble from existing primitives rather than starting from raw markup.
@@ -241,12 +246,18 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
 
 ### Analytics (Backend) — Aggregation + Dashboards
 > Note: event ingestion endpoint and frontend capture moved to Phase 2 (early data accrual).
-- [ ] BullMQ worker `aggregate-article-metrics` (every 5 min) → `article_metrics`
-- [ ] BullMQ worker `aggregate-writer-audience` (every 15 min) → `writer_audience_metrics`
-- [ ] BullMQ worker `aggregate-writer-content` (every 15 min) → `writer_content_metrics`
-- [ ] BullMQ worker `aggregate-writer-quality` (every 15 min) → `writer_quality_metrics`
-- [ ] GET /articles/:id/analytics — writer-only endpoint (self-improvement)
-- [ ] GET /writers/:username/evaluation — magazine-only endpoint (decision support)
+- [x] BullMQ worker `aggregate-article-metrics` (every 5 min) → `article_metrics`
+- [x] BullMQ worker `aggregate-writer-audience` (every 15 min) → `writer_audience_metrics`
+- [x] BullMQ worker `aggregate-writer-content` (every 15 min) → `writer_content_metrics`
+- [x] BullMQ worker `aggregate-writer-quality` (every 15 min) → `writer_quality_metrics`
+- [x] GET /articles/:id/analytics — writer-only endpoint (self-improvement)
+- [x] GET /writers/:username/evaluation — magazine-only endpoint (decision support)
+
+> **Deviation — 4 workers shipped as 2 scheduled jobs.** The three writer rollups must run as a unit and in order: quality reads `article_metrics`, so it has to follow the article rollup. Four independently scheduled crons would let quality compute against a stale snapshot whenever the schedules drifted. They run as `aggregate-article-metrics` (\*/5) and `aggregate-writer-metrics` (:02/:17/:32/:47, offset so it lands just after an article rollup). All four rollups exist and populate all four tables; only the scheduling is grouped.
+>
+> **Three metric columns are written NULL, permanently until capture changes:** `article_metrics.paragraph_dropoff`, `writer_audience_metrics.top_countries` and `.device_split`. No client-side source exists for any of them. They are NULL rather than zero so a magazine can tell "not measured" from "measured, and none".
+>
+> **Blocker found and fixed:** the worker container had never run `worker.ts` — `nest start --watch -- --entryFile worker` passes the flag to the app, not the CLI, so it booted a second copy of the API. No BullMQ worker had ever run in this stack. The same class of bug existed in the production compose (`node dist/worker`) and the Dockerfile (`node dist/main`), where nest emits to `dist/src/` — meaning **the production image could never have started**. All fixed.
   - Combines audience + content + quality rollups in one response
   - Returns 403 if requester is not a magazine
 
@@ -260,25 +271,25 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
 
 ### Analytics (Frontend) — Dashboards
 > Note: frontend event capture moved to Phase 2 (early data accrual).
-- [ ] Writer analytics dashboard (`/dashboard`):
-  - [ ] Views per article (chart)
-  - [ ] Avg read time
-  - [ ] Scroll depth heatmap (bar chart per paragraph)
-  - [ ] Top performing articles
+- [x] Writer analytics dashboard (`/dashboard`) — master/detail: your articles (drafts included) with the selected article's report
+  - [x] Views per article (chart) — 30-day daily area chart with crosshair + tooltip
+  - [x] Avg read time
+  - [ ] ~~Scroll depth heatmap (bar chart per paragraph)~~ — **not built as specified.** The client records one page-level max-scroll percentage on leave, not per-paragraph `IntersectionObserver` entries, so there is no per-paragraph signal to chart. A quartile **retention curve** ships instead (share of readers reaching 25/50/75/90%), which is what page-level scroll honestly supports. Restoring the heatmap needs a capture change first, and it cannot be backfilled.
+  - [ ] Top performing articles — the dashboard lists articles by recency, not ranked by performance. Still open.
 
 ### Analytics (Frontend) — Magazine-Facing
-- [ ] Writer evaluation page (`/u/[writer-username]?as=magazine` or `/discover/writers/[username]`)
-  - [ ] **Audience panel**: unique readers, returning rate, geo distribution, device split
-  - [ ] **Content panel**: topic distribution, posting frequency sparkline, consistency, avg length, top tags
-  - [ ] **Quality panel**: engagement rate, completion rate, repost rate, comment depth, retention curve
-  - [ ] **Portfolio Insights panel** (loaded async, see Phase 4 for AI implementation)
-- [ ] Magazine discover page (`/discover`) — browse writers with filters
+- [x] Writer evaluation page — built at **`/discover/writers/[username]`**, not `?as=magazine`. A query parameter would make one public URL render entirely different, access-controlled content depending on the viewer. `/discover` is now behind the auth middleware; the account-type check stays server-side.
+  - [x] **Audience panel**: unique readers, returning rate — *geo distribution and device split render as explicit "not collected" notes; neither has a capture source*
+  - [x] **Content panel**: topic distribution, consistency, avg length, top tags — *posting frequency is a scalar stat, not a sparkline: no per-period series is stored*
+  - [x] **Quality panel**: engagement rate, completion rate, repost rate, comment depth, retention curve — *repost rate is structurally 0 until the Reposts module ships*
+  - [x] **Portfolio Insights panel** — present as a **stated placeholder**, not the AI implementation. Phase 4 swaps in the cached result; it deliberately shows neither a spinner nor invented prose.
+- [ ] Magazine discover page (`/discover`) — browse writers with filters. **Still open, and it is the entrance to the page above** — the evaluation report is currently reachable only by typing a URL.
 
 ### Exit criteria
-- [ ] Like/comment/follow/repost all work with correct notifications
+- [ ] Like/comment/follow/repost all work with correct notifications — like/comment/follow verified; **repost not built**
 - [x] Live notification arrives via SSE without page refresh
-- [ ] Writer dashboard shows real engagement data after a test read
-- [ ] Magazine can browse writers and view writer evaluation dashboard with real metrics
+- [x] Writer dashboard shows real engagement data — verified in a browser against the seeded corpus
+- [ ] Magazine can browse writers and view writer evaluation dashboard with real metrics — **evaluation verified in a browser (magazine 200 / personal 403 / anonymous redirect); browsing not built**
 
 ---
 
