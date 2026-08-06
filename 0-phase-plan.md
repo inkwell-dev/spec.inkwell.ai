@@ -19,7 +19,7 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
 | **S2** | Jun 12 – Jun 25 | Phase D — Design system + mobile (375px) screen set | ✅ Done |
 | **S3** | Jun 26 – Jul 9 | Phase D — Desktop (1440px) screen set + refinement | ✅ Done |
 | **S4** | Jul 10 – Jul 26 | Phase D — Figma audit, design QA, spec alignment + re-baseline | ✅ Done |
-| **S5** | Jul 27 – Aug 9 | Phase 2 — Editor + AI + event capture · Phase 3 (start) — likes/comments · **Q — codebase quality pass** | 🚧 In progress — editor, social + notifications verified end-to-end; **AI streaming unblocked and verified 2026-07-30**; a cross-repo quality pass (Phase Q) landed mid-sprint |
+| **S5** | Jul 27 – Aug 9 | Phase 2 — Editor + AI + event capture · Phase 3 (start) — likes/comments · **Q — codebase quality pass** | 🚧 In progress — editor, social + notifications verified end-to-end; **AI streaming unblocked and verified 2026-07-30**; a cross-repo quality pass (Phase Q) landed mid-sprint; **dev/prod URL topology reworked 2026-08-05/06**, which fixed image upload and pulled four Phase 6 deploy items forward |
 | **S6** | Aug 10 – Aug 23 | ~~Phase 3 — Aggregation + dashboards~~ *(pulled forward into S5)* · Phase 4 — RAG + Insights + Search | 🔜 — enters with Phase 3 largely done, so S6 is effectively Phase 4 only |
 | **S7** | Aug 24 – Sep 6 | Phase 5 — Marketplace + Premium · Phase 6 — Deploy + Defense prep | 🔜 |
 
@@ -191,7 +191,7 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
 ### Editor
 - [x] Install TipTap + extensions (StarterKit, Placeholder, Image, CodeBlock, Typography)
 - [x] Replace textarea with TipTap editor in `/editor/[id]`
-- [x] Image upload — paste/drag into editor → upload to MinIO → embed URL
+- [x] Image upload — paste/drag into editor → upload to MinIO → embed URL — *ticked prematurely; the path could not have worked until **2026-08-06**. See the infrastructure note under Phase I.*
 - [ ] Thumbnail upload for article cover
 - [x] Auto-save draft on change (debounced PATCH, 1.5s)
 - [x] Word count + estimated read-time display
@@ -272,6 +272,48 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
 **Verification:** both repos typecheck clean under `strict: true` with zero lint errors; a 24-check integration suite passes against the live stack; the feed was confirmed rendering live API data in a real browser.
 
 > **Cost/benefit for the report:** ~2 days of S5. The counter-argument is that it consumed schedule in the tightest sprint; the argument for is that four of the defects (dead sessions, inert rate limiting, silent AI failure, unreachable browser API) would each have been demo-stopping, and Phase 3's dashboards and Phase 5's marketplace UI now assemble from existing primitives rather than starting from raw markup.
+
+---
+
+## Phase I — Dev/Prod URL Topology
+> Sprint S5 · 2026-08-05 → 08-06 · **Completed** (backfilled into the plan, in the same spirit as Phase D and Phase Q)
+
+> **Why this phase exists:** it started as a workflow request — run each service in its own terminal instead of having `make dciup-dev` start them all — and as a cosmetic one: serve the stack at named hostnames rather than `localhost:8080`. Tracing what those two changes touched surfaced **six defects in how URLs were configured**, four of which made the production deploy impossible and one of which meant a feature already ticked in Phase 2 had never worked.
+
+### Developer workflow
+- [x] `web` / `api` / `worker` moved behind an **`apps` compose profile** — `make dciup-dev` now starts infrastructure only
+- [x] `make dci-api` / `dci-web` / `dci-worker` — one service per terminal via `up --attach`; Ctrl+C stops only that service
+- [x] `make dciup-all` preserves the previous one-command behaviour for demos; `--profile apps` threaded through `logs` / `down` / `ps`
+- [x] `make` with no arguments prints a target list — the Makefile was the real workflow and the README never mentioned it
+
+### Named hostnames
+- [x] `frontend.inkwell.ai` (app) · `backend.inkwell.ai` (Swagger/curl) · `storage.inkwell.ai` (presigned uploads)
+- [x] New `.infra/nginx/dev.conf`, kept separate from the production `default.conf` the two compose files had been sharing
+- [x] nginx published on `127.0.0.2:80` **and** `127.0.0.1:8080` — the legacy origin stays because Google rejects `http://` redirect URIs on any host but `localhost`, and `pnpm api:codegen` hardcodes it
+
+> **The design decision worth defending:** the browser still calls `/api` and `/storage` on the frontend's *own* origin — the extra hostnames exist for tooling, not for the app. A true three-origin split would have exercised CORS paths production never sees, broken the `sendBeacon` analytics calls (a JSON `Blob` body is not a CORS-simple request and cannot be preflighted), and required a data migration, because the relative `/storage/<bucket>/<key>` strings are already persisted in `users.avatar_url`, article covers, and inside TipTap document bodies.
+
+> **The subtle one:** an nginx `upstream` block resolves its host at *config load*. With the app services no longer auto-starting, nginx exited at boot with `host not found in upstream`. Fixed with `resolver 127.0.0.11` plus a variable in `proxy_pass`, which defers the lookup to request time — a stopped service is now a clean 502 instead of a dead proxy.
+
+### Defects found and fixed
+- [x] **Image upload had never worked.** `presignedPutObject` builds its URL from `MINIO_ENDPOINT:MINIO_PORT`, set to `minio:9000` — resolvable only inside Docker, while the entity performing the PUT is the browser. Compounded by the bucket being created with **no policy**, so it stayed private and every object answered 403 to an unauthenticated GET: the upload would have succeeded and then no image would ever have rendered. Buckets now get anonymous `s3:GetObject`, with `s3:ListBucket` deliberately withheld so contents cannot be enumerated.
+- [x] **`useSSL` was hardcoded `false`** — correct locally, but in production the endpoint is a domain behind TLS, so every presigned URL came out as `http://host:443/...`. Now driven by `MINIO_USE_SSL`.
+- [x] **CI's `NEXT_PUBLIC_*` build arg was silently discarded** — the frontend `Dockerfile` declared no matching `ARG`, so every published image shipped the localhost fallback baked into its bundle.
+- [x] **Production CORS rejected the real site.** `FRONTEND_URL` and `CORS_ORIGINS` were never passed to `api`, so the allow-list fell back to the schema defaults — `localhost:3000` and `localhost:3847`.
+- [x] **The production worker crashed at boot** — its `ConfigModule` validation requires `JWT_SECRET`, which the production compose never passed. No scheduled job would have had a consumer.
+- [x] **nginx never listened on 443** despite the compose file publishing it and mounting certificates. Added TLS termination, an HTTP→HTTPS redirect that spares the ACME challenge path, and a storage vhost — presigned URLs address `/<bucket>/<key>`, and on the apex domain that path is claimed by the Next.js catch-all.
+- [x] `GOOGLE_CALLBACK_URL` was never passed in either environment, so OAuth fell back to a port nothing publishes
+- [x] Backend `Dockerfile` said `EXPOSE 3001`; the app listens on 3000, and the wrong number had already been copied into nginx and both compose files
+
+### Pulled forward from Phase 6
+- [x] MinIO bucket created + **public read policy** for article images *(Phase 6 line item, closed here)*
+- [x] TLS via Let's Encrypt — nginx side configured and verified; only VPS provisioning remains
+- [x] Production `.env` documented — a full production override block in `.env.example`
+- [x] `docker.inkwell.ai/README.md` rewritten — it had told developers to run `docker compose up --build`, which fails because no root compose file exists
+
+**Verification:** both compose files validate; nginx boots with the app services stopped and returns 502 rather than dying; all three vhosts route correctly; a presigned upload was driven end-to-end (`presign → PUT 200 → public GET 200 image/png`) with bucket listing still 403; SSE confirmed unbuffered (`text/event-stream`, chunked); the production config was run against the live containers on a spare loopback address with a self-signed certificate and served the redirect, both vhosts and the ACME path correctly; backend typecheck, lint and 27/27 tests pass.
+
+> **Cost/benefit for the report:** ~1.5 days of S5. This is the second time a "configuration" task has turned up demo-stopping defects (see Phase Q), and the pattern is the same both times: values that were *present* but never *exercised*. Nothing here was caught by tests or CI, because every one of them lives in the gap between the container and the browser — the one boundary neither unit tests nor typechecking cross.
 
 ---
 
@@ -494,16 +536,20 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
 - [ ] `reconcile-balances` background job — asserts snapshot == ledger sum, alerts on drift
 
 ### Production Deploy
+> Partially delivered early in S5 — see **Phase I**. What remains is provisioning and the deploy pipeline; the configuration itself is written and tested.
+
 - [ ] Provision VPS (Hetzner CX22 or Oracle Cloud free tier)
-- [ ] Configure domain + Cloudflare DNS
-- [ ] TLS via Let's Encrypt (Nginx + certbot or Caddy)
+- [ ] Configure domain + Cloudflare DNS — **two records needed**: the apex, and `storage.` for presigned uploads (the apex path `/<bucket>/<key>` is claimed by the Next.js catch-all)
+- [x] TLS via Let's Encrypt (Nginx + certbot) — **nginx side done 2026-08-06**: 443 listener, HTTP→HTTPS redirect sparing the ACME path, certbot webroot volume, storage vhost. Verified against live containers with a self-signed certificate. Issuing the real certificate needs the VPS.
 - [ ] GitHub Actions deploy workflow in `docker.inkwell.ai`:
   - [ ] Trigger on push to `main` in backend/frontend repos (via `repository_dispatch`)
   - [ ] SSH to VPS → pull new images → `docker compose up -d`
-- [ ] Production `.env` configured on VPS (secrets, AI API keys)
+- [x] Production `.env` configured — **template done 2026-08-06**: a full production override block in `.env.example`, including which values are runtime and which are build-time. Filling in real secrets needs the VPS.
 - [ ] Database migration runs automatically on deploy
-- [ ] MinIO bucket created + public read policy for article images
+- [x] MinIO bucket created + public read policy for article images — **done 2026-08-06**, in `UploadsService` on bucket creation, and applied to the existing dev bucket
 - [ ] Verify full stack running at production URL
+
+> **Set these as GitHub repository variables before the first deploy**, not in `.env`: `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_STORAGE_URL`. `next build` inlines them into the browser bundle, so a runtime value changes nothing the browser executes — and changing one requires **rebuilding** the frontend image, not restarting it.
 
 ### Defense Preparation
 - [ ] `docs/ARCHITECTURE.md` — full system architecture diagram + explanation
