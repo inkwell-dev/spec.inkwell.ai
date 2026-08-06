@@ -147,9 +147,15 @@ Deploy workflow in `docker.inkwell.ai`:
 
 Nginx configuration:
 - `/` → frontend (`web:3000`)
-- `/api` → backend (`api:3001`)
+- `/api` → backend (`api:3000`)
+- `/storage` → object storage (`minio:9000`), prefix stripped
 - SSE support: `proxy_buffering off`, `X-Accel-Buffering: no`
 - WebSocket-ready headers (for future use)
+
+Development uses a separate `dev.conf` that additionally serves
+`frontend.inkwell.ai`, `backend.inkwell.ai` and `storage.inkwell.ai` as named
+vhosts, and resolves upstreams at request time so the proxy starts even when the
+application containers are stopped.
 
 ---
 
@@ -188,9 +194,21 @@ Variables include:
 - Database credentials
 - Redis connection
 - AI provider API keys (Groq, Gemini, OpenAI)
-- MinIO credentials
+- MinIO credentials and public endpoint (`MINIO_ENDPOINT`, `MINIO_USE_SSL`)
 - JWT secrets
+- Public URLs (`FRONTEND_URL`, `CORS_ORIGINS`, `GOOGLE_CALLBACK_URL`)
 - Resend API key (email)
+
+**Build-time vs runtime.** `NEXT_PUBLIC_*` variables are inlined into the browser
+bundle by `next build`, so they are passed as Docker **build args** from CI (via
+GitHub repository variables), not through the runtime `environment:` block.
+Setting them in `.env` has no effect on the shipped JavaScript, and changing one
+requires rebuilding the frontend image.
+
+Presigned upload URLs are generated against `MINIO_ENDPOINT`, which must be the
+**public** hostname: the browser performs the upload, so an internal container
+name is unreachable. `MINIO_USE_SSL` controls the scheme, since a presigned
+signature covers the `Host` header.
 
 ### 8.2 Secrets Management
 
