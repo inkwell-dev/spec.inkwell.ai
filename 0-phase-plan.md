@@ -19,8 +19,8 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
 | **S2** | Jun 12 – Jun 25 | Phase D — Design system + mobile (375px) screen set | ✅ Done |
 | **S3** | Jun 26 – Jul 9 | Phase D — Desktop (1440px) screen set + refinement | ✅ Done |
 | **S4** | Jul 10 – Jul 26 | Phase D — Figma audit, design QA, spec alignment + re-baseline | ✅ Done |
-| **S5** | Jul 27 – Aug 9 | Phase 2 — Editor + AI + event capture · Phase 3 (start) — likes/comments · **Q — codebase quality pass** | 🚧 In progress — editor, social + notifications verified end-to-end; **AI streaming unblocked and verified 2026-07-30**; a cross-repo quality pass (Phase Q) landed mid-sprint; **dev/prod URL topology reworked 2026-08-05/06**, which fixed image upload and pulled four Phase 6 deploy items forward |
-| **S6** | Aug 10 – Aug 23 | ~~Phase 3 — Aggregation + dashboards~~ *(pulled forward into S5)* · Phase 4 — RAG + Insights + Search | 🔜 — enters with Phase 3 largely done, so S6 is effectively Phase 4 only |
+| **S5** | Jul 27 – Aug 9 | Phase 2 — Editor + AI + event capture · Phase 3 (start) — likes/comments · **Q — codebase quality pass** | ✅ Done — editor, social + notifications verified end-to-end; **AI streaming unblocked and verified 2026-07-30**; a cross-repo quality pass (Phase Q) landed mid-sprint; **dev/prod URL topology reworked 2026-08-05/06**, which fixed image upload and pulled four Phase 6 deploy items forward. Six trailing items were closed out on **2026-08-10**, one day past the window — see *S5 Close-out* below |
+| **S6** | Aug 10 – Aug 23 | ~~Phase 3 — Aggregation + dashboards~~ *(pulled forward into S5)* · Phase 4 — RAG + Insights + Search | 🚧 — opened on Aug 10 with the S5 close-out running in parallel on day 1. Phases 2 and 3 are now fully closed, so S6 is Phase 4 only |
 | **S7** | Aug 24 – Sep 6 | Phase 5 — Marketplace + Premium · Phase 6 — Deploy + Defense prep | 🔜 |
 
 > Sprints S5–S7 compress the original Phases 2–6 (10 planned weeks) into 6 weeks. This assumes increased weekly effort and the scope freeze below. **Contingency rule (decided 2026-07-26):** if S6 runs late, the magazine-facing BI dashboard panels (audience / content / quality charts) are reduced to summary cards and documented as future work in the report — but **event capture, article metrics, and the eligibility counters always ship**, because the marketplace gate and the demo narrative depend on them.
@@ -191,8 +191,8 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
 ### Editor
 - [x] Install TipTap + extensions (StarterKit, Placeholder, Image, CodeBlock, Typography)
 - [x] Replace textarea with TipTap editor in `/editor/[id]`
-- [x] Image upload — paste/drag into editor → upload to MinIO → embed URL — *ticked prematurely; the path could not have worked until **2026-08-06**. See the infrastructure note under Phase I.*
-- [ ] Thumbnail upload for article cover
+- [x] Image upload — paste/drag into editor → upload to MinIO → embed URL — *ticked prematurely twice over. The transport could not have worked until **2026-08-06** (see Phase I), and paste/drag itself did not exist until **2026-08-10**: there was no `handlePaste` and no `handleDrop`, and with `allowBase64: false` the default handler produced a data URL the Image extension refused, so dropping a screenshot did nothing at all, silently.*
+- [x] Thumbnail upload for article cover — *2026-08-10. The column, both DTOs, the feed card, the reader page and the OG tag had all existed since Phase 1; nothing had ever set the value.*
 - [x] Auto-save draft on change (debounced PATCH, 1.5s)
 - [x] Word count + estimated read-time display
 
@@ -209,13 +209,13 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
 ### AI Features (Frontend)
 - [x] AI chat panel (slide-out sidebar in editor)
   - [x] Chat history UI
-  - [ ] "Insert into article" button on AI responses
+  - [x] "Insert into article" button on AI responses — *2026-08-10; required lifting the TipTap instance out of `TipTapEditor`, since the chat panel is its sibling and had no handle on the document at all*
   - [x] Token usage indicator
 - [x] Inline editing popup — appears on text selection
   - [x] 5 action buttons (Reformulate / Shorten / Expand / Simplify / Improve)
   - [x] Streaming result preview
-  - [ ] Replace / Insert below / Cancel actions
-- [ ] Token quota warning + "upgrade" prompt when tokens depleted
+  - [x] Replace / Insert below / Cancel actions — *2026-08-10; "Reject" was renamed "Cancel", and the selection range is now captured once instead of re-read after the stream (see the close-out note)*
+- [x] Token quota warning + "upgrade" prompt when tokens depleted — *2026-08-10; copy branches on plan, because a free account's allowance is 0 by design and so is permanently "depleted"*
 
 ### Analytics Event Capture (Early — data accrual starts here)
 - [x] Backend: POST /analytics/events — batch event ingestion endpoint
@@ -234,10 +234,10 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
 ### Observability
 - [x] `GET /health` — liveness probe (process running)
 - [x] `GET /ready` — readiness probe (DB + Redis connectivity)
-- [ ] Sentry integration (free tier) — backend + frontend error tracking
+- [x] Sentry integration (free tier) — backend + frontend error tracking — *2026-08-10; API, worker, Next.js server and browser. `SENTRY_DSN` is runtime config, `NEXT_PUBLIC_SENTRY_DSN` is build-time and needs the same ARG/build-arg/repository-variable treatment as the other `NEXT_PUBLIC_*`. Both optional — with no DSN the SDK no-ops.*
 
 ### Exit criteria
-- [ ] Writer can edit with TipTap and upload images *(editor works; thumbnail/cover upload still open)*
+- [x] Writer can edit with TipTap and upload images — **closed 2026-08-10**: toolbar, paste, drag, and a cover image on the publish dialog
 - [x] AI chat streams tokens in real-time — **verified 2026-07-30**: chunks arrive incrementally (~7 ms apart, not buffered) and the model responds. Browser-side "visible in UI" still to be confirmed in the editor panel.
 - [x] Inline popup works on text selection — backend path verified end-to-end for `shorten`; the other four actions share the same handler and prompt map
 - [x] Token counter decrements correctly per AI action — **verified**: 1000 → 673 across two calls (214 + 113), matching the `ai_interactions` rows exactly
@@ -324,7 +324,7 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
 - [x] Likes module — POST /articles/:id/like, DELETE /articles/:id/like
 - [x] Comments module — POST/GET/DELETE for threaded comments
 - [x] Follows module — POST /users/:username/follow, DELETE unfollow *(stretch — first social cut under time pressure)*
-- [ ] Reposts module — POST /articles/:id/repost *(stretch — first social cut under time pressure)*
+- [x] Reposts module — POST /articles/:id/repost — *2026-08-10. The `reposts` table and its unique constraint had existed since Phase 1, and the aggregation worker had been counting it into `article_metrics.total_reposts` and `writer_quality_metrics.repost_rate` the whole time. Nothing ever wrote a row, which is why `repostRate` on the evaluation report was structurally 0. No aggregation change was needed — only a writer.*
 - [x] Notifications module:
   - [x] Create notification on like / comment / follow events
   - [x] GET /notifications (paginated list)
@@ -352,7 +352,7 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
 - [x] Like button with optimistic UI
 - [x] Comment section under articles — threaded replies
 - [x] Follow button on profile pages — one shared `<FollowButton>` (handles self / logged-out / pending), replacing three disabled `TODO(Phase 3)` stubs. Delivered early by the quality pass; see the Tier 0–2 note below.
-- [ ] Repost button
+- [x] Repost button — *2026-08-10; optimistic count, sharing `useOptimisticToggle` with the like button*
 - [x] Notification bell — live SSE connection, unread count badge
 - [x] Notification dropdown list
 
@@ -362,7 +362,7 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
   - [x] Views per article (chart) — 30-day daily area chart with crosshair + tooltip
   - [x] Avg read time
   - [ ] ~~Scroll depth heatmap (bar chart per paragraph)~~ — **not built as specified.** The client records one page-level max-scroll percentage on leave, not per-paragraph `IntersectionObserver` entries, so there is no per-paragraph signal to chart. A quartile **retention curve** ships instead (share of readers reaching 25/50/75/90%), which is what page-level scroll honestly supports. Restoring the heatmap needs a capture change first, and it cannot be backfilled.
-  - [ ] Top performing articles — the dashboard lists articles by recency, not ranked by performance. Still open.
+  - [x] Top performing articles — **2026-08-10**. The list had no performance data at all to rank by: `findByAuthor` selected only authoring fields, and sorted by `updatedAt` hardcoded. `article_metrics` is now LEFT JOINed (a PK lookup per row, so no N+1) and `GET /articles/me` accepts `?sort=recent|views|engagement`. Ranking is server-side so it covers the whole body of work rather than reordering the current page.
 
 ### Analytics (Frontend) — Magazine-Facing
 - [x] Writer evaluation page — built at **`/discover/writers/[username]`**, not `?as=magazine`. A query parameter would make one public URL render entirely different, access-controlled content depending on the viewer. `/discover` is now behind the auth middleware; the account-type check stays server-side.
@@ -370,13 +370,51 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
   - [x] **Content panel**: topic distribution, consistency, avg length, top tags — *posting frequency is a scalar stat, not a sparkline: no per-period series is stored*
   - [x] **Quality panel**: engagement rate, completion rate, repost rate, comment depth, retention curve — *repost rate is structurally 0 until the Reposts module ships*
   - [x] **Portfolio Insights panel** — present as a **stated placeholder**, not the AI implementation. Phase 4 swaps in the cached result; it deliberately shows neither a spinner nor invented prose.
-- [ ] Magazine discover page (`/discover`) — browse writers with filters. **Still open, and it is the entrance to the page above** — the evaluation report is currently reachable only by typing a URL.
+- [x] Magazine discover page (`/discover`) — browse writers with filters. **Built 2026-08-10**, together with its backing endpoint `GET /discover/writers` (pulled forward from Phase 5). Search across name/username/bio, topic filter, four sorts, and an eligibility toggle. It is the entrance to the evaluation report, which until now was reachable only by typing a URL.
 
 ### Exit criteria
-- [ ] Like/comment/follow/repost all work with correct notifications — like/comment/follow verified; **repost not built**
+- [x] Like/comment/follow/repost all work with correct notifications — **closed 2026-08-10** with the Reposts module; three POSTs produce exactly one row and exactly one notification
 - [x] Live notification arrives via SSE without page refresh
 - [x] Writer dashboard shows real engagement data — verified in a browser against the seeded corpus
-- [ ] Magazine can browse writers and view writer evaluation dashboard with real metrics — **evaluation verified in a browser (magazine 200 / personal 403 / anonymous redirect); browsing not built**
+- [x] Magazine can browse writers and view writer evaluation dashboard with real metrics — **closed 2026-08-10**. Endpoint verified end to end: magazine 200 / personal 403 / anonymous 401, all four sorts distinct, case-insensitive search, tag filter, and stable pagination (two 13-row pages → 26 distinct writers, none repeated or dropped)
+
+---
+
+## S5 Close-out — the trailing items
+> Sprint S5 → S6 boundary · 2026-08-10 · **Completed** (recorded in the same spirit as Phases D, Q and I)
+
+> **Why this exists:** S5 absorbed two unplanned sub-phases (Q, then I) and they consumed the slack. What was left over was not a coherent feature but six individually small items — and between them they held **four written exit criteria** open across Phases 2 and 3. They were closed in one pass on the first day of S6 so Phase 4 opens with nothing trailing.
+
+| Item | Phase it closed |
+|---|---|
+| Magazine discover page + `GET /discover/writers` | Phase 3 exit criterion |
+| Article cover image, and paste/drag upload | Phase 2 exit criterion |
+| AI "Insert into article", inline Replace / Insert below / Cancel, token-quota state | Phase 2 |
+| Top-performing ranking on the writer dashboard | Phase 3 |
+| Reposts module + button | Phase 3 exit criterion |
+| Sentry (API, worker, Next server, browser) | Phase 2 observability |
+
+### Defects found while closing them
+
+Same pattern as Phases Q and I: the surfaces looked finished, and the gaps were all in code paths nothing exercised.
+
+- **The inline AI popup could edit the wrong text.** `handleAction` and `handleAccept` each read `editor.state.selection` independently, with a multi-second stream between them. Any click, blur or bubble-menu reposition in that window moved the selection, so "Replace" deleted a different range than the one the writer had selected — silently, and destructively. The range is now captured once.
+- **The AI token balance never moved.** `qk.ai.tokens()` was invalidated by nothing, anywhere. The indicator showed whatever the balance was when the panel first mounted and held that number for the entire session no matter how many tokens were spent.
+- **Paste and drag had never been implemented**, despite being ticked — see the Phase 2 note above.
+- **The dashboard's article list carried no metrics at all**, so "Top performing articles" had nothing to rank.
+- **`notification_type` had no `'repost'` value**, so the Reposts module needed the close-out's only schema change: `ALTER TYPE ... ADD VALUE`, additive and non-rewriting.
+- **`.pnpm-store/` was root-owned in both app repos** — a survivor of the root-container era that Phase Q fixed for `dist/` and `.next/` but missed here. Since the containers switched to the host UID, `pnpm install` had been failing on every `api` start with an opaque SQLite "attempt to write a readonly database". It went unnoticed because `node_modules` was already populated in its named volume, so nothing broke until a new dependency was added — at which point the container could not install it.
+- **A pnpm placeholder stopped the web container booting.** Installing `@sentry/nextjs` made pnpm write `'@sentry/cli': set this to true or false` into `pnpm-workspace.yaml`. pnpm exits **non-zero** on an unresolved entry, and the dev container runs `pnpm install && pnpm dev`, so the `&&` short-circuited and the dev server never started.
+
+### Deliberate deviations, recorded rather than silently resolved
+
+- **`/discover` is not subscription-gated.** Spec §4.5.3 requires an active magazine subscription; the subscription module is Phase 5, so the gate is account-type only for now.
+- **The credit-balance pill** from `design/prompts/08-marketplace-browse.md` is not built — it reads `magazine_profiles.credit_balance`, which Phase 5 owns.
+- **Eligibility defaults to on, with a toggle.** §4.5.3 says "browse all eligible writers", but `check-writer-eligibility` is a Phase 5 worker, so the flag is seed-only today and a strict filter renders an empty page on any database where the seed has not run.
+- **The upgrade CTA is a disabled button.** `ROUTES` has no billing entry and the upgrade flow is Phase 5; a live button would be a dead link. Matches the article paywall, which made the same call.
+- **Route naming drift is resolved toward `/discover`.** `9-design.md` and design prompt 08 called this page `/marketplace`; the code uses `/discover`, because the evaluation report already lives at `/discover/writers/[username]`. `/marketplace` is left to Phase 5's *article* browse (`GET /discover/marketplace`).
+
+**Verification:** both repos typecheck clean under `strict: true` with zero lint errors; backend 27/27 tests pass on the host; both compose files validate; the full stack (api + web + worker + infra) runs. The repost chain was driven end to end — button → row → `aggregate-article-metrics` → `aggregate-writer-metrics` → `repostRate` on the evaluation report moving from a structural 0 to 0.0076 — and the Sentry filter ordering was checked to confirm it had not swallowed the database exception filter (400 / 400 / 404 / 401 / 403, no 500s).
 
 ---
 
@@ -458,7 +496,7 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
   - [ ] Subscription guard middleware — 403 if magazine subscription inactive on marketplace endpoints
 - [ ] Backend marketplace module:
   - [ ] Writer eligibility BullMQ worker `check-writer-eligibility` — runs after each analytics aggregation, flips eligible writers
-  - [ ] GET /discover/writers — magazine-only writer browse with filters/sort (subscription required)
+  - [x] GET /discover/writers — magazine-only writer browse with filters/sort — **pulled forward to 2026-08-10**, because the Phase 3 discover page depends on it. The account-type gate is in place; the **subscription** gate is still open here and stays a Phase 5 item, since there is no subscription state to check yet.
   - [ ] GET /discover/marketplace — magazine-only browse of marketplace-listed articles
   - [ ] POST /purchases/preview — preview unlock (atomic DB transaction):
     - [ ] Validates `subscription_status = active` + `credit_balance >= preview_price`
@@ -482,7 +520,7 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
 - [ ] Frontend marketplace UI:
   - [ ] Marketplace placement option + price input in publish flow (greyed + eligibility progress if not eligible)
   - [ ] Magazine subscription screen (sign-up wall and settings)
-  - [ ] Magazine Discover page with writer cards + filters
+  - [x] Magazine Discover page with writer cards + filters — **built 2026-08-10**; what remains for Phase 5 is the subscription gate and the credit-balance indicator
   - [ ] Writer evaluation page: marketplace article list with "Preview" / "Purchase" buttons
   - [ ] Preview confirmation modal (shows 10% cost + credit balance)
   - [ ] Purchase confirmation modal (shows remaining 90% + credit balance + preview-credit note)
@@ -661,7 +699,7 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
 ## Droppable Features (Priority Order)
 > Mobile, voice, email, AI eval, cookie consent, and advanced moderation were already descoped in the 2026-07-26 re-baseline. If further time pressure builds, drop the remaining features in this order (top = first to cut):
 
-1. **Reposts** — one quality signal, low demo value
+1. ~~**Reposts**~~ — **built 2026-08-10**, so no longer available to cut. It was cheaper than it looked: the table, the constraint and the aggregation already existed and only a writer was missing, and it turns `repostRate` on the magazine evaluation report from a structural 0 into a real measurement.
 2. **Follows / follower-growth chart** — vanity metrics
 3. **Dynamic OG images** — SEO polish, not load-bearing
 4. **BI trim** (last resort, per contingency rule) — magazine dashboard panels reduced to summary cards; eligibility pipeline untouched

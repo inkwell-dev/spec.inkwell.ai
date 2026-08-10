@@ -145,6 +145,8 @@ A contextual AI assistant integrated into the editor.
 
 ### 3.2 Voice-to-Article Generation
 
+> **Descoped to post-MVP** in the 2026-07-26 re-baseline (see [`0-phase-plan.md`](./0-phase-plan.md) — Post-MVP Descope). Design kept below as future-work reference.
+
 #### Flow:
 1. User records voice input
 2. Audio is transcribed to text
@@ -314,6 +316,27 @@ Magazines have a dedicated discovery interface (requires active subscription):
 - Click into any writer's profile → see full evaluation dashboard (section 4.2) and Portfolio Insights (section 3.6)
 - View a writer's marketplace-listed articles with titles, excerpts, and prices
 - See per-writer stats (per-article stats deferred to post-MVP)
+
+> **As built (2026-08-10).** The page is `/discover`, not `/marketplace` — the
+> writer evaluation report already lives at `/discover/writers/[username]`, so
+> the browse surface sits above it. `/marketplace` is reserved for the Phase 5
+> browse of marketplace-listed *articles*.
+>
+> Two deliberate departures from the paragraph above, both because the
+> subscription and eligibility machinery is Phase 5:
+>
+> - **Access is gated on account type, not on an active subscription.** There is
+>   no subscription state to check yet, and a guard against an unwritable column
+>   would fail closed for every magazine account.
+> - **"All eligible writers" is the default, not the only option.** The page
+>   ships an *Eligible only* toggle, on by default. `check-writer-eligibility` is
+>   a Phase 5 worker, so `is_marketplace_eligible` is set only by the demo seed
+>   today — a strict filter renders an empty page on any database where the seed
+>   has not run, which is the wrong first impression of the feature.
+>
+> Sorting is by engagement, unique readers, posting frequency, or account age.
+> "Topic relevance" is not implemented: it needs the Phase 4 embeddings to mean
+> anything more than the tag filter already provides.
 
 ---
 
