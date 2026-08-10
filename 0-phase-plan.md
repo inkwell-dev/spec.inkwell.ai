@@ -1,7 +1,7 @@
 # 🗺️ Inkwell.ai — Phase Plan
 
 > **Target defense:** September 2026 (~16-week timeline from May 21, 2026 — re-baselined 2026-07-26)
-> **Stack:** Next.js 15 · NestJS 11 · PostgreSQL + pgvector · Redis · MinIO · Groq · Gemini · OpenAI (embeddings) · Drizzle ORM
+> **Stack:** Next.js 15 · NestJS 11 · PostgreSQL + pgvector · Redis · MinIO · Groq · Gemini (LLM fallback + embeddings) · Drizzle ORM
 > **Repos:** `frontend.inkwell.ai` · `backend.inkwell.ai` · `docker.inkwell.ai` · `mobile.inkwell.ai` (deferred)
 > **Core pivot (post-mentor-review):** Inkwell is a **writer ↔ magazine marketplace**. Analytics is now decision support for magazine licensing decisions, not just writer vanity.
 > **Re-baseline (2026-07-26):** The June–July design track (Stitch prompts, desktop refinement, Figma inventory, design QA) was executed between Phase 1 and Phase 2 but was never modeled in the original plan. It is now recorded as **Phase D**, the remaining implementation phases are re-dated from Jul 27, and scope is frozen to the defensible core (see *Post-MVP Descope*). Phase numbers 2–6 are unchanged so cross-references from other spec docs remain valid.
@@ -429,10 +429,10 @@ Same pattern as Phases Q and I: the surfaces looked finished, and the gaps were 
 > Sprint S6 · Aug 10 – Aug 23 *(re-dated from Jul 10–23)*
 
 ### RAG Pipeline (Backend)
-- [ ] Install OpenAI SDK (embeddings) + pgvector Drizzle helpers
+- [x] Embedding SDK + pgvector Drizzle helpers — *2026-08-10; `@ai-sdk/google` (already installed) plus Drizzle's first-party `vector` column, `cosineDistance`, and an HNSW index*
 - [ ] Article chunking on publish:
   - [ ] Split TipTap JSON into paragraph-level chunks
-  - [ ] Each chunk embedded via OpenAI `text-embedding-3-small`
+  - [x] Each chunk embedded via Gemini `gemini-embedding-001` at 1536 dims — *provider substituted for OpenAI, see the S6 note*
   - [ ] Stored in `article_chunks` with `embedding vector(1536)` + HNSW index
   - [ ] BullMQ job: `embed-article` triggered on publish/update
 - [ ] Retrieval service:
@@ -583,20 +583,36 @@ Same pattern as Phases Q and I: the surfaces looked finished, and the gaps were 
 ### Production Deploy
 > **DEFERRED — this whole section is the last thing that happens.** Decision of
 > 2026-08-10: development continues **entirely locally** until the feature work is
-> finished. No domain has been bought and no VPS exists, so every item below is
-> blocked on two purchases, not on engineering. Nothing in Phases 4–5 depends on
-> any of it.
+> finished. Nothing in Phases 4–5 depends on any of it.
+>
+> *Updated later the same day:* the original reason for deferring was that a
+> domain and a VPS both cost money the project could not spend. The GitHub
+> Student Developer Pack supplies both at no cost, so this is now a **scheduling**
+> decision rather than a hard block — features first, deploy last, but the deploy
+> is genuinely reachable. That is a materially better position for the defense: a
+> live production URL is worth real marks on a DevOps-heavy project.
 >
 > The configuration is already written and tested (see **Phase I**) — what remains
 > is provisioning, then a single pass through the checklist below.
 
-**Blocked prerequisites — nothing else here can start until these two exist:**
+**Prerequisites — both are covered by the GitHub Student Developer Pack**
+*(confirmed available 2026-08-10; no purchase and no international card needed,
+which was the original blocker)*
 
-- [ ] **Buy a domain.** The specs, `.env.example`, the README and both nginx
-      configs all assume `inkwell.ai`; that name is a placeholder until it is
-      actually registered. Whatever is bought must be substituted in all four
-      places at once.
-- [ ] **Provision the VPS** (Hetzner CX22 or Oracle Cloud free tier)
+- [ ] **Claim a domain.** Namecheap's pack offer includes a free `.me` domain for
+      a year. The specs, `.env.example`, the README and both nginx configs all
+      assume `inkwell.ai`; that name is a **placeholder** until something is
+      actually registered, and whatever is claimed must be substituted in all
+      four places at once.
+- [ ] **Provision the VPS.** DigitalOcean ($200 pack credit) or Azure for
+      Students ($100, academic-email verification, no card). Either comfortably
+      covers the 7-container stack; the spec's Hetzner CX22 sizing is the
+      reference, not a requirement.
+
+> **Standing preference (2026-08-10):** when a Student Pack offer is the best
+> available option for a piece of infrastructure, use it. It is why deployment is
+> no longer blocked on spending money — the constraint that produced the deferral
+> below has been removed, and what remains is sequencing, not capability.
 
 **Then, in order:**
 
@@ -728,7 +744,7 @@ Same pattern as Phases Q and I: the surfaces looked finished, and the gaps were 
 
 ## Notes
 
-- **AI providers used:** Groq (LLM + Whisper, free tier), Gemini 2.0 Flash (free tier), OpenAI (embeddings, $0.02/1M tokens)
+- **AI providers used:** Groq (LLM + Whisper, free tier), Gemini 2.0 Flash (LLM fallback) and `gemini-embedding-001` (embeddings) — all free tier, no payment method required
 - **Shared types strategy:** Backend OpenAPI → auto-generated TS client in frontend CI + `@inkwell/shared` package for non-API types
 - **Worker container** shares the backend image but runs `node dist/worker` — handles BullMQ jobs for embedding, analytics aggregation, email
 - **RAG scope:** Only the writer's own articles (not platform-wide) — makes the demo story "it writes like *me*"

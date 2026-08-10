@@ -193,7 +193,7 @@ Managed via `.env` files:
 Variables include:
 - Database credentials
 - Redis connection
-- AI provider API keys (Groq, Gemini, OpenAI)
+- AI provider API keys (Groq, Gemini — Gemini covers both LLM fallback and embeddings)
 - MinIO credentials and public endpoint (`MINIO_ENDPOINT`, `MINIO_USE_SSL`)
 - JWT secrets
 - Public URLs (`FRONTEND_URL`, `CORS_ORIGINS`, `GOOGLE_CALLBACK_URL`)
@@ -259,7 +259,7 @@ signature covers the `Host` header.
 
 | Job | Trigger | Description |
 |-----|---------|-------------|
-| `embed-article` | Article publish/update | Generate/refresh article chunks via OpenAI |
+| `embed-article` | Article publish/update | Generate/refresh article chunks via Gemini embeddings |
 | `extract-writer-memory` | Article publish | LLM extracts structured memory (tone, style, topics) |
 | `send-email` | User action | Transactional email via Resend |
 
@@ -334,7 +334,7 @@ BullMQ worker, the Next.js server, and the browser.
 ## 13. Failure Handling
 
 - BullMQ job retry with exponential backoff (3 attempts)
-- AI provider fallback chain (Groq → Gemini for LLM; OpenAI for embeddings — single provider, paid tier)
+- AI provider fallback chain (Groq → Gemini for LLM; Gemini for embeddings — single provider, free tier)
 - Docker Compose `restart: unless-stopped` on all services
 - Health check-based dependency ordering (API waits for DB + Redis)
 - Graceful shutdown handling (SIGTERM → drain connections → exit)

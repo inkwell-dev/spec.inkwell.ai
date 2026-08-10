@@ -88,6 +88,8 @@ Actions include:
 
 ### 4.3 Voice-to-Article
 
+> **Descoped to post-MVP** (2026-07-26 re-baseline — see [`0-phase-plan.md`](./0-phase-plan.md)). Pipeline design retained for future work.
+
 Flow:
 - User records speech
 - Speech is transcribed via **Groq Whisper-large-v3-turbo** (free tier, fast)
@@ -244,7 +246,10 @@ To avoid token overflow from double-injecting memory and RAG chunks:
 
 ### 9.4 RAG Layer (Article Chunks)
 - Articles are split into paragraph-level chunks on publish
-- Each chunk embedded with **OpenAI `text-embedding-3-small`** (1536 dimensions)
+- Each chunk embedded with **Gemini `gemini-embedding-001`** at **1536 dimensions**
+  (`outputDimensionality: 1536`). *Substituted for OpenAI `text-embedding-3-small`
+  on 2026-08-10 — see the provider table in §13.5 for why. The width is
+  deliberately unchanged, so the schema and the HNSW index were untouched.*
 - Stored in `article_chunks` with HNSW vector index in pgvector
 - Retrieved via cosine similarity for:
   - Writer-facing chat (top-K chunks from the writer's own articles, K ≤ 5)
@@ -290,7 +295,7 @@ To avoid token overflow from double-injecting memory and RAG chunks:
 ### 11.2 Handling Strategy
 
 - Retry failed requests (Vercel AI SDK built-in retry)
-- **Provider fallback chain**: Groq → Gemini for LLM; OpenAI `text-embedding-3-small` is the sole embedding provider (no fallback needed — paid tier, no expiry)
+- **Provider fallback chain**: Groq → Gemini for LLM; Gemini `gemini-embedding-001` is the sole embedding provider (free tier, no card required)
 - Return user-facing fallback message ("AI is temporarily unavailable")
 - Log errors to Sentry for monitoring
 - Non-AI features continue working during AI provider outages  
@@ -319,7 +324,7 @@ To avoid token overflow from double-injecting memory and RAG chunks:
 |------------|------------------|----------|-------|
 | LLM (chat, inline edit, Portfolio Insights) | **Groq** (Llama 3.3 70B) | **Gemini 2.0 Flash** | Both have generous free tiers |
 | Speech-to-text | **Groq Whisper-large-v3-turbo** | OpenAI Whisper API | Free, very fast |
-| Embeddings (RAG) | **OpenAI `text-embedding-3-small`** | — | $0.02/1M tokens (~$0.10 total at PFE scale). No trial expiry risk. 1536 dimensions. |
+| Embeddings (RAG) | **Gemini `gemini-embedding-001`** | — | Free tier, no payment method required. Emits **1536 dimensions** via `outputDimensionality`, matching the original OpenAI width so the schema is unaffected. |
 | Content moderation | **OpenAI Moderation API** | — | Free |
 | Premium AI (optional) | **Anthropic Claude** | — | Small paid budget for higher-quality "premium" actions |
 
