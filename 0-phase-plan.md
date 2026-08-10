@@ -21,7 +21,14 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
 | **S4** | Jul 10 – Jul 26 | Phase D — Figma audit, design QA, spec alignment + re-baseline | ✅ Done |
 | **S5** | Jul 27 – Aug 9 | Phase 2 — Editor + AI + event capture · Phase 3 (start) — likes/comments · **Q — codebase quality pass** | ✅ Done — editor, social + notifications verified end-to-end; **AI streaming unblocked and verified 2026-07-30**; a cross-repo quality pass (Phase Q) landed mid-sprint; **dev/prod URL topology reworked 2026-08-05/06**, which fixed image upload and pulled four Phase 6 deploy items forward. Six trailing items were closed out on **2026-08-10**, one day past the window — see *S5 Close-out* below |
 | **S6** | Aug 10 – Aug 23 | ~~Phase 3 — Aggregation + dashboards~~ *(pulled forward into S5)* · Phase 4 — RAG + Insights + Search | 🚧 — opened on Aug 10 with the S5 close-out running in parallel on day 1. Phases 2 and 3 are now fully closed, so S6 is Phase 4 only |
-| **S7** | Aug 24 – Sep 6 | Phase 5 — Marketplace + Premium · Phase 6 — Deploy + Defense prep | 🔜 |
+| **S7** | Aug 24 – Sep 6 | Phase 5 — Marketplace + Premium · Phase 6 — Deploy + Defense prep | 🔜 — **deployment is the last work of the last sprint** (decision of 2026-08-10). Phase 5 and the quality/SEO/demo parts of Phase 6 come first; the deploy block is blocked on buying a domain and a VPS and is scheduled after them |
+
+> **Development is local-only until the end (decided 2026-08-10).** No domain has
+> been registered and no VPS provisioned; both are purchases, not engineering, and
+> nothing in Phases 4–5 depends on either. All deployment work is therefore
+> consolidated into one block at the end of Phase 6 — see *Production Deploy*.
+> The production configuration is already written and tested against live
+> containers (Phase I), so this is a deferral of execution, not of design.
 
 > Sprints S5–S7 compress the original Phases 2–6 (10 planned weeks) into 6 weeks. This assumes increased weekly effort and the scope freeze below. **Contingency rule (decided 2026-07-26):** if S6 runs late, the magazine-facing BI dashboard panels (audience / content / quality charts) are reduced to summary cards and documented as future work in the report — but **event capture, article metrics, and the eligibility counters always ship**, because the marketplace gate and the demo narrative depend on them.
 
@@ -234,7 +241,7 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
 ### Observability
 - [x] `GET /health` — liveness probe (process running)
 - [x] `GET /ready` — readiness probe (DB + Redis connectivity)
-- [x] Sentry integration (free tier) — backend + frontend error tracking — *2026-08-10; API, worker, Next.js server and browser. `SENTRY_DSN` is runtime config, `NEXT_PUBLIC_SENTRY_DSN` is build-time and needs the same ARG/build-arg/repository-variable treatment as the other `NEXT_PUBLIC_*`. Both optional — with no DSN the SDK no-ops.*
+- [x] Sentry integration (free tier) — backend + frontend error tracking — *2026-08-10; API, worker, Next.js server and browser. `SENTRY_DSN` is runtime config, `NEXT_PUBLIC_SENTRY_DSN` is build-time and needs the same ARG/build-arg/repository-variable treatment as the other `NEXT_PUBLIC_*`. **The code is done; creating the Sentry project and supplying the DSNs is deferred to the deploy block in Phase 6** — both are optional and the SDK no-ops without them, so nothing local is affected.*
 
 ### Exit criteria
 - [x] Writer can edit with TipTap and upload images — **closed 2026-08-10**: toolbar, paste, drag, and a cover image on the publish dialog
@@ -574,20 +581,51 @@ Same pattern as Phases Q and I: the surfaces looked finished, and the gaps were 
 - [ ] `reconcile-balances` background job — asserts snapshot == ledger sum, alerts on drift
 
 ### Production Deploy
-> Partially delivered early in S5 — see **Phase I**. What remains is provisioning and the deploy pipeline; the configuration itself is written and tested.
+> **DEFERRED — this whole section is the last thing that happens.** Decision of
+> 2026-08-10: development continues **entirely locally** until the feature work is
+> finished. No domain has been bought and no VPS exists, so every item below is
+> blocked on two purchases, not on engineering. Nothing in Phases 4–5 depends on
+> any of it.
+>
+> The configuration is already written and tested (see **Phase I**) — what remains
+> is provisioning, then a single pass through the checklist below.
 
-- [ ] Provision VPS (Hetzner CX22 or Oracle Cloud free tier)
+**Blocked prerequisites — nothing else here can start until these two exist:**
+
+- [ ] **Buy a domain.** The specs, `.env.example`, the README and both nginx
+      configs all assume `inkwell.ai`; that name is a placeholder until it is
+      actually registered. Whatever is bought must be substituted in all four
+      places at once.
+- [ ] **Provision the VPS** (Hetzner CX22 or Oracle Cloud free tier)
+
+**Then, in order:**
+
 - [ ] Configure domain + Cloudflare DNS — **two records needed**: the apex, and `storage.` for presigned uploads (the apex path `/<bucket>/<key>` is claimed by the Next.js catch-all)
 - [x] TLS via Let's Encrypt (Nginx + certbot) — **nginx side done 2026-08-06**: 443 listener, HTTP→HTTPS redirect sparing the ACME path, certbot webroot volume, storage vhost. Verified against live containers with a self-signed certificate. Issuing the real certificate needs the VPS.
 - [ ] GitHub Actions deploy workflow in `docker.inkwell.ai`:
   - [ ] Trigger on push to `main` in backend/frontend repos (via `repository_dispatch`)
   - [ ] SSH to VPS → pull new images → `docker compose up -d`
 - [x] Production `.env` configured — **template done 2026-08-06**: a full production override block in `.env.example`, including which values are runtime and which are build-time. Filling in real secrets needs the VPS.
-- [ ] Database migration runs automatically on deploy
+- [ ] Database migration runs automatically on deploy — **note there is already one pending migration**: `notification_type` gained `'repost'` on 2026-08-10 (`ALTER TYPE ... ADD VALUE`, additive). It is applied to the dev and test databases; a production database has never existed, so it will be created with the value present.
 - [x] MinIO bucket created + public read policy for article images — **done 2026-08-06**, in `UploadsService` on bucket creation, and applied to the existing dev bucket
+- [ ] **Set the four GitHub repository variables** (Settings → Secrets and variables → **Variables**, not Secrets): `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_STORAGE_URL`, `NEXT_PUBLIC_SENTRY_DSN`. `next build` inlines them into the browser bundle, so a runtime value changes nothing the browser executes — and changing one requires **rebuilding** the frontend image, not restarting it. **Deliberately left unset while local-only** (see the note below).
+- [ ] Create the Sentry project and set `SENTRY_DSN` (runtime, VPS `.env`) and `NEXT_PUBLIC_SENTRY_DSN` (build-time, repository variable). The SDK no-ops with no DSN, so this is a deploy-time task, not a blocker.
 - [ ] Verify full stack running at production URL
 
-> **Set these as GitHub repository variables before the first deploy**, not in `.env`: `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_STORAGE_URL`. `next build` inlines them into the browser bundle, so a runtime value changes nothing the browser executes — and changing one requires **rebuilding** the frontend image, not restarting it.
+> **Why the repository variables are intentionally empty right now.** They were
+> set briefly on 2026-08-10 and immediately removed once it was confirmed no
+> domain had been bought — pointing them at an unregistered `inkwell.ai` would
+> bake a domain nobody controls into every published image. With them unset,
+> `next build` receives empty strings and the code falls back to its localhost
+> defaults, which is the correct behaviour for a local-only project. CI still
+> builds and publishes images to GHCR on every push to `main`; those images are
+> **not deployable** and are not meant to be — they exist to keep the pipeline
+> exercised.
+>
+> This only works because of the `||`-vs-`??` fix committed the same day: an
+> absent build arg arrives as the **empty string**, not as `undefined`, and the
+> old `??` fallbacks kept it — which failed the first CI build on `main` outright
+> (`new URL('')` in the root layout).
 
 ### Defense Preparation
 - [ ] `docs/ARCHITECTURE.md` — full system architecture diagram + explanation

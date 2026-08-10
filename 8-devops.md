@@ -205,6 +205,23 @@ GitHub repository variables), not through the runtime `environment:` block.
 Setting them in `.env` has no effect on the shipped JavaScript, and changing one
 requires rebuilding the frontend image.
 
+> **Current status (2026-08-10): the repository variables are intentionally
+> unset.** The project is still local-only — no domain registered, no VPS
+> provisioned — so pointing them at a hostname nobody owns would bake it into
+> every published image. With them absent, `next build` receives **empty
+> strings**, and the code falls back to its localhost defaults.
+>
+> That fallback only works because the fallbacks use `||` rather than `??`. An
+> absent build arg does not arrive as `undefined`: the Dockerfile promotes each
+> ARG to an ENV, so it arrives as the empty string, which `??` keeps. The first
+> CI build on `main` failed exactly this way — `new URL('')` threw in the root
+> layout and took the whole build down. Any new `NEXT_PUBLIC_*` fallback must use
+> `||` for the same reason.
+>
+> CI still builds and pushes images to GHCR on every `main` push. Those images
+> are **not deployable** and are not intended to be; they keep the pipeline
+> exercised. Setting the variables is the first step of the deploy block.
+
 Presigned upload URLs are generated against `MINIO_ENDPOINT`, which must be the
 **public** hostname: the browser performs the upload, so an internal container
 name is unreachable. `MINIO_USE_SSL` controls the scheme, since a presigned
