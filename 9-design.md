@@ -212,7 +212,7 @@ Examples:
 | Frame | Role | Route | Notes |
 |-------|------|-------|-------|
 | Subscription Wall | MAGAZINE UNSUB | `/m/subscribe` | Mandatory before marketplace access |
-| Marketplace Browse | MAGAZINE | `/marketplace` | Writer discovery, filterable grid |
+| Marketplace Browse | MAGAZINE | `/discover` | Writer discovery, filterable grid. **Built at `/discover`, not `/marketplace`** (2026-08-10): the writer evaluation report already lives at `/discover/writers/[username]`, so the browse surface sits directly above it. `/marketplace` stays reserved for Phase 5's browse of marketplace-listed *articles*. |
 
 ### Writer Dashboard `/dashboard`
 | Frame | Role | Route |

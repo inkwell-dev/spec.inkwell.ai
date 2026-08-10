@@ -4,6 +4,17 @@
 
 Dedicated discovery interface for subscribed magazines to find eligible writers.
 
+> **Implementation note (2026-08-10).** This screen shipped as **`/discover`**,
+> not `/marketplace` — the evaluation report it links into already lives at
+> `/discover/writers/[username]`. Two elements of the prompt below are
+> deliberately **not** built yet because they depend on Phase 5's subscription
+> module: the **credit-balance pill** in the header (it reads
+> `magazine_profiles.credit_balance`) and the **"N articles for sale"** line on
+> each card. The page also adds an *Eligible only* filter pill the prompt does
+> not describe, and uses Load-more rather than numbered pagination, matching the
+> comment list. Everything else — search, sort, topic chips, the two-column card
+> grid, the Eligible badge — is as specified.
+
 > Paste [`00-design-system.md`](./00-design-system.md) first, then the block below.
 
 ---

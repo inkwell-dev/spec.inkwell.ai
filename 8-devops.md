@@ -261,6 +261,29 @@ signature covers the `Host` header.
 - Captures unhandled exceptions, failed BullMQ jobs, and AI provider errors
 - Alerts on critical failures
 
+**As built (2026-08-10).** Four runtimes are instrumented: the NestJS API, the
+BullMQ worker, the Next.js server, and the browser.
+
+- `src/instrument.ts` in the backend is imported **first** in both `main.ts` and
+  `worker.ts`. Sentry patches Node's HTTP and database modules at require time,
+  and ES imports are hoisted, so an init call inside `bootstrap()` runs too late
+  to instrument anything.
+- `SentryGlobalFilter` is registered **before** `DatabaseExceptionFilter` in the
+  providers array. Nest gives later-registered global filters higher precedence,
+  so this ordering leaves the database filter with first refusal on driver
+  errors; reversed, the catch-all would swallow them and every constraint
+  violation would become a bare 500 again.
+- **Two variables, two mechanisms.** `SENTRY_DSN` is ordinary runtime config for
+  the api and worker containers. `NEXT_PUBLIC_SENTRY_DSN` is **build-time** —
+  `next build` inlines it into the browser bundle, so it must be a Docker build
+  arg fed from a GitHub repository variable, exactly like the other
+  `NEXT_PUBLIC_*` values (§8.1). Setting it in the VPS `.env` configures nothing.
+- Both are **optional**: with no DSN the SDK initialises and no-ops, so local
+  development and CI need no Sentry project.
+- `tracesSampleRate` is 0.1 and session replay is off, to stay inside the free
+  tier's quota and to avoid recording drafts keystroke by keystroke.
+  `sendDefaultPii` is false in every runtime.
+
 ### 10.3 Logging
 
 - Structured JSON logging from NestJS (via built-in Logger or Pino)
