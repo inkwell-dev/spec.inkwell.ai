@@ -1,7 +1,7 @@
 # 🗺️ Inkwell.ai — Phase Plan
 
 > **Target defense:** September 2026 (~16-week timeline from May 21, 2026 — re-baselined 2026-07-26)
-> **Stack:** Next.js 15 · NestJS 11 · PostgreSQL + pgvector · Redis · MinIO · Groq · Gemini · OpenAI (embeddings) · Drizzle ORM
+> **Stack:** Next.js 15 · NestJS 11 · PostgreSQL + pgvector · Redis · MinIO · Groq · Gemini (LLM fallback + embeddings) · Drizzle ORM
 > **Repos:** `frontend.inkwell.ai` · `backend.inkwell.ai` · `docker.inkwell.ai` · `mobile.inkwell.ai` (deferred)
 > **Core pivot (post-mentor-review):** Inkwell is a **writer ↔ magazine marketplace**. Analytics is now decision support for magazine licensing decisions, not just writer vanity.
 > **Re-baseline (2026-07-26):** The June–July design track (Stitch prompts, desktop refinement, Figma inventory, design QA) was executed between Phase 1 and Phase 2 but was never modeled in the original plan. It is now recorded as **Phase D**, the remaining implementation phases are re-dated from Jul 27, and scope is frozen to the defensible core (see *Post-MVP Descope*). Phase numbers 2–6 are unchanged so cross-references from other spec docs remain valid.
@@ -429,10 +429,10 @@ Same pattern as Phases Q and I: the surfaces looked finished, and the gaps were 
 > Sprint S6 · Aug 10 – Aug 23 *(re-dated from Jul 10–23)*
 
 ### RAG Pipeline (Backend)
-- [ ] Install OpenAI SDK (embeddings) + pgvector Drizzle helpers
+- [x] Embedding SDK + pgvector Drizzle helpers — *2026-08-10; `@ai-sdk/google` (already installed) plus Drizzle's first-party `vector` column, `cosineDistance`, and an HNSW index*
 - [ ] Article chunking on publish:
   - [ ] Split TipTap JSON into paragraph-level chunks
-  - [ ] Each chunk embedded via OpenAI `text-embedding-3-small`
+  - [x] Each chunk embedded via Gemini `gemini-embedding-001` at 1536 dims — *provider substituted for OpenAI, see the S6 note*
   - [ ] Stored in `article_chunks` with `embedding vector(1536)` + HNSW index
   - [ ] BullMQ job: `embed-article` triggered on publish/update
 - [ ] Retrieval service:
@@ -454,23 +454,56 @@ Same pattern as Phases Q and I: the surfaces looked finished, and the gaps were 
   - [ ] Caches result in `portfolio_insights` table for 24h
   - [ ] Invalidation: cache deleted when writer publishes a new article
 - [ ] GET /writers/:username/portfolio-insights — returns cached or triggers generation
-- [ ] Frontend: Portfolio Insights panel on writer evaluation page (`/u/[username]?as=magazine`)
-  - [ ] Loading state during async generation
-  - [ ] Cached result rendered with last-updated timestamp
+- [x] Frontend: Portfolio Insights panel on writer evaluation page — **2026-08-11**, at `/discover/writers/[username]` (not `?as=magazine`; see the Phase 3 note on why that route was chosen)
+  - [x] Loading state during async generation
+  - [x] Cached result rendered with last-updated timestamp — *plus how many articles it read, so the basis of the assessment is visible*
+  - [x] Generation is an explicit action, not a page-load side effect — *the report costs a model call, so browsing writers must not spend a magazine's budget*
+  - [x] The score is labelled **voice consistency**, never "score" — *it measures how recognisable the writing is across pieces, not how good it is; a consistently plain writer scores high, and reading it as a quality mark would be exactly wrong*
 
 ### Search
-- [ ] Postgres full-text search — `tsvector` on `articles.title + content + excerpt`
-- [ ] GET /search?q= — hybrid: full-text + semantic search
-  - [ ] Lexical results via `ts_rank` on `tsvector`
-  - [ ] Semantic results via pgvector cosine similarity (`<=>`) on query embedding
-  - [ ] **Reciprocal Rank Fusion (RRF)** to merge both result sets: `score = Σ 1/(k + rank_i)` with k=60
-- [ ] Frontend: search bar in navbar → search results page
+- [x] Postgres full-text search — `tsvector` on `articles.title + content + excerpt` — *a GENERATED ALWAYS AS ... STORED column with weights A/B/C plus a GIN index, added 2026-08-10. A title match ranks ~4× a body mention of the same word.*
+- [x] GET /search?q= — hybrid: full-text + semantic search — **2026-08-11**
+  - [x] Lexical results via `ts_rank` on `tsvector` — *`websearch_to_tsquery`, not `to_tsquery`, which raises a syntax error on a stray operator and would turn a user's typo into a 500*
+  - [x] Semantic results via pgvector cosine similarity (`<=>`) on query embedding — *grouped to the best-scoring chunk per article, so a long article cannot occupy the result list purely for having more chunks*
+  - [x] **Reciprocal Rank Fusion (RRF)** to merge both result sets: `score = Σ 1/(k + rank_i)` with k=60 — *in `SearchService`, not SQL. RRF scores by POSITION in each ranking, which needs two independently ordered result sets; one query produces one ordering. `ts_rank` and cosine similarity are also unrelated scales, so ranks are the only common currency.*
+- [x] Frontend: search bar in navbar → search results page — *the navbar box was inert (no state, no form, no handler) and `/search` was a 10-line stub*
+- [x] **Writers included alongside articles** — *beyond `2-features.md` §2.7, which specifies articles only. Restricted to writers with at least one published public article, because this endpoint is public unlike the magazine-only `/discover`.*
+- [x] `?tag=` browse — *fixes four links that had always pointed at `/search?tag=<slug>` from the sidebar, the mobile drawer and trending topics, and landed on the stub*
+
+> **Fusion is measurably doing work**, which is the claim worth defending:
+>
+> ```
+> "tackle"                               2 lexical + 3 semantic → 3 fused
+> "how do I stop my ferments going bad"  0 lexical + 2 semantic → 2 fused
+> "reading the water before you cast"    1 lexical + 3 semantic → 3 fused
+> ```
+>
+> The middle line is the case that justifies the pipeline: **no article contains
+> the searcher's words**, and the correct results still come back. The first line
+> is the converse — an exact title match that pure semantic ranking would not
+> reliably put first.
+>
+> **`ts_headline` highlighting was deliberately skipped.** It only helps the
+> lexical half — a semantic match often shares no words with the query, so there
+> is nothing to mark — and it would mean rendering database-derived HTML, which
+> would be this codebase's first `dangerouslySetInnerHTML` and first XSS surface.
+>
+> **The semantic floor is 0.60, the same as chat's.** It was set to 0.55 first,
+> reasoning that search tolerates looser matches than prompt injection. That was
+> wrong: 0.55 sits inside the measured off-topic band (0.48–0.58), so searching a
+> surname scored 0.586 against an unrelated article and ranked it first. There is
+> no weaker-but-genuine zone below 0.60 for this model.
 
 ### Frontend
-- [ ] Search bar in navbar → search results page
+- [x] Search bar in navbar → search results page — *see the Search section above*
 - [ ] "Sources used" expandable section below AI responses (shows which past articles were referenced)
 - [ ] RAG demo notice in writer chat: "AI trained on your X published articles"
 - [ ] Portfolio Insights panel renders structured report
+
+### AI Memory (spec §9.3.1 — was in no phase checklist until 2026-08-11)
+- [x] `extract-writer-memory` BullMQ job — *chained after `embed-article` rather than enqueued alongside it, because it reads the chunks that step writes; in parallel it would race and lose on a writer's first publish*
+- [x] Structured tone / style / vocabulary / topics extracted via Zod-validated output into `user_ai_memory` — *a table that had existed since Phase 1 with nothing ever writing to it*
+- [x] Injected into writer chat as a compact block — *complementary to RAG, not redundant: the profile is a stable persona that holds when retrieval finds nothing, the passages are evidence relevant to the current question*
 
 ### Exit criteria
 - [ ] Publish 5+ articles with distinct topics/vocabulary
@@ -583,20 +616,36 @@ Same pattern as Phases Q and I: the surfaces looked finished, and the gaps were 
 ### Production Deploy
 > **DEFERRED — this whole section is the last thing that happens.** Decision of
 > 2026-08-10: development continues **entirely locally** until the feature work is
-> finished. No domain has been bought and no VPS exists, so every item below is
-> blocked on two purchases, not on engineering. Nothing in Phases 4–5 depends on
-> any of it.
+> finished. Nothing in Phases 4–5 depends on any of it.
+>
+> *Updated later the same day:* the original reason for deferring was that a
+> domain and a VPS both cost money the project could not spend. The GitHub
+> Student Developer Pack supplies both at no cost, so this is now a **scheduling**
+> decision rather than a hard block — features first, deploy last, but the deploy
+> is genuinely reachable. That is a materially better position for the defense: a
+> live production URL is worth real marks on a DevOps-heavy project.
 >
 > The configuration is already written and tested (see **Phase I**) — what remains
 > is provisioning, then a single pass through the checklist below.
 
-**Blocked prerequisites — nothing else here can start until these two exist:**
+**Prerequisites — both are covered by the GitHub Student Developer Pack**
+*(confirmed available 2026-08-10; no purchase and no international card needed,
+which was the original blocker)*
 
-- [ ] **Buy a domain.** The specs, `.env.example`, the README and both nginx
-      configs all assume `inkwell.ai`; that name is a placeholder until it is
-      actually registered. Whatever is bought must be substituted in all four
-      places at once.
-- [ ] **Provision the VPS** (Hetzner CX22 or Oracle Cloud free tier)
+- [ ] **Claim a domain.** Namecheap's pack offer includes a free `.me` domain for
+      a year. The specs, `.env.example`, the README and both nginx configs all
+      assume `inkwell.ai`; that name is a **placeholder** until something is
+      actually registered, and whatever is claimed must be substituted in all
+      four places at once.
+- [ ] **Provision the VPS.** DigitalOcean ($200 pack credit) or Azure for
+      Students ($100, academic-email verification, no card). Either comfortably
+      covers the 7-container stack; the spec's Hetzner CX22 sizing is the
+      reference, not a requirement.
+
+> **Standing preference (2026-08-10):** when a Student Pack offer is the best
+> available option for a piece of infrastructure, use it. It is why deployment is
+> no longer blocked on spending money — the constraint that produced the deferral
+> below has been removed, and what remains is sequencing, not capability.
 
 **Then, in order:**
 
@@ -728,7 +777,7 @@ Same pattern as Phases Q and I: the surfaces looked finished, and the gaps were 
 
 ## Notes
 
-- **AI providers used:** Groq (LLM + Whisper, free tier), Gemini 2.0 Flash (free tier), OpenAI (embeddings, $0.02/1M tokens)
+- **AI providers used:** Groq (LLM + Whisper, free tier), Gemini 2.0 Flash (LLM fallback) and `gemini-embedding-001` (embeddings) — all free tier, no payment method required
 - **Shared types strategy:** Backend OpenAPI → auto-generated TS client in frontend CI + `@inkwell/shared` package for non-API types
 - **Worker container** shares the backend image but runs `node dist/worker` — handles BullMQ jobs for embedding, analytics aggregation, email
 - **RAG scope:** Only the writer's own articles (not platform-wide) — makes the demo story "it writes like *me*"

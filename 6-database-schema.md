@@ -351,7 +351,7 @@ id            UUID PK
 article_id    UUID NOT NULL FK → articles.id ON DELETE CASCADE
 chunk_index   INTEGER NOT NULL                    -- order within article
 content       TEXT NOT NULL                        -- raw text of the chunk (paragraph)
-embedding     VECTOR(1536) NOT NULL                -- OpenAI text-embedding-3-small
+embedding     VECTOR(1536) NOT NULL                -- Gemini gemini-embedding-001 @ 1536
 created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 UNIQUE (article_id, chunk_index)
 ```
@@ -363,7 +363,12 @@ Indexes:
 Lifecycle:
 - Chunks are created only for **published** articles (not drafts)
 - On article **update/re-publish**: all existing chunks for the article are **deleted** then re-created (the unique constraint on `(article_id, chunk_index)` requires this)
-- On article **soft delete**: chunks cascade-delete via FK
+- On article **soft delete**: chunks are removed by an explicit `remove-article-chunks`
+  job. **The FK cascade does NOT apply here** — a soft delete only sets `deleted_at`,
+  so the row survives and `ON DELETE CASCADE` never fires. This document previously
+  claimed the cascade covered it; it does not, and relying on that would leave a
+  deleted article's text in the vector index, still retrievable into prompts.
+  *(Corrected 2026-08-10.)*
 - On chunk refresh: the writer's `portfolio_insights` cache is also invalidated (deleted)
 
 ---
