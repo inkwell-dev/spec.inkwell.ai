@@ -500,6 +500,11 @@ Same pattern as Phases Q and I: the surfaces looked finished, and the gaps were 
 - [ ] RAG demo notice in writer chat: "AI trained on your X published articles"
 - [ ] Portfolio Insights panel renders structured report
 
+### AI Memory (spec §9.3.1 — was in no phase checklist until 2026-08-11)
+- [x] `extract-writer-memory` BullMQ job — *chained after `embed-article` rather than enqueued alongside it, because it reads the chunks that step writes; in parallel it would race and lose on a writer's first publish*
+- [x] Structured tone / style / vocabulary / topics extracted via Zod-validated output into `user_ai_memory` — *a table that had existed since Phase 1 with nothing ever writing to it*
+- [x] Injected into writer chat as a compact block — *complementary to RAG, not redundant: the profile is a stable persona that holds when retrieval finds nothing, the passages are evidence relevant to the current question*
+
 ### Exit criteria
 - [ ] Publish 5+ articles with distinct topics/vocabulary
 - [ ] **Writer demo**: AI chat generates a new article that demonstrably uses retrieved vocabulary and style
