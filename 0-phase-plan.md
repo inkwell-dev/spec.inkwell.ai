@@ -430,30 +430,30 @@ Same pattern as Phases Q and I: the surfaces looked finished, and the gaps were 
 
 ### RAG Pipeline (Backend)
 - [x] Embedding SDK + pgvector Drizzle helpers — *2026-08-10; `@ai-sdk/google` (already installed) plus Drizzle's first-party `vector` column, `cosineDistance`, and an HNSW index*
-- [ ] Article chunking on publish:
-  - [ ] Split TipTap JSON into paragraph-level chunks
+- [x] Article chunking on publish:
+  - [x] Split TipTap JSON into paragraph-level chunks — *`chunking.ts`, 120–1200 chars with heading prefixing and sentence-boundary splitting; 22 tests. Paragraph-level alone was too fine: single-sentence paragraphs embed to noise.*
   - [x] Each chunk embedded via Gemini `gemini-embedding-001` at 1536 dims — *provider substituted for OpenAI, see the S6 note*
-  - [ ] Stored in `article_chunks` with `embedding vector(1536)` + HNSW index
-  - [ ] BullMQ job: `embed-article` triggered on publish/update
-- [ ] Retrieval service:
-  - [ ] `findSimilarChunks(authorId, queryEmbedding, topK)` — cosine similarity with pgvector `<=>` operator
-  - [ ] Filter by author for writer-facing RAG (writer's own corpus only)
-  - [ ] No author filter for cross-corpus search (Phase 4.4 search)
-- [ ] Prompt template update — inject top-K retrieved chunks as context
+  - [x] Stored in `article_chunks` with `embedding vector(1536)` + HNSW index
+  - [x] BullMQ job: `embed-article` triggered on publish/update — *plus `remove-article-chunks` on unpublish/delete, which the checklist never named but the corpus is wrong without*
+- [x] Retrieval service:
+  - [x] `findSimilarChunks(authorId, queryEmbedding, topK)` — cosine similarity with pgvector `<=>` operator
+  - [x] Filter by author for writer-facing RAG (writer's own corpus only)
+  - [x] No author filter for cross-corpus search (Phase 4.4 search)
+- [x] Prompt template update — inject top-K retrieved chunks as context — *labelled distinctly from the current draft, because conflating them made the model "continue" text the writer never wrote here*
 
 ### Writer-Facing RAG (Use Case #1)
-- [ ] POST /ai/chat — enhanced with RAG retrieval from the user's own articles
-- [ ] GET /ai/retrieval-debug — returns chunks used in last request (for demo/transparency)
+- [x] POST /ai/chat — enhanced with RAG retrieval from the user's own articles — *article lookup is scoped by `authorId`; it was not, which let any writer pass another's `articleId` and read it*
+- [x] GET /ai/retrieval-debug — returns chunks used in last request (for demo/transparency) — *scoped to the caller, since the response contains article text*
 
 ### Magazine-Facing RAG — Portfolio Insights (Use Case #2)
-- [ ] POST /ai/portfolio-insights/:writerUsername
-  - [ ] Auth guard: only magazine accounts can call
-  - [ ] Retrieves representative chunks from writer's full corpus
-  - [ ] Builds structured prompt (voice / topics / consistency / fit / strengths-gaps)
-  - [ ] LLM call with Zod-validated structured output
-  - [ ] Caches result in `portfolio_insights` table for 24h
-  - [ ] Invalidation: cache deleted when writer publishes a new article
-- [ ] GET /writers/:username/portfolio-insights — returns cached or triggers generation
+- [x] POST /ai/portfolio-insights/:username — *`:username`, not `:writerUsername`*
+  - [x] Auth guard: only magazine accounts can call — *one `@UseGuards` in execution order; two decorators do not compose, and the second silently replaced the first*
+  - [x] Retrieves representative chunks from writer's full corpus — *window function, capped per article so a prolific piece cannot dominate the sample*
+  - [x] Builds structured prompt (voice / topics / consistency / fit / strengths-gaps)
+  - [x] LLM call with Zod-validated structured output — *Groq `openai/gpt-oss-120b`; `llama-3.3-70b-versatile` rejects the `json_schema` response format*
+  - [x] Caches result in `portfolio_insights` table for 24h
+  - [x] Invalidation: cache deleted when writer publishes a new article — *in `embed-article.service.ts`, so the cache is dropped by the same job that re-indexes the corpus the report was based on*
+- [x] GET /writers/:username/portfolio-insights — returns cached, never generates — *on `reports.controller.ts`. It deliberately does NOT trigger generation as the checklist proposed: a magazine opening an evaluation page would then silently spend a model call per writer browsed.*
 - [x] Frontend: Portfolio Insights panel on writer evaluation page — **2026-08-11**, at `/discover/writers/[username]` (not `?as=magazine`; see the Phase 3 note on why that route was chosen)
   - [x] Loading state during async generation
   - [x] Cached result rendered with last-updated timestamp — *plus how many articles it read, so the basis of the assessment is visible*
@@ -496,9 +496,23 @@ Same pattern as Phases Q and I: the surfaces looked finished, and the gaps were 
 
 ### Frontend
 - [x] Search bar in navbar → search results page — *see the Search section above*
-- [ ] "Sources used" expandable section below AI responses (shows which past articles were referenced)
-- [ ] RAG demo notice in writer chat: "AI trained on your X published articles"
-- [ ] Portfolio Insights panel renders structured report
+- [x] "Sources used" expandable section below AI responses — **2026-08-11**; grouped by article, not by chunk, because two passages from one piece are one source used twice. Shows each article's closest similarity and the passages themselves, so the RAG claim is checkable rather than asserted.
+- [x] RAG demo notice in writer chat — **2026-08-11**, worded *"Drawing on N published articles of yours"*, **not** the specified *"AI trained on your X published articles"*. See the deviation note below.
+- [x] Portfolio Insights panel renders structured report — *see the Portfolio Insights section above*
+
+> **The notice does not say "trained", and the difference is not cosmetic.**
+> Nothing here is trained: the articles are embedded and retrieved at query
+> time, and the model's weights never change. Shipping "trained" would claim
+> fine-tuning this project does not do — in front of an examiner who may well
+> ask how the fine-tuning was done. Retrieval is also the better answer, because
+> an article published a minute ago is usable immediately, which no training run
+> would give you.
+>
+> **Sources are held per assistant message, not as one "latest" value.** The
+> server keeps only the caller's most recent retrieval, so a single shared value
+> would relabel every earlier reply in the conversation with the newest
+> retrieval — evidence attached to the wrong answer, which is worse than no
+> evidence at all.
 
 ### AI Memory (spec §9.3.1 — was in no phase checklist until 2026-08-11)
 - [x] `extract-writer-memory` BullMQ job — *chained after `embed-article` rather than enqueued alongside it, because it reads the chunks that step writes; in parallel it would race and lose on a writer's first publish*
