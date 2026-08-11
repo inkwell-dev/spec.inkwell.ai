@@ -459,15 +459,41 @@ Same pattern as Phases Q and I: the surfaces looked finished, and the gaps were 
   - [ ] Cached result rendered with last-updated timestamp
 
 ### Search
-- [ ] Postgres full-text search — `tsvector` on `articles.title + content + excerpt`
-- [ ] GET /search?q= — hybrid: full-text + semantic search
-  - [ ] Lexical results via `ts_rank` on `tsvector`
-  - [ ] Semantic results via pgvector cosine similarity (`<=>`) on query embedding
-  - [ ] **Reciprocal Rank Fusion (RRF)** to merge both result sets: `score = Σ 1/(k + rank_i)` with k=60
-- [ ] Frontend: search bar in navbar → search results page
+- [x] Postgres full-text search — `tsvector` on `articles.title + content + excerpt` — *a GENERATED ALWAYS AS ... STORED column with weights A/B/C plus a GIN index, added 2026-08-10. A title match ranks ~4× a body mention of the same word.*
+- [x] GET /search?q= — hybrid: full-text + semantic search — **2026-08-11**
+  - [x] Lexical results via `ts_rank` on `tsvector` — *`websearch_to_tsquery`, not `to_tsquery`, which raises a syntax error on a stray operator and would turn a user's typo into a 500*
+  - [x] Semantic results via pgvector cosine similarity (`<=>`) on query embedding — *grouped to the best-scoring chunk per article, so a long article cannot occupy the result list purely for having more chunks*
+  - [x] **Reciprocal Rank Fusion (RRF)** to merge both result sets: `score = Σ 1/(k + rank_i)` with k=60 — *in `SearchService`, not SQL. RRF scores by POSITION in each ranking, which needs two independently ordered result sets; one query produces one ordering. `ts_rank` and cosine similarity are also unrelated scales, so ranks are the only common currency.*
+- [x] Frontend: search bar in navbar → search results page — *the navbar box was inert (no state, no form, no handler) and `/search` was a 10-line stub*
+- [x] **Writers included alongside articles** — *beyond `2-features.md` §2.7, which specifies articles only. Restricted to writers with at least one published public article, because this endpoint is public unlike the magazine-only `/discover`.*
+- [x] `?tag=` browse — *fixes four links that had always pointed at `/search?tag=<slug>` from the sidebar, the mobile drawer and trending topics, and landed on the stub*
+
+> **Fusion is measurably doing work**, which is the claim worth defending:
+>
+> ```
+> "tackle"                               2 lexical + 3 semantic → 3 fused
+> "how do I stop my ferments going bad"  0 lexical + 2 semantic → 2 fused
+> "reading the water before you cast"    1 lexical + 3 semantic → 3 fused
+> ```
+>
+> The middle line is the case that justifies the pipeline: **no article contains
+> the searcher's words**, and the correct results still come back. The first line
+> is the converse — an exact title match that pure semantic ranking would not
+> reliably put first.
+>
+> **`ts_headline` highlighting was deliberately skipped.** It only helps the
+> lexical half — a semantic match often shares no words with the query, so there
+> is nothing to mark — and it would mean rendering database-derived HTML, which
+> would be this codebase's first `dangerouslySetInnerHTML` and first XSS surface.
+>
+> **The semantic floor is 0.60, the same as chat's.** It was set to 0.55 first,
+> reasoning that search tolerates looser matches than prompt injection. That was
+> wrong: 0.55 sits inside the measured off-topic band (0.48–0.58), so searching a
+> surname scored 0.586 against an unrelated article and ranked it first. There is
+> no weaker-but-genuine zone below 0.60 for this model.
 
 ### Frontend
-- [ ] Search bar in navbar → search results page
+- [x] Search bar in navbar → search results page — *see the Search section above*
 - [ ] "Sources used" expandable section below AI responses (shows which past articles were referenced)
 - [ ] RAG demo notice in writer chat: "AI trained on your X published articles"
 - [ ] Portfolio Insights panel renders structured report
