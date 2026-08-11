@@ -454,9 +454,11 @@ Same pattern as Phases Q and I: the surfaces looked finished, and the gaps were 
   - [ ] Caches result in `portfolio_insights` table for 24h
   - [ ] Invalidation: cache deleted when writer publishes a new article
 - [ ] GET /writers/:username/portfolio-insights — returns cached or triggers generation
-- [ ] Frontend: Portfolio Insights panel on writer evaluation page (`/u/[username]?as=magazine`)
-  - [ ] Loading state during async generation
-  - [ ] Cached result rendered with last-updated timestamp
+- [x] Frontend: Portfolio Insights panel on writer evaluation page — **2026-08-11**, at `/discover/writers/[username]` (not `?as=magazine`; see the Phase 3 note on why that route was chosen)
+  - [x] Loading state during async generation
+  - [x] Cached result rendered with last-updated timestamp — *plus how many articles it read, so the basis of the assessment is visible*
+  - [x] Generation is an explicit action, not a page-load side effect — *the report costs a model call, so browsing writers must not spend a magazine's budget*
+  - [x] The score is labelled **voice consistency**, never "score" — *it measures how recognisable the writing is across pieces, not how good it is; a consistently plain writer scores high, and reading it as a quality mark would be exactly wrong*
 
 ### Search
 - [x] Postgres full-text search — `tsvector` on `articles.title + content + excerpt` — *a GENERATED ALWAYS AS ... STORED column with weights A/B/C plus a GIN index, added 2026-08-10. A title match ranks ~4× a body mention of the same word.*
