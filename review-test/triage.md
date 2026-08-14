@@ -8,7 +8,8 @@ them in.
 single one-line configuration change, and two more are blocked behind a third — so the
 list is considerably shorter to fix than it is to read.
 
-**Status: steps 1–6 are done** — see "What was fixed" at the end. Steps 7–10 remain.
+**Status: complete.** All ten steps are done and all 13 active findings are fixed. See
+"What was fixed" at the end.
 
 | | |
 |---|---|
@@ -16,7 +17,7 @@ list is considerably shorter to fix than it is to read.
 | Distinct causes | 8 |
 | Findings fixed by the single highest-value change | 3 |
 | Findings whose severity triage changed | 3 |
-| **Fixed so far** | **9 of 14** (steps 1–6) |
+| **Fixed** | **13 of 13 active** (steps 1–10) |
 
 ---
 
@@ -272,8 +273,43 @@ Neither weakens an assertion:
   state. They are toggles against a persistent database, so on a second run the spec was
   undoing the first run's work rather than repeating it.
 
-### Still open
+### Steps 7–10
 
-Steps 7–10, covering `BUG-011` (no way to publish a premium article — still blocks sweep
-flow 2), `BUG-005` (`/settings` is a stub), `BUG-016`, `BUG-015`, `BUG-009` and
-`BUG-010`.
+| step | finding(s) | what changed |
+|---|---|---|
+| 7 | `BUG-011` | `feat(editor): let a writer publish an article as premium` — a "Reader access" Free/Premium pair, shown only for public placement. The API had always accepted `visibility`; there was simply no control. **Unblocks sweep flow 2**, now driven and passing. |
+| 8 | `BUG-005` | `feat(settings): build the settings page` — profile (name, bio, avatar), appearance, and a read-only account panel. |
+| 9 | `BUG-015`, `BUG-016` | `fix(moderation): tell a banned user why, and stop flagging stubs` (backend). |
+| 10 | `BUG-009`, `BUG-010` | Dangling thumbnail cleared in the dev database; `BUG-010` **withdrawn** — it was the sweep's own screenshots. |
+
+### Two more corrections, both the sweep's fault rather than the app's
+
+- **`BUG-010` withdrawn.** Playwright's screenshot defaults to `caret: 'hide'`, which
+  mutates `caret-color` mid-hydration and makes React report a mismatch. Measured: 1
+  error with a screenshot in the sequence, 0 without. The helper now passes
+  `caret: 'initial'` and the console is clean across the whole suite. That is the third
+  finding withdrawn after diagnosis, all three for the same underlying reason — the
+  sweep measured a symptom accurately and inferred the wrong cause.
+- **`BUG-009` was data, not code.** The seed sets no thumbnails at all; that article
+  carried a manually-uploaded cover whose object is no longer in storage. Cleared the
+  column. Worth noting the app renders a dangling `thumbnail_url` as a broken image
+  rather than falling back to the no-thumbnail stand-in it already has — not filed, but
+  a real robustness gap if uploads are ever pruned.
+
+### One judgement call worth reviewing — `BUG-015`
+
+The generic "Invalid credentials" for a banned account was **deliberate and tested**:
+`test/auth/banned-login.spec.ts` asserted it explicitly, so that a banned account could
+not be told apart from an address that was never registered.
+
+Rather than trade that away, the suspension is now disclosed **only after the password
+has been verified**. Anyone without the password still gets the identical generic
+response for a banned account, an active one, and one that does not exist — verified
+live against all three. The specific message reaches only a caller who has just proved
+they hold the credentials, and who therefore already knew the account existed.
+
+The test was split in two to pin down both halves, and now states the enumeration
+guarantee explicitly rather than as a side effect. If the original intent was stricter
+than that — no signal even to someone holding the password — this should be reverted;
+it is the one change here that alters a security-relevant decision someone made on
+purpose.

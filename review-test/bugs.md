@@ -14,9 +14,11 @@ to something, even if that something says "this was wrong".
 | Critical | 0 |
 | High | 5 |
 | Medium | 6 |
-| Low | 3 |
-| **active total** | **14** |
-| *(withdrawn)* | *2* |
+| Low | 2 |
+| **active total** | **13** |
+| *(withdrawn)* | *3* |
+
+**All 13 active findings are fixed.** See `triage.md` for what each fix was.
 
 ---
 
@@ -317,24 +319,6 @@ to something, even if that something says "this was wrong".
 - **Console/network:** none captured — the refusal itself works correctly.
 - **Note:** the ban is enforced properly; this is only what the user is told about it.
 
-### BUG-010 — a hydration mismatch is logged on every page carrying the navbar
-
-- **Route:** every route with the site header — `/`, `/articles/[slug]`, `/u/[username]`
-  and the rest
-- **Persona:** all, including guest
-- **Expected:** a clean console.
-- **Actual:** every page logs a React hydration-mismatch error naming the navbar's
-  search input, on the `caret-color: transparent` style attribute. React states the
-  mismatch "won't be patched up".
-- **Screenshot:** `screenshots/home--guest.png`
-- **Console/network:** `[console] A tree hydrated but some attributes of the server
-  rendered HTML didn't match the client properties. … <input type="search"
-  aria-label="Search articles and writers" -style={{caret-color:"transparent"}}>`
-- **Note:** checked for a visible consequence and found none — the computed
-  `caret-color` on the focused search input is `rgb(0, 0, 0)`, and typing into the box
-  shows a normal cursor. Filed Low on the console noise alone. This is a **different**
-  error from the uncaught hydration *failure* on `/subscription` recorded in `BUG-004`.
-
 ---
 
 ## Withdrawn
@@ -353,6 +337,21 @@ publish → read flow completes successfully.
 
 What survives is the blank page shown in place of a not-found state, re-filed accurately
 as **`BUG-013`** at Medium.
+
+### BUG-010 — ~~a hydration mismatch is logged on every page carrying the navbar~~ — **WITHDRAWN**
+
+Filed Low against the navbar's search input, on a React hydration mismatch naming
+`caret-color: transparent`. **The sweep's own screenshots were causing it.**
+
+Playwright's `page.screenshot()` defaults to `caret: 'hide'`, which works by mutating
+`caret-color` on the page. Doing that while React is hydrating makes React see an
+attribute that was not in the server HTML, and report a mismatch. Measured on the exact
+sequence: **1 such error with a screenshot in the middle of it, 0 without.** Supporting
+evidence: `caret-color` appears nowhere in `src/`, nowhere in the server-rendered HTML,
+and the computed caret at runtime is a normal `rgb(0, 0, 0)`.
+
+The screenshot helper now passes `caret: 'initial'`, and the error is gone from the whole
+suite. Nothing in the application was wrong.
 
 ### BUG-008 — ~~`/discover/writers/[username]` is a blank page for personal accounts~~ — **WITHDRAWN**
 
