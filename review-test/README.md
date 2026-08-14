@@ -24,6 +24,7 @@ done afterwards, against a finished list.
 | `progress.md` | The coverage matrix and session log. **The resume point** — read it first. |
 | `bugs.md` | Every finding, grouped by severity. IDs are stable and never reused. |
 | `known-gaps.md` | Documented deliberate non-implementations. **Not bugs.** |
+| `triage.md` | Causes, clusters and a suggested fix order. Written after the sweep. |
 | `screenshots/` | One per screen per persona, `<route>--<persona>.png`. |
 
 ## Severity

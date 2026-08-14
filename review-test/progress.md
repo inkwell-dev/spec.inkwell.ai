@@ -16,7 +16,7 @@ leave an accurate picture of what was covered.
 | Cells covered | 62 / 66 · **flows 5 of 6** |
 | Playwright installed | **yes** — see "The suite" below |
 | Findings so far | 16 filed, 2 withdrawn → **14 active** (0 Critical, 5 High, 6 Medium, 3 Low) |
-| **Resume at** | **the 4 open cells** — all blocked on `BUG-004`; and flow 2, blocked on `BUG-011` |
+| **Resume at** | **fixing** — the sweep is done and triaged; see `triage.md` for the order |
 
 ---
 
@@ -205,6 +205,10 @@ was changed in the dev database.
   the deleted-article editor (`BUG-013`), 3 × not-found (`BUG-014`) and the AI quota
   notice (`BUG-001`). The 2 skips are the AI tests on an exhausted allowance. The
   `/discover/writers` cell that flaked in session 1 is now stable.
+- **Triaged (2026-08-14).** The 14 findings resolve to 8 causes; see `triage.md`. Three
+  entries were corrected by diagnosis — `BUG-014`, `BUG-007` and `BUG-013` were all the
+  same 7.5-second retry-on-404 delay being photographed as a missing state, which is a
+  sweep error rather than an app one. The single highest-value change closes 3 findings.
 - **Resume at:** nothing is left that is not blocked. `BUG-004` gates the last 4 cells
   (cancel a subscription to make the magazine lapse) and `BUG-011` gates flow 2. If
   either is fixed, those are the next things to drive. Otherwise the sweep is complete

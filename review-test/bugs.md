@@ -161,16 +161,22 @@ to something, even if that something says "this was wrong".
   reviewing the queue has no way to tell this apart from a real report, and because a
   demo run that publishes an article may put a spurious "hate" flag on screen.
 
-### BUG-014 — no not-found state anywhere: every dead content URL is a blank page
+### BUG-014 — every dead content URL is a blank page for 7.5 seconds
+
+> **Corrected in triage.** Filed as "no not-found state anywhere". That was wrong: the
+> not-found state exists and is correctly worded — it just takes **~7.5 s** to appear,
+> and the sweep only waited 3.5 s. Cause and fix in `triage.md` (Cause 1). The finding
+> stands, re-scoped from "missing" to "unusably delayed"; severity unchanged.
 
 - **Route:** `/articles/[slug]`, `/u/[username]`, `/m/[slug]`
 - **Persona:** all, including guest
 - **Expected:** a not-found state — "this article doesn't exist", a link back to the
   feed, something.
-- **Actual:** the content region is **entirely empty (0 characters)** on every one of
-  them. The sidebar, topic list and footer render as normal, wrapped around nothing. A
+- **Actual:** the content region is **entirely empty (0 characters)** for the first
+  ~7.5 seconds on every one of them — the sidebar, topic list and footer render as
+  normal, wrapped around nothing, because the loading skeletons contain no text. A
   visitor cannot tell whether the link is dead, the page is still loading, or the app is
-  broken.
+  broken. Measured: `/articles/<dead-slug>` paints "Article not found" after **7547 ms**.
 - **Reproduced with:**
   - `/articles/this-slug-does-not-exist-at-all-12345` → `404 GET /api/articles/…`
   - `/u/no-such-user-98765` → `404 GET /api/u/…`
@@ -188,7 +194,13 @@ to something, even if that something says "this was wrong".
   symptom reached by two other doors, kept separate because each has its own
   reproduction.
 
-### BUG-013 — the editor renders a blank page for a deleted article
+### BUG-013 — the editor opens an empty, editable document over a deleted article
+
+> **Re-scoped in triage.** The blank period is the `BUG-014` delay (paints after
+> **7966 ms**). What survives is worse than "blank" and is why this stays Medium: after
+> the delay the editor renders working chrome — "Edit article / AI Assistant / Publish" —
+> around an **empty but editable** body, with no not-found state, over an article that
+> still exists in the database. See `triage.md`, Cause 1.
 
 - **Route:** `/editor/[id]` where the article has been soft-deleted
 - **Persona:** writer (the article's own author)
@@ -203,7 +215,12 @@ to something, even if that something says "this was wrong".
   state is the finding. This is the salvaged, accurate part of the withdrawn `BUG-003`.
   The editor opens live articles and newly created drafts without any problem.
 
-### BUG-007 — a marketplace article renders a completely blank page to anyone without access
+### BUG-007 — a marketplace article is blank for 7.7 s, then says it "doesn't exist"
+
+> **Corrected in triage; recommend dropping to Low.** The blankness is the `BUG-014`
+> delay, not a missing state — the page paints after **7750 ms**. What remains specific
+> to this route is only the wording: a listing the viewer is *not entitled to* is
+> described as one that "doesn't exist". See `triage.md`, Cause 1.
 
 - **Route:** `/articles/[slug]` where the article's placement is `marketplace`
 - **Persona:** guest, and the article's **own author** (writer)
