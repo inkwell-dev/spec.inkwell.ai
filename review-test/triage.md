@@ -230,6 +230,15 @@ step. The suite went from **100 passed / 10 failed** to **112 passed / 0 failed*
 | 4 | `BUG-001`, `BUG-002` | `fix(subscription): enable the two CTAs that lead to /subscription` |
 | 5 | `BUG-006` | `fix(notifications): render the marketplace and earnings types` |
 | 6 | rest of `BUG-013` | `fix(editor): show a not-found state instead of an empty editable document` |
+| +1 | the ambiguity behind `BUG-014` | `fix(a11y): give loading states words, not just shimmer` |
+
+The last one was the follow-on noted under Cause 1. Skeletons are empty `div`s, so a
+loading page and an empty one were the same thing to anything reading the DOM — which is
+precisely how three findings came to be filed as blank pages. `SkeletonBlock` is now a
+`role="status"` region with a visually-hidden "Loading…", `Skeleton` itself is
+`aria-hidden` decoration, and `probe()` reports **STILL LOADING** separately from
+**BLANK**. `13-not-found` was tightened to match: asserting a non-empty region would
+now pass on a loading state, so it asserts the not-found copy instead.
 
 ### One cause the triage missed
 
