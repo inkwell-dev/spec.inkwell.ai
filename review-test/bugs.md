@@ -13,9 +13,9 @@ to something, even if that something says "this was wrong".
 |---|---|
 | Critical | 0 |
 | High | 5 |
-| Medium | 4 |
-| Low | 2 |
-| **active total** | **11** |
+| Medium | 6 |
+| Low | 3 |
+| **active total** | **14** |
 | *(withdrawn)* | *2* |
 
 ---
@@ -106,23 +106,87 @@ to something, even if that something says "this was wrong".
   `NOT WIRED`, `TODO(` or `disabled` marker of any kind, so it is a finding rather than
   a documented non-implementation.
 
-### BUG-006 — every notification renders as the literal text "New notification"
+### BUG-006 — the marketplace and earnings notifications render as "New notification"
 
 - **Route:** `/notifications`
-- **Persona:** writer (`imane@example.com`, who has unread notifications — the navbar
-  bell shows a count of 2)
-- **Expected:** each row describes what happened and who did it, e.g. "X liked your
-  article …", and links to the thing it refers to.
-- **Actual:** all four rows render the identical placeholder string **"New
-  notification"**, with no actor, no article title, no timestamp and no visible link
-  target. The list is unusable — a reader cannot tell what any notification is about.
+- **Persona:** writer (`imane@example.com`) — any writer who has sold or been previewed
+- **Expected:** each row describes what happened, e.g. "Your article was purchased" or
+  "84 credits were credited to your balance".
+- **Actual:** every notification of these three types renders the identical placeholder
+  string **"New notification"** — no actor, no article title, no amount, no timestamp:
+  - `earnings_credited`
+  - `article_purchased`
+  - `article_previewed`
+
+  A writer is therefore never told that they were paid, or how much. Confirmed by count:
+  the dev database holds exactly four notifications across these three types
+  (`earnings_credited` ×2, `article_purchased` ×1, `article_previewed` ×1), and exactly
+  four placeholder rows render.
+- **Scope — the social notifications are fine.** Driven end to end in flow 4: a like, a
+  comment, a repost and a follow against an `E2E:` article all produce correctly worded
+  rows with actor, article title and relative timestamp, e.g. *"hakim-toure reposted
+  your article "E2E: Publish and read 24136735" — 38s ago"*. Only the money-related
+  types fall through to the placeholder.
 - **Screenshot:** `screenshots/notifications--writer-depth.png`,
-  `screenshots/notifications--writer.png`
+  `screenshots/notifications--writer.png` (placeholders);
+  `screenshots/notifications--e2e-author.png` (the same screen rendering correctly)
 - **Console/network:** none captured.
 - **Note:** checked against the known-gap rule — no `NOT WIRED` or `TODO(` marker exists
-  anywhere in the notifications feature, so this is a finding.
+  anywhere in the notifications feature, so this is a finding. Originally filed during
+  session 1 as "every notification"; narrowed to the four marketplace/earnings types in
+  session 2 after driving the social flow.
 
 ## Medium
+
+### BUG-016 — publish-time auto-moderation flagged innocuous text as "hate"
+
+- **Route:** the publish path; the result is visible in the `/admin` queue
+- **Persona:** any writer publishing; seen by admin
+- **Expected:** anodyne text is not flagged.
+- **Actual:** an article whose entire body was *"Body for the remove moderation case."*
+  was automatically reported at publish, and sits in the admin **Pending** queue with
+  the reason:
+
+  > Automatically flagged at publish by groq: hate. Published normally — this is a
+  > review request, not a block.
+
+  There is nothing resembling hate speech in the article.
+- **Frequency:** 1 of the 6 identical, equally innocuous `E2E:` articles this sweep
+  published was flagged; the other 5 were not. So it is intermittent rather than
+  deterministic on this input.
+- **Screenshot:** `screenshots/admin-queue-pending--admin.png`
+- **Console/network:** none captured — publishing succeeded normally.
+- **Note:** publishing is **not** blocked, so the consequence is a moderation queue
+  filling with false positives rather than lost work. Recorded because an admin
+  reviewing the queue has no way to tell this apart from a real report, and because a
+  demo run that publishes an article may put a spurious "hate" flag on screen.
+
+### BUG-014 — no not-found state anywhere: every dead content URL is a blank page
+
+- **Route:** `/articles/[slug]`, `/u/[username]`, `/m/[slug]`
+- **Persona:** all, including guest
+- **Expected:** a not-found state — "this article doesn't exist", a link back to the
+  feed, something.
+- **Actual:** the content region is **entirely empty (0 characters)** on every one of
+  them. The sidebar, topic list and footer render as normal, wrapped around nothing. A
+  visitor cannot tell whether the link is dead, the page is still loading, or the app is
+  broken.
+- **Reproduced with:**
+  - `/articles/this-slug-does-not-exist-at-all-12345` → `404 GET /api/articles/…`
+  - `/u/no-such-user-98765` → `404 GET /api/u/…`
+  - `/m/no-such-magazine-98765` → `404 GET /api/m/…`
+  - and an article an admin has just **removed** through the moderation queue, which
+    leaves every existing link to it blank rather than explaining it is gone.
+- **Screenshot:** `screenshots/notfound-articles-this-slug-does-not-exist-a--guest.png`,
+  `screenshots/notfound-u-no-such-user-98765--guest.png`,
+  `screenshots/notfound-m-no-such-magazine-98765--guest.png`,
+  `screenshots/removed-article-page--admin.png`
+- **Console/network:** a clean `404` from the API in each case — nothing crashes, and
+  the API behaves correctly. Only the UI has nothing to show.
+- **Note:** this is the general case. `BUG-007` (a marketplace listing the viewer may
+  not read) and `BUG-013` (a deleted article in the editor) are the same blank-page
+  symptom reached by two other doors, kept separate because each has its own
+  reproduction.
 
 ### BUG-013 — the editor renders a blank page for a deleted article
 
@@ -168,9 +232,20 @@ to something, even if that something says "this was wrong".
   and can change a personal account's plan.
 - **Actual:** rendered `disabled`. Pressing it does nothing, and the notice offers no
   other way forward.
-- **Screenshot:** *not yet captured — found by code inspection while preparing this
-  sweep; confirm in the browser and attach.*
+- **Confirmed in the browser** (session 2), on the free-plan `E2E:` account created by
+  flow 1 once its allowance reached zero:
+  - the quota indicator reads **"No tokens remaining"**
+  - the prompt box is locked out, placeholder **"No AI tokens remaining"**
+  - the notice's only control reads **"Upgrade to Premium"** and reports
+    `enabled = false`
+
+  So a free writer who runs out of tokens is shown the way forward and cannot take it.
+- **Screenshot:** `screenshots/ai-quota-notice--free-writer.png`
 - **Console/network:** none captured.
+- **Also worth noting:** the AI panel is article-scoped and does not exist at all on an
+  unsaved `/editor/new` — the control only appears once an article has been saved. That
+  looks deliberate rather than broken, and is recorded here only so the next session
+  does not mistake it for a missing button.
 - **Note:** filed as a bug rather than a known gap because its marker is **stale**. The
   comment reads `TODO(Phase 5): enable once the subscription upgrade flow exists` — and
   Phase 5 shipped that flow. This is the pattern to watch for: a `TODO(Phase 5)` whose
@@ -209,6 +284,21 @@ to something, even if that something says "this was wrong".
   `400 GET /_next/image?url=%2Fstorage%2Finkwell%2F934073d1-3550-4fdb-bb3d-7fe576247a44.png&w=256&q=75`
   and `[console] Failed to load resource: the server responded with a status of 400`.
   Requesting the file directly returns `404`.
+
+### BUG-015 — a banned account is told its password is wrong
+
+- **Route:** `/login`
+- **Persona:** an account an admin has banned
+- **Expected:** the sign-in attempt is refused with a reason — the account has been
+  suspended, and here is who to contact.
+- **Actual:** the form shows **"Invalid credentials"**, the same message a typo
+  produces. A banned user is told they mistyped their password and will keep retrying;
+  nobody is told the account was actioned.
+- **Reproduced:** banned `e2e-mod-202645` through the moderation queue in flow 6, then
+  attempted sign-in with the correct password.
+- **Screenshot:** `screenshots/banned-account-login--e2e.png`
+- **Console/network:** none captured — the refusal itself works correctly.
+- **Note:** the ban is enforced properly; this is only what the user is told about it.
 
 ### BUG-010 — a hydration mismatch is logged on every page carrying the navbar
 
