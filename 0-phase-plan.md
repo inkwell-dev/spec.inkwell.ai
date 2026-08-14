@@ -590,7 +590,7 @@ Same pattern as Phases Q and I: the surfaces looked finished, and the gaps were 
   - [x] Writer earnings dashboard (preview + purchase transactions itemized)
   - [x] Magazine credit balance display + top-up flow
   - [x] Writer eligibility progress bar on dashboard
-  - [ ] Admin: eligibility grant UI in admin panel — **not built.** The endpoint works; there is no button. This blocks the first step of the end-to-end demo in a browser.
+  - [x] Admin: eligibility grant UI in admin panel — **built 2026-08-14.** Username lookup through `GET /u/:username`, which already returns the id and the current flag, then the grant. Sits above the report queue; refuses magazines and already-eligible writers before the click.
 
 ### Moderation
 - [x] Reports module — POST /reports (article, user or comment), admin GET /admin/reports
