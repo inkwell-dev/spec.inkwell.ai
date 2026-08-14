@@ -531,71 +531,149 @@ Same pattern as Phases Q and I: the surfaces looked finished, and the gaps were 
 
 ## Phase 5 — Marketplace + Premium + Moderation
 > Sprint S7 · Aug 24 – Sep 6 *(re-dated from Jul 24–Aug 6; voice, email, AI eval harness and the mobile go/no-go moved to Post-MVP Descope)*
+>
+> **Built 2026-08-13/14.** Backend `819726f`, frontend `7be2873`, both merged to
+> `main` with CI green. 479 backend tests pass. The whole phase was built against
+> schema that has existed since Phase 1's marketplace pivot — `article_purchases`,
+> `transactions`, `magazine_subscriptions`, `writer_eligibility_audit_log` and
+> `reports` all existed with **zero write sites** — so this was services, routes
+> and UI rather than migrations. The one schema change is noted below.
 
 ### Premium + Subscription
-- [ ] Backend subscription simulation:
-  - [ ] POST /subscriptions/upgrade — sets `user.plan = premium`
-  - [ ] POST /subscriptions/downgrade
-  - [ ] Token top-up endpoint (simulated purchase)
+- [x] Backend subscription simulation:
+  - [x] POST /subscriptions/upgrade — sets `user.plan = premium`
+  - [x] POST /subscriptions/downgrade
+  - [ ] Token top-up endpoint (simulated purchase) — **not built, and it conflicts with the design.** `dailyAllowanceSql` rewrites `ai_tokens_remaining` to a fixed per-plan allowance every UTC day, so topped-up tokens would be erased at midnight. A top-up needs either a separate non-resetting balance column or a change to the reset rule; neither is a Phase 5 decision. Magazine CREDIT top-up is built and is a different thing.
 - [ ] Frontend upgrade flow:
-  - [ ] Upgrade modal / page with plan comparison
-  - [ ] Payment mock (no real Stripe in MVP — just a button that confirms)
-  - [ ] Premium badge on profile
+  - [x] Upgrade page — `/subscription`, one route serving both account types (magazine subscription + credits, or the personal plan switch)
+  - [ ] Plan comparison — the page states the current plan and what premium unlocks, but there is no side-by-side free/premium table
+  - [x] Payment mock — a button that confirms, with the simulation stated on the page rather than implied
+  - [ ] Premium badge on profile — **not built.** Nothing renders a plan badge on a user profile.
 
 ### Marketplace — Subscription + Preview/Purchase Transactions
-- [ ] Backend subscription module:
-  - [ ] POST /subscriptions/magazine — activate magazine subscription (simulated payment, sets subscription_status + initial credit_balance)
-  - [ ] BullMQ cron job `renew-magazine-subscriptions` — monthly credit grant + renewal row insert
-  - [ ] POST /credits/topup — optional extra credits for magazines (simulated)
-  - [ ] Subscription guard middleware — 403 if magazine subscription inactive on marketplace endpoints
-- [ ] Backend marketplace module:
-  - [ ] Writer eligibility BullMQ worker `check-writer-eligibility` — runs after each analytics aggregation, flips eligible writers
-  - [x] GET /discover/writers — magazine-only writer browse with filters/sort — **pulled forward to 2026-08-10**, because the Phase 3 discover page depends on it. The account-type gate is in place; the **subscription** gate is still open here and stays a Phase 5 item, since there is no subscription state to check yet.
-  - [ ] GET /discover/marketplace — magazine-only browse of marketplace-listed articles
-  - [ ] POST /purchases/preview — preview unlock (atomic DB transaction):
-    - [ ] Validates `subscription_status = active` + `credit_balance >= preview_price`
-    - [ ] Debits magazine `credit_balance`
-    - [ ] Credits writer `earnings_balance` (preview_price - platform_fee)
-    - [ ] Inserts `article_purchases` row (`stage = preview_unlock`)
-    - [ ] Inserts transaction rows (preview_unlock + writer_payout)
-    - [ ] Idempotency key prevents double-charge
-  - [ ] POST /purchases/buy — full purchase (atomic DB transaction):
-    - [ ] Looks up prior preview row for (article_id, magazine_id)
-    - [ ] Validates credit_balance >= remaining amount (price - preview_paid)
-    - [ ] Debits magazine, credits writer, inserts full_purchase row with parent_purchase_id
-    - [ ] Idempotency key
-  - [ ] GET /magazines/me/library — magazine's fully purchased articles
-  - [ ] GET /me/earnings — writer's earnings summary (preview payouts + purchase payouts)
-  - [ ] Admin: POST /admin/eligibility/:writerId — grant eligibility manually + audit log entry
-- [ ] Notifications:
-  - [ ] Writer notified when article previewed by a magazine
-  - [ ] Writer notified when article purchased by a magazine
-  - [ ] Writer notified when earnings credited
+- [x] Backend subscription module:
+  - [x] POST /subscriptions/magazine — activate magazine subscription (simulated payment, sets subscription_status + initial credit_balance)
+  - [x] BullMQ cron job `renew-magazine-subscriptions` — monthly credit grant + renewal row insert
+  - [x] POST /credits/topup — optional extra credits for magazines (simulated)
+  - [x] Subscription guard middleware — 403 if magazine subscription inactive on marketplace endpoints
+- [x] Backend marketplace module:
+  - [x] Writer eligibility BullMQ worker `check-writer-eligibility` — runs on a 20-minute schedule, flips eligible writers
+  - [x] GET /discover/writers — magazine-only writer browse with filters/sort — **pulled forward to 2026-08-10**. The subscription gate landed in Phase 5 as planned.
+  - [x] GET /discover/marketplace — magazine-only browse of marketplace-listed articles
+  - [x] POST /purchases/preview — preview unlock (atomic DB transaction):
+    - [x] Validates `subscription_status = active` + `credit_balance >= preview_price`
+    - [x] Debits magazine `credit_balance`
+    - [x] Credits writer `earnings_balance` (preview_price - platform_fee)
+    - [x] Inserts `article_purchases` row (`stage = preview_unlock`)
+    - [x] Inserts transaction rows (preview_unlock + writer_payout + platform_fee — see deviations)
+    - [x] Idempotency key prevents double-charge
+  - [x] POST /purchases/buy — full purchase (atomic DB transaction):
+    - [x] Looks up prior preview row for (article_id, magazine_id)
+    - [x] Validates credit_balance >= remaining amount (price - preview_paid)
+    - [x] Debits magazine, credits writer, inserts full_purchase row with parent_purchase_id
+    - [x] Idempotency key
+  - [x] GET /magazines/me/library — magazine's fully purchased articles
+  - [x] GET /me/earnings — writer's earnings summary (preview payouts + purchase payouts)
+  - [x] Admin: POST /admin/eligibility/:writerId — grant eligibility manually + audit log entry
+- [x] Notifications:
+  - [x] Writer notified when article previewed by a magazine
+  - [x] Writer notified when article purchased by a magazine
+  - [x] Writer notified when earnings credited
 - [ ] Frontend marketplace UI:
-  - [ ] Marketplace placement option + price input in publish flow (greyed + eligibility progress if not eligible)
-  - [ ] Magazine subscription screen (sign-up wall and settings)
-  - [x] Magazine Discover page with writer cards + filters — **built 2026-08-10**; what remains for Phase 5 is the subscription gate and the credit-balance indicator
-  - [ ] Writer evaluation page: marketplace article list with "Preview" / "Purchase" buttons
-  - [ ] Preview confirmation modal (shows 10% cost + credit balance)
-  - [ ] Purchase confirmation modal (shows remaining 90% + credit balance + preview-credit note)
-  - [ ] Magazine library page (fully purchased articles)
-  - [ ] Writer earnings dashboard (preview + purchase transactions itemized)
-  - [ ] Magazine credit balance display + top-up flow
-  - [ ] Writer eligibility progress bar on dashboard
-  - [ ] Admin: eligibility grant UI in admin panel
+  - [x] Marketplace placement option + price input in publish flow (enabled per writer from the live eligibility check, with progress bars when locked)
+  - [x] Magazine subscription screen (sign-up wall and settings)
+  - [x] Magazine Discover page with writer cards + filters — **built 2026-08-10**; the subscription gate and credit-balance indicator landed in Phase 5
+  - [ ] Writer evaluation page: marketplace article list with "Preview" / "Purchase" buttons — **not built.** The API supports it (`GET /discover/marketplace?writer=`, which exists for exactly this panel) but the evaluation page does not call it. A magazine reaches the same listings through `/marketplace` today.
+  - [x] Preview confirmation modal (shows 10% cost + credit balance)
+  - [x] Purchase confirmation modal (shows remaining 90% + credit balance + preview-credit note)
+  - [x] Magazine library page (fully purchased articles)
+  - [x] Writer earnings dashboard (preview + purchase transactions itemized)
+  - [x] Magazine credit balance display + top-up flow
+  - [x] Writer eligibility progress bar on dashboard
+  - [ ] Admin: eligibility grant UI in admin panel — **not built.** The endpoint works; there is no button. This blocks the first step of the end-to-end demo in a browser.
 
 ### Moderation
-- [ ] Reports module — POST /reports (article or user), admin GET /reports
+- [x] Reports module — POST /reports (article, user or comment), admin GET /admin/reports
 - [ ] Admin panel (`/admin`):
-  - [ ] Reports queue with article preview
-  - [ ] Actions: dismiss / delete article / ban user (soft delete)
-  - [ ] User management table with role/plan editing
-- [ ] Content moderation on article publish: OpenAI Moderation API (free) — auto-flag violating content
+  - [x] Reports queue with target preview, status filters, and the report's own audit trail
+  - [x] Actions: dismiss / delete article / ban user (soft delete)
+  - [ ] User management table with role/plan editing — **not built.** Users are reachable only through a report about them.
+- [x] Content moderation on article publish: auto-flag violating content — **Groq, not OpenAI.** The chain prefers OpenAI's `/v1/moderations` when `OPENAI_API_KEY` is set and falls back to Groq; there is no OpenAI key on this project (no international card), so it runs on Groq in practice. A flag writes a `pending` report and the article publishes regardless.
 
 ### Exit criteria
-- [ ] Upgrade flow changes user plan and unlocks premium articles + AI features
-- [ ] Reported content appears in admin queue
-- [ ] **Marketplace end-to-end demo**: Admin grants eligibility to demo writer → Writer publishes article to marketplace → Magazine (with active subscription) browses → views writer evaluation + Portfolio Insights → previews article (credits debited 10%) → purchases full (credits debited remaining 90%) → article appears in magazine library → writer earnings reflect both the preview payout and the purchase payout
+- [ ] Upgrade flow changes user plan and unlocks premium articles + AI features — code complete and API-verified; **needs a browser walkthrough**
+- [ ] Reported content appears in admin queue — API-verified end to end; **needs a browser walkthrough**
+- [ ] **Marketplace end-to-end demo**: Admin grants eligibility to demo writer → Writer publishes article to marketplace → Magazine (with active subscription) browses → views writer evaluation + Portfolio Insights → previews article (credits debited 10%) → purchases full (credits debited remaining 90%) → article appears in magazine library → writer earnings reflect both the preview payout and the purchase payout — **every step verified over the API**; the browser walkthrough is outstanding, and step 1 needs the admin grant UI above or a curl call
+
+> ### Deviations and findings, Phase 5
+>
+> **Three transaction rows per purchase, not two.** `6-database-schema.md`:572
+> describes two. The `platform_fee` enum value exists and
+> `ledger-invariants.ts`:107 already documents such a row's shape ("null on both
+> user sides"), so the two-row reading leaves an enum member permanently dead and
+> platform revenue unqueryable. The third row is invisible to both balance
+> invariants, so it adds information without moving any balance.
+>
+> **Eligibility could not read the rollups.** §4.5.2 requires *lifetime* unique
+> readers and reactions. `writer_audience_metrics.total_unique_readers` is a
+> 30-day window (`aggregation.service.ts`:189), so a writer could cross the line
+> and later fall back under it — contradicting "once reached, it stays unlocked
+> permanently" — and no table holds a lifetime reaction count at all. Both are
+> computed from `analytics_events` and the social tables instead. Consequence
+> worth knowing: anonymous views carry `viewer_id IS NULL` and cannot count
+> toward a DISTINCT tally of people, so the threshold is 5,000 *identified*
+> readers. The seeded corpus reaches 11.
+>
+> **`GET /articles/:slug` was serving every article's body to anyone.** No
+> authentication, no status check, no placement check. Marketplace articles were
+> readable without paying, the Phase 3 premium paywall existed only in the
+> browser, and unpublished drafts were readable by slug. The §7.4 matrix is now
+> applied server-side and `content` arrives null when locked. **One row of that
+> matrix is deliberately not implemented**: §7.4 also reads as requiring an
+> account to see a free public article's body. That would change the reading
+> experience of the whole product and contradicts the public feed and the Phase 6
+> SEO work, so free public articles remain readable by guests.
+>
+> **A ban did not ban.** `deleted_at` was checked in exactly one place —
+> `refresh()`. Neither `login()` nor the Google path looked at it, so a banned
+> user could sign in again and a self-deleted account was never locked out.
+> Fixed. A ban still takes effect at the next authentication rather than
+> instantly: `JwtStrategy` does not re-read the database, so an issued access
+> token stays valid for the rest of its 15 minutes.
+>
+> **`reports.reporter_id` widened to nullable** — the one schema change in this
+> phase. It was NOT NULL, which made the automatic publish-time flag
+> unrepresentable: a classifier is not a user, and naming the author or an
+> arbitrary admin would have been false. NULL means the platform filed it. The
+> queue's join on `users` had to become a LEFT join in the same change; an inner
+> join silently dropped exactly the automatic flags nobody is watching for.
+>
+> **`magazine_profiles.subscription_status` is `varchar(20)`** while a real
+> `subscription_status` pgEnum exists and is used by
+> `magazine_subscriptions.status`. Two spellings of one concept. DTOs are typed
+> to the enum's values so the application cannot write a third; converting the
+> column deserves its own change.
+>
+> **The eligibility sweep was a performance defect as first written.** It
+> examined every personal account — one query per registered user, every twenty
+> minutes. A writer with no published public article is provably at zero on both
+> counts, so excluding them changes no outcome; the test suite went from 22
+> minutes to 15 seconds.
+>
+> **The seed had no admin account**, which made this phase's own exit criterion
+> ("admin grants eligibility") impossible to demonstrate on a fresh database.
+> Added, along with the audit rows behind the seeded grants — which previously
+> claimed `admin_grant` with an empty audit log and no admin who could have made
+> the decision.
+
+**Verification:** 479 backend tests pass, including a price sweep over every
+value from 1 to 300 (both stages and both splits reconcile exactly) and ledger
+invariant checks after every money-moving spec. `tsc --noEmit` and
+`eslint --max-warnings=0` clean in both repos; the frontend builds with **empty**
+`NEXT_PUBLIC_*`. The full marketplace flow, the three scheduled jobs, the
+moderation queue and the publish-time classifier were each driven against the
+running stack — `reconcile-balances` reports the dev ledger consistent. **No
+Phase 5 screen has been looked at in a browser.**
 
 ---
 
