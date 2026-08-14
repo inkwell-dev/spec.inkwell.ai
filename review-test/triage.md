@@ -8,7 +8,7 @@ them in.
 single one-line configuration change, and two more are blocked behind a third — so the
 list is considerably shorter to fix than it is to read.
 
-Nothing here has been fixed. This is the plan, not the work.
+**Status: steps 1–6 are done** — see "What was fixed" at the end. Steps 7–10 remain.
 
 | | |
 |---|---|
@@ -16,6 +16,7 @@ Nothing here has been fixed. This is the plan, not the work.
 | Distinct causes | 8 |
 | Findings fixed by the single highest-value change | 3 |
 | Findings whose severity triage changed | 3 |
+| **Fixed so far** | **9 of 14** (steps 1–6) |
 
 ---
 
@@ -211,3 +212,59 @@ the acceptance criteria — a fix is done when its spec goes green without being
 
 After step 2, lower `probe()`'s 3500 ms settle time — it is padded to accommodate exactly
 the retry backoff that step removes.
+
+
+---
+
+## What was fixed
+
+Steps 1–6, on `fix/sweep-triage-steps-1-6` in `frontend.inkwell.ai`. Six commits, one per
+step. The suite went from **100 passed / 10 failed** to **112 passed / 0 failed**, with
+2 skipped (the AI specs, on an exhausted allowance).
+
+| step | finding(s) | commit |
+|---|---|---|
+| 1 | `BUG-012` | `fix(ui): cap dialog height so tall dialogs stay reachable` |
+| 2 | `BUG-014`, `BUG-007`, timing half of `BUG-013` | `fix(query): stop retrying 4xx responses` |
+| 3 | `BUG-004` | `fix(subscription): make /subscription load for every account type` |
+| 4 | `BUG-001`, `BUG-002` | `fix(subscription): enable the two CTAs that lead to /subscription` |
+| 5 | `BUG-006` | `fix(notifications): render the marketplace and earnings types` |
+| 6 | rest of `BUG-013` | `fix(editor): show a not-found state instead of an empty editable document` |
+
+### One cause the triage missed
+
+`BUG-004` turned out to have **two** independent causes, not one. The hydration mismatch
+was real and is fixed, but it was not what produced the magazine's "This page couldn't
+load" — that was a second, unrelated fault sitting behind it:
+
+`MagazinePanel` computes its idempotency token with `crypto.randomUUID()`.
+**That API is secure-context only.** It is `undefined` over plain HTTP, which is exactly
+how this app is served locally — confirmed in the browser: `isSecureContext: false`,
+`typeof crypto.randomUUID === "undefined"`. Calling it did not degrade, it threw, during
+render, taking out the error boundary and the whole page with it.
+
+It would have worked perfectly in any HTTPS environment, which is precisely why it
+survived to be found by a browser sweep on an HTTP dev stack. Fixed with `randomId()`,
+which prefers `crypto.randomUUID` and falls back to assembling a v4 UUID from
+`crypto.getRandomValues` — not secure-context gated, so still cryptographically random.
+
+**Worth carrying forward:** anything gated on a secure context is invisible in
+development-over-HTTPS and fails only where there is no TLS. This deployment has no TLS
+until the very end, so that class of fault will keep landing here first.
+
+### Two spec changes, both deliberate
+
+Neither weakens an assertion:
+
+- **Flow 1** no longer grows the viewport to 1600px before publishing. That was a
+  workaround for `BUG-012`; it now publishes at 1280×720 and asserts the footer is
+  reachable after scrolling.
+- **Flow 4** presses repost and follow only when they are not already in the desired
+  state. They are toggles against a persistent database, so on a second run the spec was
+  undoing the first run's work rather than repeating it.
+
+### Still open
+
+Steps 7–10, covering `BUG-011` (no way to publish a premium article — still blocks sweep
+flow 2), `BUG-005` (`/settings` is a stub), `BUG-016`, `BUG-015`, `BUG-009` and
+`BUG-010`.

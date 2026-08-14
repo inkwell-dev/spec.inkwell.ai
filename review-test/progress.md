@@ -15,8 +15,8 @@ leave an accurate picture of what was covered.
 | Sessions run | 2 |
 | Cells covered | 62 / 66 · **flows 5 of 6** |
 | Playwright installed | **yes** — see "The suite" below |
-| Findings so far | 16 filed, 2 withdrawn → **14 active** (0 Critical, 5 High, 6 Medium, 3 Low) |
-| **Resume at** | **fixing** — the sweep is done and triaged; see `triage.md` for the order |
+| Findings so far | 16 filed, 2 withdrawn → 14 active · **9 fixed**, 5 open |
+| **Resume at** | **triage steps 7–10** — steps 1–6 are fixed and merged to a branch |
 
 ---
 
