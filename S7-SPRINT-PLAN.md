@@ -31,7 +31,7 @@ against the code, not assumed:
 | Demo seed script | Phase Q built it: 5 writers, 12 articles, ~1,250 analytics events, a subscribed magazine |
 | Demo scenario — eligibility → list → preview → purchase | `11-flow-marketplace` + `22-phase5-marketplace-demo`, both green |
 
-Tick those first; the sprint starts at **~34 items**, not 43.
+Ticked 2026-08-15. Phase 6 now reads **34 open**, not 43.
 
 ## The one decision that has expired
 
@@ -67,7 +67,7 @@ opens with the risk already retired.
 - [ ] **Configure DNS** — two records, the apex and `storage.` for presigned
       uploads, per the note in the phase plan.
 - [ ] **Create the Sentry project**, get both DSNs.
-- [ ] Tick the nine already-satisfied boxes above.
+- [x] Tick the nine already-satisfied boxes above — *done 2026-08-15; Phase 6 now reads 34 open.*
 
 If the domain and VPS exist before Aug 24, S7 has no external dependency left in
 it at all.

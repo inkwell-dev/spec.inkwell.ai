@@ -716,15 +716,15 @@ Phase 5 screen has been looked at in a browser.**
 > Sprint S7 (parallel with Phase 5) · Aug 24 – defense · *(re-dated from Aug 7–end of August)*
 
 ### Quality
-- [ ] Playwright E2E tests — cover all critical flows:
-  - [ ] Sign up → create → publish → read cycle
-  - [ ] AI chat interaction
-  - [ ] Inline editing
-  - [ ] Like / comment / follow
-  - [ ] Premium gate
+- [x] Playwright E2E tests — cover all critical flows: *all five verified 2026-08-15 against the existing suite, which stands at 155 passing.*
+  - [x] Sign up → create → publish → read cycle — *`08-flow-register-publish-read`, 3 tests*
+  - [x] AI chat interaction — *`09-flow-ai`, "the AI chat panel opens and answers"*
+  - [x] Inline editing — *`09-flow-ai`, 2 tests: the popup appears on a selection, and an action returns a suggestion that can be applied*
+  - [x] Like / comment / follow — *`10-flow-social`, 4 tests, including the notifications the actions produce*
+  - [x] Premium gate — *`15-flow-premium-paywall`, 3 tests, plus `21-phase5-upgrade-flow` which drives the free→premium transition across the same article*
 - [ ] Lighthouse audit — target score >90 on article pages (Performance, Accessibility, SEO)
 - [ ] Accessibility pass — `axe-core` scan, fix critical issues
-- [ ] Fix all TypeScript strict errors
+- [x] Fix all TypeScript strict errors — *2026-08-15: both repos already carry `"strict": true` and `tsc --noEmit` exits 0. Nothing to fix; the box was never ticked.*
 - [ ] Input sanitization audit (XSS on article content, comments)
 
 ### SEO
@@ -736,8 +736,8 @@ Phase 5 screen has been looked at in a browser.**
 ### Demo & Seed Mode
 - [ ] `DEMO_MODE=true` environment flag:
   - [ ] Lowered eligibility thresholds (e.g., 5 readers + 2 reactions)
-  - [ ] Seed script: pre-populate demo writers, 10+ substantive articles, analytics events, magazine account
-  - [ ] Demo scenario: writer crosses eligibility live → publishes to marketplace → magazine previews + purchases
+  - [x] Seed script: pre-populate demo writers, 10+ substantive articles, analytics events, magazine account — *built in Phase Q: `pnpm db:seed` produces 5 writers, 12 published articles, a subscribed magazine, 3 readers, 12 one-off visitors, 8 tags and ~1,250 analytics events, with deliberately non-overlapping vocabularies*
+  - [x] Demo scenario: writer crosses eligibility live → publishes to marketplace → magazine previews + purchases — *walked end to end 2026-08-15: `11-flow-marketplace` (6 tests) plus `22-phase5-marketplace-demo` (3), which adds the evaluation/Portfolio Insights step and completes the purchase from that page. **Note the live-crossing beat still needs the `DEMO_MODE` thresholds below** — the real bar is 5,000 identified readers and the seeded corpus reaches 11.*
 - [ ] `reconcile-balances` background job — asserts snapshot == ledger sum, alerts on drift
 
 ### Production Deploy
