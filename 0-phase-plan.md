@@ -548,11 +548,11 @@ Same pattern as Phases Q and I: the surfaces looked finished, and the gaps were 
   - [x] POST /subscriptions/upgrade — sets `user.plan = premium`
   - [x] POST /subscriptions/downgrade
   - [ ] Token top-up endpoint (simulated purchase) — **not built, and it conflicts with the design.** `dailyAllowanceSql` rewrites `ai_tokens_remaining` to a fixed per-plan allowance every UTC day, so topped-up tokens would be erased at midnight. A top-up needs either a separate non-resetting balance column or a change to the reset rule; neither is a Phase 5 decision. Magazine CREDIT top-up is built and is a different thing.
-- [ ] Frontend upgrade flow:
+- [x] Frontend upgrade flow:
   - [x] Upgrade page — `/subscription`, one route serving both account types (magazine subscription + credits, or the personal plan switch)
-  - [ ] Plan comparison — the page states the current plan and what premium unlocks, but there is no side-by-side free/premium table
+  - [x] Plan comparison — *2026-08-15. A three-row table on `/subscription`, with the current plan's column marked. Deliberately three rows: exactly two things in the codebase branch on `plan === 'premium'` — the access gate in `article-access.ts` and `dailyAllowanceSql` — so anything further would be marketing copy dressed as a feature table. **Marketplace listing is explicitly called out as NOT included**, because it is gated on `isMarketplaceEligible` (earned through readership, granted by an admin) and a writer upgrading in order to sell would otherwise have bought the wrong thing. Note the stale comment in `types/index.ts` claiming premium is required to list; it is not.*
   - [x] Payment mock — a button that confirms, with the simulation stated on the page rather than implied
-  - [ ] Premium badge on profile — **not built.** Nothing renders a plan badge on a user profile.
+  - [x] Premium badge on profile — *2026-08-15. **This was not frontend-only, contrary to the earlier read of it:** `plan` was absent from `findByUsername`, the public profile query, and only present on `findById` (`/users/me`). Adding it means `GET /u/:username` — unauthenticated — now tells any anonymous caller whether a given person pays us. That is a billing fact about a person, published to strangers; it was a deliberate product decision, taken 2026-08-15, and `test/users/public-profile.spec.ts` pins the exposed field list so widening it later has to be done on purpose. Nothing else was added: not the renewal date, not `aiTokensRemaining`, not the email. The badge renders for premium only — a "Free" counterpart would label most of the platform with what they have not bought, on a page they do not control.*
 
 ### Marketplace — Subscription + Preview/Purchase Transactions
 - [x] Backend subscription module:
@@ -583,7 +583,7 @@ Same pattern as Phases Q and I: the surfaces looked finished, and the gaps were 
   - [x] Writer notified when article previewed by a magazine
   - [x] Writer notified when article purchased by a magazine
   - [x] Writer notified when earnings credited
-- [ ] Frontend marketplace UI:
+- [x] Frontend marketplace UI:
   - [x] Marketplace placement option + price input in publish flow (enabled per writer from the live eligibility check, with progress bars when locked)
   - [x] Magazine subscription screen (sign-up wall and settings)
   - [x] Magazine Discover page with writer cards + filters — **built 2026-08-10**; the subscription gate and credit-balance indicator landed in Phase 5
