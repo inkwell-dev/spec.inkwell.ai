@@ -587,7 +587,7 @@ Same pattern as Phases Q and I: the surfaces looked finished, and the gaps were 
   - [x] Marketplace placement option + price input in publish flow (enabled per writer from the live eligibility check, with progress bars when locked)
   - [x] Magazine subscription screen (sign-up wall and settings)
   - [x] Magazine Discover page with writer cards + filters — **built 2026-08-10**; the subscription gate and credit-balance indicator landed in Phase 5
-  - [ ] Writer evaluation page: marketplace article list with "Preview" / "Purchase" buttons — **not built.** The API supports it (`GET /discover/marketplace?writer=`, which exists for exactly this panel) but the evaluation page does not call it. A magazine reaches the same listings through `/marketplace` today.
+  - [x] Writer evaluation page: marketplace article list with "Preview" / "Purchase" buttons — *2026-08-15. An "Available to license" panel, full width below the metrics: the panels above are what the decision is made ON, this is where it is acted on. Frontend only — `GET /discover/marketplace?writer=` already existed for exactly this and nothing was calling it. Reuses `MarketplaceCard` and `PurchaseDialog` rather than reimplementing them, so the two screens cannot drift apart on what an article costs; every price still comes from the server. The empty state distinguishes "has not listed anything" from "not eligible to list", which look identical otherwise. Covered by `e2e/18-evaluation-marketplace-panel.spec.ts`.*
   - [x] Preview confirmation modal (shows 10% cost + credit balance)
   - [x] Purchase confirmation modal (shows remaining 90% + credit balance + preview-credit note)
   - [x] Magazine library page (fully purchased articles)
