@@ -1,4 +1,4 @@
-# 17 — Notifications
+# 17 — Notifications [INTEGRATED]
 
 **Route:** `/notifications` · **Role:** Any authenticated user · **Stitch mode:** Standard
 

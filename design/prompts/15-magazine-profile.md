@@ -1,4 +1,4 @@
-# 15 — Magazine Profile (Public)
+# 15 — Magazine Profile (Public) [INTEGRATED]
 
 **Route:** `/m/[slug]` · **Role:** Any reader · **Stitch mode:** Standard
 

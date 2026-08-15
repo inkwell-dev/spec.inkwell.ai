@@ -1,4 +1,4 @@
-# 14 — Writer Profile (Public)
+# 14 — Writer Profile (Public) [INTEGRATED]
 
 **Route:** `/u/[username]` · **Role:** Any reader · **Stitch mode:** Standard
 

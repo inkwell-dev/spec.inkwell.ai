@@ -6,7 +6,7 @@ Desktop (1440px) expansion prompts for screens that exist only as mobile in the 
 
 ---
 
-## A — Write Editor (Desktop)
+## A — Write Editor (Desktop) [INTEGRATED]
 
 Stitch generated a mobile-only "Write Editor" (basic editor without AI panel). This prompt creates the desktop version.
 
@@ -46,7 +46,7 @@ No sidebar. No AI panel. Clean, distraction-free writing surface.
 
 ---
 
-## B — Writer Dashboard (Desktop)
+## B — Writer Dashboard (Desktop) [INTEGRATED]
 
 Mobile-only general dashboard overview. This prompt creates the desktop version.
 
@@ -105,7 +105,7 @@ MAIN AREA (padding 32px, #F8FAFC canvas):
 
 ---
 
-## C — Marketplace Feed (Desktop)
+## C — Marketplace Feed (Desktop) [GENERATED]
 
 Mobile-only marketplace feed screen. This prompt creates the desktop version.
 
@@ -159,65 +159,65 @@ MAIN AREA (padding 32px):
 
 ---
 
-## D — Discovery & Search (Desktop)
+## D — Discovery & Search (Desktop) [INTEGRATED]
 
 Mobile-only search and discovery screen. This prompt creates the desktop version.
 
 ```
-Generate the DESKTOP (1440 × 900 px minimum) version of this screen.
-
-Screen: Discovery & Search page — where readers explore topics, discover writers,
-and search across all content. Route "/discover".
-
-TOP NAVBAR: standard Inkwell navbar. Search input in navbar is focused/active
-(2px Violet-600 focus ring) with query text "content strategy" typed in.
-
-MAIN AREA (no sidebar — full-width layout, max-width 1120px centered):
-
-  SEARCH RESULTS HEADER (32px below navbar):
-    "Results for "content strategy"" (text-xl font-medium Slate-900).
-    "127 articles · 8 writers · 3 topics" (text-sm Slate-500 Geist Mono).
-
-  TABS (16px below):
-    "Articles" (active — Violet-600 text, 2px bottom border), "Writers" (Slate-500),
-    "Topics" (Slate-500).
-    1px Slate-200 bottom border.
-
-  TWO-COLUMN LAYOUT (24px below tabs):
-
-    LEFT COLUMN (flex-1, max-width 720px) — Search results:
-      Article result cards (16px gap):
-        Each: white, 1px Slate-200 border, rounded-xl, padding 20px. Horizontal.
-        Left (flex-1):
-          Writer: avatar (24px) + "Priya Nair" (text-sm Slate-600) · "in The Startup"
-          (text-sm Slate-500).
-          Title with highlighted match: "The Evolution of <mark>Content Strategy</mark>
-          in the Age of AI" (text-lg font-medium Slate-900, matched words get
-          Violet-100 bg highlight).
-          Excerpt: 2 lines (text-sm Slate-500).
-          Meta: "May 15 · 9 min read" (text-xs Slate-400 Geist Mono) + placement badge.
-        Right: thumbnail (140x90px, rounded-lg).
-
-      Show 5 results. Pagination: "1 2 3 ... 13" (text-sm, active page: Violet-600 bg
-      white text circle, others Slate-500).
-
-    RIGHT COLUMN (280px) — Discovery sidebar:
-      "Related topics" card (white, rounded-xl, padding 20px):
-        Topic pills: "Content Marketing", "Editorial Design", "AI Writing",
-        "Publishing Strategy" (Slate-100 bg, text-sm Slate-600, rounded-full).
-
-      "Suggested writers" card (20px below, white, rounded-xl, padding 20px):
-        3 writer rows: avatar (40px) + name + bio snippet (text-xs Slate-500, 1 line)
-        + "Follow" small secondary button.
-
-      "Trending articles" card (20px below, white, rounded-xl, padding 20px):
-        3 articles: rank number (Geist Mono Violet-600) + title (text-sm Slate-700)
-        + author (text-xs Slate-400).
+    Generate the DESKTOP (1440 × 900 px minimum) version of this screen.
+    
+    Screen: Discovery & Search page — where readers explore topics, discover writers,
+    and search across all content. Route "/discover".
+    
+    TOP NAVBAR: standard Inkwell navbar. Search input in navbar is focused/active
+    (2px Violet-600 focus ring) with query text "content strategy" typed in.
+    
+    MAIN AREA (no sidebar — full-width layout, max-width 1120px centered):
+    
+      SEARCH RESULTS HEADER (32px below navbar):
+        "Results for "content strategy"" (text-xl font-medium Slate-900).
+        "127 articles · 8 writers · 3 topics" (text-sm Slate-500 Geist Mono).
+    
+      TABS (16px below):
+        "Articles" (active — Violet-600 text, 2px bottom border), "Writers" (Slate-500),
+        "Topics" (Slate-500).
+        1px Slate-200 bottom border.
+    
+      TWO-COLUMN LAYOUT (24px below tabs):
+    
+        LEFT COLUMN (flex-1, max-width 720px) — Search results:
+          Article result cards (16px gap):
+            Each: white, 1px Slate-200 border, rounded-xl, padding 20px. Horizontal.
+            Left (flex-1):
+              Writer: avatar (24px) + "Priya Nair" (text-sm Slate-600) · "in The Startup"
+              (text-sm Slate-500).
+              Title with highlighted match: "The Evolution of <mark>Content Strategy</mark>
+              in the Age of AI" (text-lg font-medium Slate-900, matched words get
+              Violet-100 bg highlight).
+              Excerpt: 2 lines (text-sm Slate-500).
+              Meta: "May 15 · 9 min read" (text-xs Slate-400 Geist Mono) + placement badge.
+            Right: thumbnail (140x90px, rounded-lg).
+    
+          Show 5 results. Pagination: "1 2 3 ... 13" (text-sm, active page: Violet-600 bg
+          white text circle, others Slate-500).
+    
+        RIGHT COLUMN (280px) — Discovery sidebar:
+          "Related topics" card (white, rounded-xl, padding 20px):
+            Topic pills: "Content Marketing", "Editorial Design", "AI Writing",
+            "Publishing Strategy" (Slate-100 bg, text-sm Slate-600, rounded-full).
+    
+          "Suggested writers" card (20px below, white, rounded-xl, padding 20px):
+            3 writer rows: avatar (40px) + name + bio snippet (text-xs Slate-500, 1 line)
+            + "Follow" small secondary button.
+    
+          "Trending articles" card (20px below, white, rounded-xl, padding 20px):
+            3 articles: rank number (Geist Mono Violet-600) + title (text-sm Slate-700)
+            + author (text-xs Slate-400).
 ```
 
 ---
 
-## E — Writer Profile (Desktop) — NEW screen 14
+## E — Writer Profile (Desktop) — NEW screen 14 [INTEGRATED]
 
 ```
 Generate the DESKTOP (1440 × 900 px minimum) version of this screen.
@@ -269,7 +269,7 @@ MAIN AREA (no sidebar, full-width, max-width 960px centered):
 
 ---
 
-## F — Magazine Profile (Desktop) — NEW screen 15
+## F — Magazine Profile (Desktop) — NEW screen 15 [INTEGRATED]
 
 ```
 Generate the DESKTOP (1440 × 900 px minimum) version of this screen.
@@ -304,7 +304,7 @@ MAIN AREA (no sidebar, full-width, max-width 1120px centered):
 
 ---
 
-## G — Settings (Desktop) — NEW screen 16
+## G — Settings (Desktop) — NEW screen 16 [INTEGRATED]
 
 ```
 Generate the DESKTOP (1440 × 900 px minimum) version of this screen.
@@ -337,7 +337,7 @@ MAIN AREA (padding 32px):
 
 ---
 
-## H — Notifications (Desktop) — NEW screen 17
+## H — Notifications (Desktop) — NEW screen 17 [INTEGRATED]
 
 ```
 Generate the DESKTOP (1440 × 900 px minimum) version of this screen.

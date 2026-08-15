@@ -1,4 +1,4 @@
-# 16 — Settings
+# 16 — Settings [INTEGRATED]
 
 **Route:** `/settings` · **Role:** Any authenticated user · **Stitch mode:** Standard
 
