@@ -20,7 +20,7 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
 | **S3** | Jun 26 – Jul 9 | Phase D — Desktop (1440px) screen set + refinement | ✅ Done |
 | **S4** | Jul 10 – Jul 26 | Phase D — Figma audit, design QA, spec alignment + re-baseline | ✅ Done |
 | **S5** | Jul 27 – Aug 9 | Phase 2 — Editor + AI + event capture · Phase 3 (start) — likes/comments · **Q — codebase quality pass** | ✅ Done — editor, social + notifications verified end-to-end; **AI streaming unblocked and verified 2026-07-30**; a cross-repo quality pass (Phase Q) landed mid-sprint; **dev/prod URL topology reworked 2026-08-05/06**, which fixed image upload and pulled four Phase 6 deploy items forward. Six trailing items were closed out on **2026-08-10**, one day past the window — see *S5 Close-out* below |
-| **S6** | Aug 10 – Aug 23 | ~~Phase 3 — Aggregation + dashboards~~ *(pulled forward into S5)* · Phase 4 — RAG + Insights + Search | 🚧 — opened on Aug 10 with the S5 close-out running in parallel on day 1. Phases 2 and 3 are now fully closed, so S6 is Phase 4 only |
+| **S6** | Aug 10 – Aug 23 | ~~Phase 3 — Aggregation + dashboards~~ *(pulled forward into S5)* · Phase 4 — RAG + Insights + Search | ✅ Done — opened on Aug 10 with the S5 close-out running in parallel on day 1. Phases 2 and 3 were already closed, so S6 was Phase 4 only. **All six Phase 4 exit criteria verified 2026-08-15**, eight days inside the window; the magazine-facing Portfolio Insights demo had never been run before that day and passed on first execution |
 | **S7** | Aug 24 – Sep 6 | Phase 5 — Marketplace + Premium · Phase 6 — Deploy + Defense prep | 🔜 — **deployment is the last work of the last sprint** (decision of 2026-08-10). Phase 5 and the quality/SEO/demo parts of Phase 6 come first; the deploy block is blocked on buying a domain and a VPS and is scheduled after them |
 
 > **Development is local-only until the end (decided 2026-08-10).** No domain has
@@ -520,12 +520,16 @@ Same pattern as Phases Q and I: the surfaces looked finished, and the gaps were 
 - [x] Injected into writer chat as a compact block — *complementary to RAG, not redundant: the profile is a stable persona that holds when retrieval finds nothing, the passages are evidence relevant to the current question*
 
 ### Exit criteria
-- [ ] Publish 5+ articles with distinct topics/vocabulary
-- [ ] **Writer demo**: AI chat generates a new article that demonstrably uses retrieved vocabulary and style
-- [ ] **Magazine demo**: Magazine views a writer's profile → Portfolio Insights panel shows AI-generated voice/topics/score/fit
-- [ ] `/ai/retrieval-debug` shows correct chunk IDs pulled from the user's articles
-- [ ] Search returns relevant results for both keyword and semantic queries
-- [ ] Cache invalidation works (publish a new article → next insights request regenerates)
+> **All six verified 2026-08-15** against the running stack with real Gemini
+> embeddings and Groq completions. Full record with figures:
+> [`review-test/phase-4-exit-verification.md`](./review-test/phase-4-exit-verification.md).
+
+- [x] Publish 5+ articles with distinct topics/vocabulary — *5 seed writers, 13 articles, non-overlapping vocabularies, all embedded. The planned `db:embed-backfill` turned out to be unnecessary: 0 published non-deleted articles lacked chunks; the apparent gap was a query that did not filter `deleted_at`.*
+- [x] **Writer demo**: AI chat generates a new article that demonstrably uses retrieved vocabulary and style — *asked `imane-farouk` for an opening on parking minimums, a topic she has never written about; the reply re-applies her setback argument ("the edge of the street… empty expanses of asphalt") to it. The argument transferred, not just the keywords.*
+- [x] **Magazine demo**: Magazine views a writer's profile → Portfolio Insights panel shows AI-generated voice/topics/score/fit — *this produced the **first `portfolio_insights` row the table has ever held**; generation is an explicit click by design, so the panel had never rendered a populated report since shipping on 2026-08-11. Voice, 5 topics, 85/100 consistency, 5 commission ideas, strengths-and-gaps all render. Now covered by `e2e/17-phase4-portfolio-insights.spec.ts`.*
+- [x] `/ai/retrieval-debug` shows correct chunk IDs pulled from the user's articles — *5 chunks, top similarity 0.668; cross-checked by ID against the database: 5 of 5 exist, **0 belong to anyone else**.*
+- [x] Search returns relevant results for both keyword and semantic queries — *the three recorded fusion cases reproduce exactly, including `0 lexical + 2 semantic` on a query whose words appear in no article.*
+- [x] Cache invalidation works (publish a new article → next insights request regenerates) — *cache dropped and the new article re-indexed within 3s; the cached read returns `{"insights": null}` rather than stale data; regeneration went `basedOnArticles` 3 → 4 and its topics now include "curb cut design" from the article published seconds earlier.*
 
 ---
 
