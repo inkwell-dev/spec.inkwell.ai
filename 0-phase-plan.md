@@ -547,7 +547,26 @@ Same pattern as Phases Q and I: the surfaces looked finished, and the gaps were 
 - [x] Backend subscription simulation:
   - [x] POST /subscriptions/upgrade — sets `user.plan = premium`
   - [x] POST /subscriptions/downgrade
-  - [ ] Token top-up endpoint (simulated purchase) — **not built, and it conflicts with the design.** `dailyAllowanceSql` rewrites `ai_tokens_remaining` to a fixed per-plan allowance every UTC day, so topped-up tokens would be erased at midnight. A top-up needs either a separate non-resetting balance column or a change to the reset rule; neither is a Phase 5 decision. Magazine CREDIT top-up is built and is a different thing.
+  - [ ] Token top-up endpoint (simulated purchase) — **not built. Design decided 2026-08-15; deliberately not implemented.** `dailyAllowanceSql` rewrites `ai_tokens_remaining` to a fixed per-plan allowance every UTC day, so topped-up tokens would be erased at midnight. Magazine CREDIT top-up is built and is a different thing.
+
+    > **The decision: a separate non-resetting column, not a change to the reset rule.**
+    >
+    > The two candidates were weighed against the three sites that write `ai_tokens_remaining` — the nightly `ResetTokensProcessor`, the lazy grant in `readQuotaGrantingIfDue`, and the spend in `ai.service.ts`.
+    >
+    > **Changing the reset rule cannot be made correct.** `SET remaining = GREATEST(remaining, allowance)` loses purchased tokens the moment the user spends below the allowance: buy 500 on top of 1,000, spend 1,200, and the 300 left is entirely purchased — the next reset replaces it with 1,000 rather than adding to it, and 300 paid-for tokens vanish. `SET remaining = remaining + allowance` is worse: unspent daily tokens accumulate without bound, so a premium account that never uses AI banks ~30,000 a month and "daily allowance" stops meaning anything.
+    >
+    > The reason is structural, not a matter of picking a better expression: **a single integer cannot distinguish "granted today, expires tonight" from "bought, never expires".** Any rule over one column has to guess which kind of token it is holding, and both guesses cost someone something — the first costs the user what they paid for, which is the exact failure this item was flagged for in the first place.
+    >
+    > **The shape to build**, when it is built: an `ai_tokens_purchased` column that no reset ever touches. The nightly job and the lazy grant keep writing `ai_tokens_remaining` and are left completely unchanged. The spend drains the expiring bucket first and the purchased reserve only on overflow — which is also the fair order, since it spends what expires before what does not:
+    >
+    > ```sql
+    > SET ai_tokens_remaining = GREATEST(0, ai_tokens_remaining - :used),
+    >     ai_tokens_purchased = GREATEST(0, ai_tokens_purchased - GREATEST(0, :used - ai_tokens_remaining))
+    > ```
+    >
+    > Both right-hand sides see the pre-update row, so the overflow term reads the old `ai_tokens_remaining` — which is what makes this a single atomic statement rather than a read-then-write race. `getTokenCount` returns the sum, and `useAiQuota`'s `exhausted` becomes sum ≤ 0.
+    >
+    > **One product question to settle before building it:** a free account's allowance is 0 *by design*. If a free user can buy tokens, the top-up becomes a way to buy AI without buying premium, which quietly undoes the plan gate. The top-up should almost certainly be premium-only, but that is a pricing decision rather than an engineering one.
 - [x] Frontend upgrade flow:
   - [x] Upgrade page — `/subscription`, one route serving both account types (magazine subscription + credits, or the personal plan switch)
   - [x] Plan comparison — *2026-08-15. A three-row table on `/subscription`, with the current plan's column marked. Deliberately three rows: exactly two things in the codebase branch on `plan === 'premium'` — the access gate in `article-access.ts` and `dailyAllowanceSql` — so anything further would be marketing copy dressed as a feature table. **Marketplace listing is explicitly called out as NOT included**, because it is gated on `isMarketplaceEligible` (earned through readership, granted by an admin) and a writer upgrading in order to sell would otherwise have bought the wrong thing. Note the stale comment in `types/index.ts` claiming premium is required to list; it is not.*
