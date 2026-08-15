@@ -113,6 +113,8 @@ User opens AI chat panel
 
 ## 6. 🎙️ Voice-to-Article Flow
 
+> **Descoped to post-MVP** (2026-07-26 re-baseline — see [`0-phase-plan.md`](./0-phase-plan.md)).
+
 User clicks "Voice Input"  
 → Records speech  
 → Stops recording  

@@ -56,7 +56,7 @@ Inkwell is an **AI-native writing marketplace** with three coordinated layers:
   - Shorten
   - Improve engagement
 
-### 3.3 Voice-Driven Content Creation
+### 3.3 Voice-Driven Content Creation *(post-MVP — descoped 2026-07-26)*
 - Writers describe ideas verbally
 - System transcribes (Groq Whisper) and structures speech into article drafts
 
