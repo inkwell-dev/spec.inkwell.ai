@@ -598,10 +598,18 @@ Same pattern as Phases Q and I: the surfaces looked finished, and the gaps were 
 
 ### Moderation
 - [x] Reports module — POST /reports (article, user or comment), admin GET /admin/reports
-- [ ] Admin panel (`/admin`):
+- [x] Admin panel (`/admin`):
   - [x] Reports queue with target preview, status filters, and the report's own audit trail
   - [x] Actions: dismiss / delete article / ban user (soft delete)
-  - [ ] User management table with role/plan editing — **not built.** Users are reachable only through a report about them.
+  - [x] User management table with role/plan editing — *2026-08-15. New `GET /admin/users` (paginated, searchable on username/name/email, filterable by role and by active/banned) and `PATCH /admin/users/:id`. Banned accounts are visible on request: they are soft-deleted and so excluded from every other read path, but reviewing a ban after the fact is the part of moderation most worth being able to do.*
+
+    > **The escalation boundary, decided 2026-08-15.** `admin` is **not an assignable role**, and an existing admin's role is **not editable**, in either direction. There is no super-admin tier in this system, and `banUser` already refuses outright with *"Administrators cannot be banned"* — so an admin able to grant `admin` means one compromised session can create an account with full rights that the product offers no way to remove. Promotion to admin stays a deliberate act against the database. Blocking demotion too is the same boundary crossed the other way: an admin who cannot be created through the UI must not be removable through it either.
+    >
+    > Three further refusals, all server-side: you cannot edit **your own** role or plan (demoting yourself locks you out of the page you are standing on, with no UI to undo it); you cannot edit a **banned** account (it cannot log in, so the edit changes nothing observable while implying it did); and you cannot give a **magazine** a role (`users.role` is NULL there by design — capability comes from `accountType`).
+    >
+    > Plan editing **is** allowed both ways, and is logged at warn alongside bans and eligibility grants. Payments are simulated in this release, so granting premium costs nothing — which is exactly why it should leave a trace.
+    >
+    > The UI declines to render controls for edits the API would refuse, rather than offering a dropdown that always errors. The server is the gate; `test/moderation/admin-users.spec.ts` (11 tests) pins every refusal above.
 - [x] Content moderation on article publish: auto-flag violating content — **Groq, not OpenAI.** The chain prefers OpenAI's `/v1/moderations` when `OPENAI_API_KEY` is set and falls back to Groq; there is no OpenAI key on this project (no international card), so it runs on Groq in practice. A flag writes a `pending` report and the article publishes regardless.
 
 ### Exit criteria
