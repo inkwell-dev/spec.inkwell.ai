@@ -1,2 +1,10 @@
 # IDE
 .idea/
+
+# graphify output.
+#
+# Regenerable by re-running /graphify, and pinned to the machine that produced
+# it: .graphify_root and .graphify_python hold absolute paths, and manifest.json
+# and cache/stat-index.json carry more of them. Syncing it would hand every other
+# machine a root pointing at somebody else's home directory.
+graphify-out/
