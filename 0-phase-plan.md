@@ -759,15 +759,34 @@ Phase 5 screen has been looked at in a browser.**
 *(confirmed available 2026-08-10; no purchase and no international card needed,
 which was the original blocker)*
 
-- [ ] **Claim a domain.** Namecheap's pack offer includes a free `.me` domain for
-      a year. The specs, `.env.example`, the README and both nginx configs all
-      assume `inkwell.ai`; that name is a **placeholder** until something is
-      actually registered, and whatever is claimed must be substituted in all
-      four places at once.
-- [ ] **Provision the VPS.** DigitalOcean ($200 pack credit) or Azure for
-      Students ($100, academic-email verification, no card). Either comfortably
-      covers the 7-container stack; the spec's Hetzner CX22 sizing is the
-      reference, not a requirement.
+- [x] **Claim a domain.** — **`inkwell-ai.me`, registered 2026-08-16** via
+      Namecheap's pack offer.
+      **Correction to the note this replaces:** it said `inkwell.ai` was a
+      placeholder to be substituted "in all four places at once". That was wrong.
+      `inkwell.ai` is also the *local dev hostname* — `/etc/hosts` maps
+      `frontend.`/`backend.`/`storage.inkwell.ai` to `127.0.0.2`, and `dev.conf`,
+      the Playwright suite and every review-test doc resolve through those names.
+      A blanket replace would break local dev and all 22 E2E specs.
+      Production barely uses the name: `default.conf` serves the app on
+      `server_name _` (catch-all), so exactly **one** line hardcoded a domain.
+      Substituted 2026-08-17 in the production-only places — the `.env.example`
+      prod block, `default.conf`'s storage vhost and certbot line, and the
+      README's production section. Dev names left untouched, deliberately.
+- [ ] **Provision the VPS.** ~~DigitalOcean ($200 pack credit)~~ — **withdrawn.**
+      DigitalOcean wound down its Student Pack participation and revoked *all*
+      pack credits on 2026-08-01, including ones already redeemed.
+      **Use Azure for Students** ($100, academic-email verification, no card —
+      which is the binding constraint here). Size **B2s** (2 vCPU, 4 GiB, x86),
+      ~$30–35/mo, so the credit covers ~3 months against the ~4 weeks needed.
+      Nothing builds on the server — all three app containers pull prebuilt
+      images from GHCR — so this is runtime footprint only.
+      **Oracle Cloud's Always Free tier is not a drop-in replacement**: it is ARM
+      Ampere, and neither CI workflow sets `platforms:` on
+      `docker/build-push-action`, so the images are amd64-only. Going ARM means
+      adding multi-arch builds and a 20–40 min QEMU cross-compile.
+      **Fallback if Azure rejects the academic email:** Cloudflare Tunnel — free,
+      no card, real certificate, stack running on the laptop. Not a true deploy
+      and the report should say so, but it makes the live-URL demo performable.
 
 > **Standing preference (2026-08-10):** when a Student Pack offer is the best
 > available option for a piece of infrastructure, use it. It is why deployment is
@@ -776,7 +795,7 @@ which was the original blocker)*
 
 **Then, in order:**
 
-- [ ] Configure domain + Cloudflare DNS — **two records needed**: the apex, and `storage.` for presigned uploads (the apex path `/<bucket>/<key>` is claimed by the Next.js catch-all)
+- [ ] Configure domain + Cloudflare DNS — **three A records**, all at the VPS and all resolving *before* certbot runs, since one certificate covers all three: `inkwell-ai.me`, `www.inkwell-ai.me`, and `storage.inkwell-ai.me` for presigned uploads (the apex path `/<bucket>/<key>` is claimed by the Next.js catch-all)
 - [x] TLS via Let's Encrypt (Nginx + certbot) — **nginx side done 2026-08-06**: 443 listener, HTTP→HTTPS redirect sparing the ACME path, certbot webroot volume, storage vhost. Verified against live containers with a self-signed certificate. Issuing the real certificate needs the VPS.
 - [ ] GitHub Actions deploy workflow in `docker.inkwell.ai`:
   - [ ] Trigger on push to `main` in backend/frontend repos (via `repository_dispatch`)
