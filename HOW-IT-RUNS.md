@@ -163,36 +163,77 @@ building — the server never compiles anything.
 
 ---
 
-## 6. Development builds no images at all
+## 6. Development builds images too — but thin ones
 
-This is the biggest difference between the two compose files, and it surprises
-people.
+The two compose files build *different* images from *different* Dockerfiles, and
+conflating them is the usual source of confusion.
 
-In `docker-compose.dev.yml`, `api`, `web` and `worker` all use the **stock**
-`node:22.22.3-alpine` image, unmodified. The code is not baked in — it is
-bind-mounted from the real working directory:
+Production builds from the `Dockerfile` inside each app repo — the four-stage
+pipeline described above, ending in a `runner` image with compiled `dist/` and no
+compiler. Development builds from `.infra/dockerfiles/`, which stops far earlier:
+it installs dependencies and nothing else.
 
 ```yaml
+build:
+  context: ../../src/backend.inkwell.ai
+  dockerfile: ../../.infra/dockerfiles/api.dev.dockerfile
+  target: development
 volumes:
-  - ../../../backend.inkwell.ai:/app      # your folder, live
-  - api_node_modules:/app/node_modules    # named volume, hides the host's
-command: sh -c "corepack pnpm install && corepack pnpm start:dev"
+  - ../../src/backend.inkwell.ai:/app      # your folder, live
+  - api_node_modules:/app/node_modules     # named volume, hides the host's
+command: pnpm start:dev
 ```
 
-Save a file in the editor and the container sees it instantly — that is how hot
-reload works. There is no rebuild step because there is no image to rebuild.
+The dev image copies **only** `package.json` and the lockfile, then installs. The
+source is never baked in — it arrives at runtime on the bind mount, so saving a
+file in the editor is visible to the container instantly and hot reload works
+exactly as before.
 
-The second mount is the subtle one. `node_modules` is a *named volume* layered
-over the bind mount, so the container's Linux binaries never collide with
-whatever the host installed. Without it, a native module compiled on the host
-would be handed to Alpine and refuse to load.
+What the image buys is the install. Previously these services ran the stock
+`node:22-alpine` with `command: sh -c "corepack pnpm install && corepack pnpm
+start:dev"`, so **every container start re-ran a full install** before the dev
+server could boot. As a cached layer it re-runs only when a dependency actually
+changes — the same caching argument as the `deps` stage in section 5, applied to
+development. A cold container now serves in about five seconds.
+
+The trade-off is a rebuild step that did not exist before: change a dependency
+and the image must be rebuilt (`make dci-dev-build`, cached and near-instant)
+before the container can see it. Change ordinary source and nothing needs
+rebuilding.
+
+`api` and `worker` share one image. Same repo, same dependencies, different
+`command:` — there is no reason to build it twice.
+
+### Why the dev image creates a user
+
+Both dev Dockerfiles delete Alpine's built-in `node` account and recreate it at
+the host's own UID/GID, then install as that user. Two distinct problems make
+this necessary.
+
+The first is familiar: these containers compile into the bind-mounted repo, so
+running as root leaves `dist/` and `.next/` root-owned in the developer's working
+tree, and the host can no longer build.
+
+The second is subtler and is about the named volume. **Docker seeds an empty
+named volume from the image, ownership included.** When nothing existed at
+`/app/node_modules` in the stock image, the volume was created owned by
+`root:root` while the container ran as the host UID — so the first start died on
+
+```
+EACCES: permission denied, mkdir '/app/node_modules/.pnpm'
+```
+
+Because the dev image installs as the runtime user, `/app/node_modules` exists in
+the image owned by that user, and the volume inherits it.
 
 | | Development | Production |
 |---|---|---|
-| Image | stock `node:22-alpine` | built from the Dockerfile |
+| Image | `.infra/dockerfiles/*.dev.dockerfile` | the app repo's `Dockerfile` |
+| Stages | one — install only | four — base, deps, build, runner |
 | Code | bind-mounted, live | baked into `dist/` |
 | Runs | `pnpm start:dev` (watch) | `node dist/src/main` |
 | Code change | instant reload | rebuild, push, pull, restart |
+| Dependency change | `make dci-dev-build` | rebuild, push, pull, restart |
 | nginx config | `dev.conf`, 3 vhosts | `default.conf`, TLS |
 
 ---
@@ -221,12 +262,43 @@ Containers talking to each other never need it — which is why the `api` servic
 publishes no ports at all. It is unreachable from the host and fully reachable by
 nginx.
 
+A published port has a third, optional field in front: the **host interface** to
+bind to. Omit it and Docker binds `0.0.0.0` — every interface, including the
+laptop's Wi-Fi address. `"5433:5432"` therefore offers Postgres to every other
+machine on whatever network you have joined; `"127.0.0.1:5433:5432"` offers it
+only to this machine.
+
+Every datastore publish is written the long way for that reason:
+
+```yaml
+ports:
+  - "127.0.0.1:${POSTGRES_HOST_PORT:-5433}:5432"   # db
+  - "127.0.0.1:6379:6379"                          # redis
+  - "127.0.0.1:9000:9000"                          # minio S3
+  - "127.0.0.1:9001:9001"                          # minio console
+```
+
+Nothing is lost: these publishes exist so `psql`, `redis-cli` or a GUI client on
+this machine can connect, and the app services never used them at all — they
+reach each other by service name over the bridge network. nginx is the deliberate
+exception, since something outside Docker has to reach it; it binds `127.0.0.2`
+and `127.0.0.1:8080`.
+
+The same rule matters more in production, where "every interface" means the
+public internet. The MinIO **console** — which authenticates with the root
+credentials that grant access to every bucket — is bound to `127.0.0.1:9001` on
+the VPS and reached over an SSH tunnel:
+
+```bash
+ssh -L 9001:127.0.0.1:9001 <vps>
+```
+
 ### `volumes`
 
 Storage that outlives the container. `postgres_data` is why
 `docker compose down` does not destroy the database. Bind mounts
-(`../../backend:/app`) are the dev-time variant that points at a real folder on
-disk.
+(`../../src/backend.inkwell.ai:/app`) are the dev-time variant that points at a
+real folder on disk — here a git submodule checked out under `src/`.
 
 ---
 
@@ -334,6 +406,9 @@ one that occurred.
   why the production compose sets it as a build arg and says so in a comment.
 - **Publishing a port is only for outside access.** The API publishes none and
   works fine.
+- **A published port defaults to every interface.** `"5433:5432"` is reachable
+  from the LAN; `"127.0.0.1:5433:5432"` is not. Write the interface explicitly
+  for anything that is not meant to be public.
 - **One process per port.** `0.0.0.0` means all addresses and beats any
   single-address binding to it.
 - **Multi-stage builds exist to throw things away.** The compiler builds the code

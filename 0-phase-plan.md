@@ -840,6 +840,42 @@ which was the original blocker)*
 
 ---
 
+## Phase V — Vendored Sources & Dev Images
+> Sprint S7 · 2026-08-19 · **Completed** (backfilled into the plan, in the same spirit as Phases D, Q and I)
+
+> **Why this phase exists:** it started as a bug report — `make dciup-dev` followed by a 502 at `frontend.inkwell.ai`. The 502 was correct behaviour (that target starts infrastructure only, and the `web` container was not running), but the reason the app services could not be started at all was that the two app repos were **absent from the machine**. Tracing why that failed so opaquely surfaced three further defects, one of them live in production.
+
+### Repo layout
+- [x] `frontend.inkwell.ai` and `backend.inkwell.ai` vendored as **git submodules** under `docker.inkwell.ai/src/`, both pinned to `main`
+- [x] Dev bind mounts retargeted from `../../../<repo>` — paths *outside* the repository, enforced by nothing but a README paragraph — to `../../src/<repo>`
+- [x] `make check-submodules` guards `dci-api` / `dci-web` / `dci-worker` / `dciup-all`; `dciup-dev` deliberately unguarded, since it mounts no application source
+- [x] `make git-spull` fast-forwards both submodules to the branch declared in `.gitmodules`
+- [x] `make setup-hosts` adds the three dev hostnames idempotently; `check-hosts` warns before `dciup-dev` without failing or prompting for sudo
+
+### Dev images
+- [x] `.infra/dockerfiles/{web,api}.dev.dockerfile` — dependencies as a cached layer, source still bind-mounted, `api` and `worker` sharing one image
+- [x] Container start no longer re-runs `pnpm install`: a cold container serves in ~5s
+- [x] `dci-dev-build` is now cached (the common case after a dependency bump); `dci-dev-rebuild` keeps `--no-cache`
+
+### Defects found while closing them
+
+Same pattern as Phases Q and I: each had been latent for some time, and none was what the original bug report was about.
+
+- **A missing repo failed silently and misleadingly.** Docker's response to a bind-mount source that does not exist is to *create* it, owned by root. The app container then died on a missing `package.json` with nothing pointing at the actual cause — a repository that had never been cloned. Submodules make the layout a property of the checkout rather than a convention.
+- **The `node_modules` named volumes were seeded root-owned.** Docker seeds an empty named volume from the image, ownership included; nothing existed at `/app/node_modules` in the stock `node:22-alpine`, so the volume was created `root:root` while the container ran as the host UID. Every first start died on `EACCES: permission denied, mkdir '/app/node_modules/.pnpm'`. The dev images install as the runtime user, so the seed is correct. This is the same class of bug as the root-owned `.pnpm-store/` found in Phase 3's close-out, in a place that pass did not reach.
+- **Datastore ports were published on `0.0.0.0`.** nginx had been carefully bound to `127.0.0.2` and `127.0.0.1`, while `db`, `redis` and `minio` used bare `"5433:5432"`-style mappings — offering Postgres, Redis and the object store to every host on whatever network the laptop had joined. All now bind `127.0.0.1`; verified from the machine's LAN address that each port refuses while loopback still connects.
+- **Production published the MinIO admin console on `0.0.0.0:9001`.** That console authenticates with `MINIO_ROOT_USER`/`MINIO_ROOT_PASSWORD` — full access to every bucket — so the VPS was serving an internet-facing root login. Now `127.0.0.1:9001`, reached over an SSH tunnel. **This one was live**, and the fix only takes effect on the next production deploy.
+- **`.gitignore` did not ignore the TLS private key.** The pattern `nginx/certs/` contains a non-trailing slash, so git anchored it to the repository root and it never matched `.infra/nginx/certs/`. Corrected and verified with `git check-ignore`.
+- **A stale `DOCKER_UID` from an unrelated project broke every app container.** An old project exported `DOCKER_UID=oussama` from `~/.zshrc`, and Compose gives the shell environment precedence over `--env-file`, so `.env`'s `1000` was silently ignored and containers failed with `unable to find user oussama`. An environment-only defect, recorded because the precedence rule is not obvious and the symptom names no project.
+
+**Verification:** both compose files validate; the submodule guard was negative-tested against an emptied submodule; the `node_modules` volumes were deleted and the stack brought up cold to confirm correct seeding; images build in 1m44s and a cached rebuild in under a second; `frontend.inkwell.ai` returns 200, `backend.inkwell.ai/api/docs` returns 200, `localhost:8080` returns 200, and the worker registers its BullMQ repeatable jobs.
+
+**Not addressed, recorded rather than silently skipped:**
+- **Dev still has no migration path.** The *production* half is done and recorded in S7 (automatic migrations on deploy, built 2026-08-17): a one-shot `migrate` service gated on `service_completed_successfully`. Locally, though, nothing creates the schema and no `make` target documents it, so a fresh clone gets an empty database. The same `drizzle-orm` migrator the deploy uses would serve.
+- **Neither app repo declares `packageManager`** in `package.json`, so `corepack` resolves an unpinned pnpm version and two machines can silently differ. Belongs to the app repos, not the infra repo.
+
+---
+
 ## 📦 Post-MVP Descope (2026-07-26 re-baseline)
 > Features formally removed from the MVP commitment so the report's sprint plan only promises what will ship. Each is documented as "future work" in the report, not as a missed deliverable. Removed from the phases above; listed here with their original phase for traceability.
 
@@ -925,7 +961,7 @@ which was the original blocker)*
 
 - **AI providers used:** Groq (LLM + Whisper, free tier), Gemini 2.0 Flash (LLM fallback) and `gemini-embedding-001` (embeddings) — all free tier, no payment method required
 - **Shared types strategy:** Backend OpenAPI → auto-generated TS client in frontend CI + `@inkwell/shared` package for non-API types
-- **Worker container** shares the backend image but runs `node dist/worker` — handles BullMQ jobs for embedding, analytics aggregation, email
+- **Worker container** shares the backend image but runs `node dist/src/worker` — handles BullMQ jobs for embedding, analytics aggregation, email
 - **RAG scope:** Only the writer's own articles (not platform-wide) — makes the demo story "it writes like *me*"
 - **Mobile:** deferred post-MVP (resolved by the 2026-07-26 re-baseline — see Post-MVP Descope)
 

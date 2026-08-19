@@ -369,15 +369,27 @@ Event Trigger → Backend → Notification Created → Stored → Delivered via 
 
 7 containers in a single `docker-compose.yml`:
 
-| Service | Image | Port |
-|---------|-------|------|
-| `nginx` | nginx:alpine | 80, 443 |
+Ports below are the ports each service listens on **inside** the network. What is
+published to the host is a separate question — see Containerization.
+
+| Service | Image | Listens on |
+|---------|-------|------------|
+| `nginx` | nginx:1.27-alpine | 80, 443 |
 | `web` | frontend (multi-stage build) | 3000 |
-| `api` | backend (multi-stage build) | 3001 |
-| `worker` | backend (same image, `node dist/worker`) | — |
-| `db` | postgres:16 + pgvector | 5432 |
+| `api` | backend (multi-stage build) | 3000 |
+| `worker` | backend (same image, `node dist/src/worker`) | — |
+| `db` | pgvector/pgvector:pg16 | 5432 |
 | `redis` | redis:7-alpine | 6379 |
-| `minio` | minio/minio | 9000 |
+| `minio` | minio/minio | 9000 (S3), 9001 (console) |
+
+`api` listens on **3000**, not 3001. `main.ts` has always bound 3000; the 3001 in
+earlier drafts of this table was copied into nginx and the compose files more
+than once before being caught.
+
+Published to the host: nginx only in production (80, 443), plus the MinIO console
+on `127.0.0.1:9001` for SSH-tunnel access. In development the datastores also
+publish on `127.0.0.1` for local clients. Never `0.0.0.0` — an omitted host
+interface exposes the port to every network the machine has joined.
 
 ---
 

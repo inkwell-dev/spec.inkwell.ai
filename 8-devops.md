@@ -55,18 +55,44 @@ services:
 
 ### 4.2 Multi-Stage Builds
 
-Both frontend and backend use multi-stage Dockerfiles:
-- **Stage 1 (deps):** install dependencies
-- **Stage 2 (build):** compile TypeScript / build Next.js standalone
-- **Stage 3 (runner):** minimal production image, non-root user
+**Production** images are built from the `Dockerfile` in each app repo, in four
+stages:
+- **base:** Node 22 Alpine with pnpm enabled, inherited by every later stage
+- **deps:** manifests only, then install — so the install layer caches
+- **build:** compile TypeScript / build the Next.js standalone output
+- **runner:** fresh base, production dependencies plus the build output only
 
-The worker container reuses the backend image with a different entrypoint (`node dist/worker`).
+The worker container reuses the backend image with a different entrypoint
+(`node dist/src/worker`).
+
+**Development** images are built separately, from `.infra/dockerfiles/` in the
+infra repo:
+- `web.dev.dockerfile`, `api.dev.dockerfile` — target `development`
+- One stage: install dependencies, nothing else. Source is bind-mounted at
+  runtime, so hot reload is unaffected and only a dependency change requires a
+  rebuild (`make dci-dev-build`).
+- They install as the host UID/GID, which is what keeps the `node_modules` named
+  volume from being seeded root-owned (Docker seeds an empty named volume from
+  the image, ownership included).
+- `api` and `worker` share one dev image; they differ only in `command:`.
+
+The app repos' own Dockerfiles have no `development` target, which is why these
+are separate files rather than an extra stage.
 
 ### 4.3 Docker Networking
 
-- All services communicate via an internal Docker network (`inkwell-net`)
-- Services are referenced by container names (e.g., `db`, `redis`, `minio`)
-- Only Nginx exposes ports to the host (80, 443)
+- All services communicate via an internal Docker bridge network (`inkwell`)
+- Services are referenced by service name (e.g., `db`, `redis`, `minio`)
+- In production only Nginx is published publicly (80, 443). The MinIO console is
+  published to `127.0.0.1:9001` only — it authenticates with the root credentials
+  — and is reached over an SSH tunnel. The S3 API is not published at all; Nginx
+  proxies it.
+- In development the datastores additionally publish on `127.0.0.1` (`5433`,
+  `6379`, `9000`, `9001`) for local clients. The loopback prefix is required:
+  omitting it binds every interface, which exposes them to the local network.
+- Nginx also declares network **aliases** for the three dev hostnames, so
+  `storage.inkwell.ai` resolves inside the network as well as on the host —
+  without it the API cannot presign upload URLs.
 
 ### 4.4 Health Checks
 
@@ -85,6 +111,13 @@ Every service defines a Docker health check:
 
 - Source code managed with Git, hosted on GitHub
 - Repos: `frontend.inkwell.ai`, `backend.inkwell.ai`, `docker.inkwell.ai`
+- `docker.inkwell.ai` vendors the two app repos as **git submodules** under
+  `src/`, each pinned to `main`. The dev compose file bind-mounts
+  `../../src/<repo>`, so a checkout is self-contained and `git clone
+  --recurse-submodules` is the entire setup step.
+- A submodule pins a commit, not a branch tip: after pulling new work in a
+  submodule, the updated pointer must be committed in the infra repo too. That
+  commit is what identifies a deployable revision of the whole system.
 
 ### 5.2 Continuous Integration (GitHub Actions)
 
@@ -240,7 +273,7 @@ signature covers the `Host` header.
 ### 9.1 Queue System
 
 - Redis + BullMQ for job queue management
-- Worker container runs as a separate process (`node dist/worker`)
+- Worker container runs as a separate process (`node dist/src/worker`)
 - Worker shares the backend codebase and database connections
 
 ### 9.2 Scheduled Jobs
@@ -319,6 +352,8 @@ BullMQ worker, the Next.js server, and the browser.
 - Rate limiting via `@nestjs/throttler`
 - Signed upload URLs for MinIO (no direct public write access)
 - Idempotency keys on financial transactions
+- Datastore ports bound to `127.0.0.1`, never `0.0.0.0` — an omitted host
+  interface publishes on every network the machine has joined
 
 ---
 
