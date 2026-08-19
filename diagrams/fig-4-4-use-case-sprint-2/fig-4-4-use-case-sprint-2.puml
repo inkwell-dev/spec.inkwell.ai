@@ -1,0 +1,62 @@
+@startuml
+' Figure 4.4 – Use case diagram, Sprint 2: editor, AI assistance and event capture
+!include ../_style.puml
+left to right direction
+skinparam nodesep 14
+skinparam ranksep 60
+
+actor "Free reader" as LG
+actor "Premium reader" as LP
+actor "Writer" as R
+
+LP --|> LG
+R  --|> LG
+
+rectangle {
+  usecase "Sign in" as AUTH
+  usecase "Write in the\nrich editor" as EDIT
+  usecase "Format text" as EDIT1
+  usecase "Insert an image" as EDIT2
+  usecase "Set a cover image" as EDIT3
+  usecase "Save the draft\nautomatically" as SAVE
+  usecase "Read an article" as READ
+  usecase "Record reading\nevents" as EVENTS
+  usecase "Use the AI\nassistant" as AI
+  usecase "Chat with the\nassistant" as AI1
+  usecase "Apply an inline\naction" as AI2
+  usecase "Insert the answer\ninto the document" as AI3
+  usecase "Consume the daily\ntoken allowance" as QUOTA
+}
+
+rectangle "Object storage" as EXT1
+rectangle "Large language model\nprovider" as EXT2
+
+R  --> EDIT
+LG --> READ
+LP --> AI
+
+EDIT1 --|> EDIT
+EDIT2 --|> EDIT
+EDIT3 --|> EDIT
+AI1 --|> AI
+AI2 --|> AI
+
+EDIT ..> AUTH : <<include>>
+EDIT ..> SAVE : <<include>>
+READ ..> EVENTS : <<include>>
+AI   ..> AUTH : <<include>>
+AI   ..> QUOTA : <<include>>
+AI   <.. AI3 : <<extend>>
+
+EDIT2 -- EXT1
+AI -- EXT2
+
+LG -[hidden]down- LP
+LP -[hidden]down- R
+
+note as N1
+  Reading events are recorded for every reader,
+  authenticated or not; a guest is counted as a
+  view but never as an identified reader.
+end note
+@enduml

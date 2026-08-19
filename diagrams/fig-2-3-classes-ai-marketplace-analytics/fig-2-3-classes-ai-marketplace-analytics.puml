@@ -1,0 +1,179 @@
+@startuml
+' Figure 2.3 – Class diagram: AI, marketplace and analytics
+' The remaining 13 persisted classes and the enumerations they reference.
+' User and Article appear as references only; they are defined in figure 2.2.
+!include ../_style.puml
+skinparam nodesep 20
+skinparam ranksep 45
+hide circle
+hide methods
+
+class User
+class Article
+
+class ArticleChunk {
+  - chunkIndex : Integer
+  - content : Text
+  - embedding : Vector
+}
+class WriterMemory {
+  - tonePreferences : Json
+  - styleExamples : Json
+  - vocabularyPatterns : Json
+  - topics : Json
+}
+class PortfolioInsight {
+  - voiceSummary : Text
+  - topicExpertise : Json
+  - consistencyScore : Integer
+  - expiresAt : Timestamp
+}
+class AiInteraction {
+  - actionType : AiActionType
+  - tokensUsed : Integer
+  - model : String
+}
+class Purchase {
+  - stage : PurchaseStage
+  - creditsPaid : Integer
+  - platformFee : Integer
+  - writerPayout : Integer
+}
+class Transaction {
+  - type : TransactionType
+  - amount : Integer
+  - idempotencyKey : String
+  - status : TransactionStatus
+}
+class MagazineSubscription {
+  - status : SubscriptionStatus
+  - creditsGranted : Integer
+  - expiresAt : Timestamp
+}
+class EligibilityAuditLog {
+  - source : EligibilitySource
+  - readersAt : Integer
+  - reactionsAt : Integer
+}
+class AnalyticsEvent {
+  - eventType : AnalyticsEventType
+  - metadata : Json
+}
+class ArticleMetrics {
+  - totalViews : Integer
+  - totalUniqueViews : Integer
+  - completionRate : Float
+  - engagementRate : Float
+  - paragraphDropoff : Json
+}
+class WriterAudienceMetrics {
+  - totalUniqueReaders : Integer
+  - returningReaderRate : Float
+  - topCountries : Json
+  - deviceSplit : Json
+}
+class WriterContentMetrics {
+  - totalPublished : Integer
+  - postingFrequency : Float
+  - postingConsistency : Float
+  - topTags : Json
+}
+class WriterQualityMetrics {
+  - engagementRate : Float
+  - repostRate : Float
+  - commentDepth : Float
+  - retentionCurve : Json
+}
+
+class PurchaseStage <<Enumeration>> {
+  preview_unlock
+  full_purchase
+}
+class TransactionType <<Enumeration>> {
+  subscription_charge
+  monthly_credit_grant
+  credit_topup
+  preview_unlock
+  article_full_purchase
+  writer_payout
+  platform_fee
+  refund
+}
+class TransactionStatus <<Enumeration>> {
+  pending
+  completed
+  failed
+  refunded
+}
+class SubscriptionStatus <<Enumeration>> {
+  active
+  past_due
+  cancelled
+  refunded
+}
+class EligibilitySource <<Enumeration>> {
+  threshold
+  admin_grant
+}
+class AiActionType <<Enumeration>> {
+  chat
+  inline_reformulate
+  inline_shorten
+  inline_expand
+  inline_simplify
+  inline_improve
+  voice_transcribe
+  portfolio_insight
+}
+class AnalyticsEventType <<Enumeration>> {
+  view
+  scroll
+  time_on_page
+  like
+  comment
+  repost
+}
+
+Article "1" -- "0..*" ArticleChunk : is chunked into
+User "1" -- "0..1" WriterMemory
+User "1" -- "0..1" PortfolioInsight
+User "1" -- "0..*" AiInteraction
+Article "1" -- "0..*" Purchase
+User "1" -- "0..*" Purchase : buys
+Purchase "0..1" -- "0..1" Purchase : prior preview
+Purchase "1" -- "2..3" Transaction : records
+User "1" -- "0..*" Transaction
+User "1" -- "0..*" MagazineSubscription
+User "1" -- "0..*" EligibilityAuditLog
+Article "1" -- "0..*" AnalyticsEvent
+Article "1" -- "0..1" ArticleMetrics
+User "1" -- "0..1" WriterAudienceMetrics
+User "1" -- "0..1" WriterContentMetrics
+User "1" -- "0..1" WriterQualityMetrics
+
+note as N1
+  topCountries, deviceSplit and paragraphDropoff are
+  written NULL: no client-side capture source exists.
+  NULL rather than zero, so "not measured" stays
+  distinguishable from "measured, and none".
+end note
+
+' Layout: stack the leaves and group the enumerations, otherwise the
+' User hub spreads the figure into a 2800px strip.
+ArticleChunk -[hidden]down- WriterMemory
+WriterMemory -[hidden]down- PortfolioInsight
+PortfolioInsight -[hidden]down- AiInteraction
+Purchase -[hidden]down- Transaction
+Transaction -[hidden]down- MagazineSubscription
+MagazineSubscription -[hidden]down- EligibilityAuditLog
+AnalyticsEvent -[hidden]down- ArticleMetrics
+ArticleMetrics -[hidden]down- WriterAudienceMetrics
+WriterAudienceMetrics -[hidden]down- WriterContentMetrics
+WriterContentMetrics -[hidden]down- WriterQualityMetrics
+PurchaseStage -[hidden]down- TransactionType
+TransactionType -[hidden]down- TransactionStatus
+SubscriptionStatus -[hidden]down- EligibilitySource
+AiActionType -[hidden]down- AnalyticsEventType
+PurchaseStage -[hidden]right- SubscriptionStatus
+SubscriptionStatus -[hidden]right- AiActionType
+@enduml

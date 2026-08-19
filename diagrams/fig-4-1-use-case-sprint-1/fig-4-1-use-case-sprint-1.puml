@@ -1,0 +1,67 @@
+@startuml
+' Figure 4.1 – Use case diagram, Sprint 1: authentication and content management
+'
+' Refinement follows the example report's convention: sub-use-cases point at
+' their parent with a hollow generalisation triangle, and every use case that
+' requires an authenticated actor draws its own <<include>> to "Sign in".
+!include ../_style.puml
+left to right direction
+skinparam nodesep 14
+skinparam ranksep 60
+
+actor "Visitor" as V
+actor "Free reader" as LG
+actor "Writer" as R
+
+LG --|> V
+R  --|> LG
+
+rectangle {
+  usecase "Sign in" as AUTH
+  usecase "Sign in with\nGoogle" as GOOGLE
+  usecase "Register" as REG
+  usecase "Register as\na reader" as REG1
+  usecase "Register as\na magazine" as REG2
+
+  usecase "Manage a profile" as PROF
+  usecase "Browse the feed" as FEED
+  usecase "Read an article" as READ
+
+  usecase "Manage own\narticles" as ART
+  usecase "Create a draft" as ART1
+  usecase "Edit an article" as ART2
+  usecase "Publish an article" as ART3
+  usecase "Delete an article" as ART4
+  usecase "Choose placement\nand visibility" as PLACE
+  usecase "Tag an article" as TAGS
+}
+
+V --> REG
+V --> AUTH
+V --> FEED
+V --> READ
+LG --> PROF
+R --> ART
+
+REG1 --|> REG
+REG2 --|> REG
+ART1 --|> ART
+ART2 --|> ART
+ART3 --|> ART
+ART4 --|> ART
+
+AUTH <.. GOOGLE : <<extend>>
+ART  ..> AUTH : <<include>>
+PROF ..> AUTH : <<include>>
+ART3 ..> PLACE : <<include>>
+ART3 ..> TAGS : <<include>>
+
+V -[hidden]down- LG
+LG -[hidden]down- R
+
+note as N1
+  Placement is chosen at publish time and is
+  one-way: marketplace may become public,
+  never the reverse.
+end note
+@enduml

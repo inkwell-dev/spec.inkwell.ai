@@ -1,0 +1,57 @@
+@startuml
+' Figure 4.6 – System sequence diagram: inline AI edit on a text selection
+!include ../_style.puml
+mainframe interaction SequenceDiagram Inline AI action
+autonumber "0 :"
+
+participant "Writer" as R
+participant "Editor" as W
+participant "System" as A
+participant "Language\nmodel" as L
+participant "Database" as D
+
+ref over R, D : Sign in
+
+R -> W : Select text in the article
+activate W
+W -> W : Capture the selected range once
+R -> W : Choose an action\n(reformulate, shorten, expand, simplify, improve)
+W -> A : POST /ai/inline with the selection and the action
+activate A
+A -> D : Read and grant the daily allowance
+activate D
+D --> A : Remaining tokens
+deactivate D
+
+alt allowance exhausted
+  A --> W : 402 with the plan-aware notice
+  W --> R : Offer the upgrade path
+else allowance available
+  A -> A : Build the prompt from the action, the selection\nand the surrounding article
+  A -> L : Stream a completion
+  activate L
+  loop for each generated chunk
+    L --> A : Chunk
+    A --> W : Server-sent event
+    W --> R : Preview the suggestion as it arrives
+  end
+  L --> A : End of stream and tokens consumed
+  deactivate L
+  A -> D : Record the interaction and decrement the balance
+  A --> W : Completed suggestion
+  alt the writer accepts
+    R -> W : Replace, or insert below
+    W -> W : Apply the edit to the captured range
+  else the writer declines
+    R -> W : Cancel
+  end
+end
+deactivate A
+deactivate W
+
+note over R, D
+  The range is captured once, before the stream starts. Reading
+  the selection again after the stream let any click or blur move
+  it, so "Replace" could silently overwrite different text.
+end note
+@enduml

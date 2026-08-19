@@ -1,0 +1,49 @@
+@startuml
+' Figure 5.4 – System sequence diagram: AI conversation grounded in the writer's own corpus
+!include ../_style.puml
+mainframe interaction SequenceDiagram AI chat with retrieval
+autonumber "0 :"
+
+participant "Writer" as R
+participant "System" as A
+participant "Embedding\nprovider" as E
+participant "Language\nmodel" as L
+participant "Database" as D
+
+ref over R, D : Sign in
+
+R -> A : Type a question in the AI panel
+activate A
+A -> A : Check and grant the daily AI allowance
+A -> E : Embed the question (1536 dimensions)
+activate E
+E --> A : Query vector
+deactivate E
+A -> D : Retrieve the writer's own passages\n(cosine distance, top-K = 5, similarity >= 0.60)
+D --> A : 5 passages, top similarity 0.668
+A -> D : Read the writer's voice profile
+D --> A : Tone, style, vocabulary, topics
+
+alt allowance exhausted
+  A --> R : Display the quota notice and disable the composer
+else allowance available
+  A -> A : Assemble the prompt\nROLE + MEMORY + PASSAGES + QUESTION (~2000 tokens)
+  A -> L : Stream a completion
+activate L
+  loop for each generated chunk
+    L --> A : Chunk
+    A --> R : Server-sent event, rendered incrementally
+  end
+  L --> A : End of stream and tokens consumed
+deactivate L
+  A -> D : Record the interaction and decrement the balance
+  A --> R : Passages used, grouped by article
+  deactivate A
+end
+
+note over R, D
+  No training takes place: articles are embedded and retrieved
+  at query time, so an article published a minute ago is
+  immediately usable.
+end note
+@enduml

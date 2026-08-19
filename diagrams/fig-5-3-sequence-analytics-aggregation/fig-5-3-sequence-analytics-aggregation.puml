@@ -1,0 +1,68 @@
+@startuml
+' Figure 5.3 – System sequence diagram: from reading events to dashboard metrics
+!include ../_style.puml
+mainframe interaction SequenceDiagram Analytics aggregation
+autonumber "0 :"
+
+participant "Reader" as U
+participant "Browser\napplication" as W
+participant "System" as A
+participant "Worker" as K
+participant "Database" as D
+
+U -> W : Open an article
+activate W
+W -> W : Observe scroll depth and engaged time
+W -> A : POST /analytics/events, batched\n(10 events, or every 5 s, or on unload)
+activate A
+A -> A : Attach the country and device server-side
+A -> D : Append to the raw event log
+activate D
+D --> A : Stored
+deactivate D
+deactivate A
+deactivate W
+
+|||
+
+group Scheduled, every 5 minutes
+  K -> D : Read events since the last aggregation
+  activate K
+  activate D
+  D --> K : New events only
+  K -> K : Compute views, unique views, read time,\ncompletion and engagement
+  K -> D : Upsert the per-article metrics
+  deactivate D
+  deactivate K
+end
+
+group Scheduled, offset to land just after the article rollup
+  K -> D : Read the per-article metrics and the social tables
+  activate K
+  activate D
+  D --> K : Rows
+  K -> K : Compute the audience, content and quality rollups
+  K -> D : Upsert the three per-writer metric rows
+  K -> K : Recheck marketplace eligibility
+  deactivate D
+  deactivate K
+end
+
+U -> W : Open the dashboard
+activate W
+W -> A : GET the analytics for an article
+activate A
+A -> D : Read the pre-computed rollup, one row
+activate D
+D --> A : Metrics
+deactivate D
+A --> W : Metrics
+deactivate A
+W --> U : Render the charts
+deactivate W
+
+note over U, D
+  The dashboards never read the raw event log. Aggregation is
+  incremental and idempotent, so a re-run cannot double-count.
+end note
+@enduml

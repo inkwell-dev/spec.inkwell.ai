@@ -1,0 +1,65 @@
+@startuml
+' Figure 6.8 – State diagram: the article lifecycle
+' Placement and visibility are not free-form: the transitions below are the only
+' ones the API permits, and one of them is deliberately one-way.
+!include ../_style.puml
+hide empty description
+
+[*] --> Draft : create
+
+state Draft {
+  Draft : content saved automatically
+  Draft : invisible to everyone but the author
+}
+
+state "Published — public, free" as PubFree {
+  PubFree : in the public feed
+  PubFree : body readable by guests
+}
+
+state "Published — public, premium" as PubPremium {
+  PubPremium : in the public feed
+  PubPremium : body requires a premium plan
+}
+
+state "Published — marketplace" as Market {
+  Market : absent from the public feed
+  Market : priced in credits
+  Market : body requires a preview or a purchase
+}
+
+state Deleted {
+  Deleted : deleted_at is set
+  Deleted : chunks removed by an explicit job
+}
+
+Draft --> PubFree : publish\n[placement = public, visibility = free]
+Draft --> PubPremium : publish\n[placement = public, visibility = premium]\n[writer is eligible]
+Draft --> Market : publish\n[placement = marketplace, price > 0]\n[writer is eligible]
+
+PubFree --> PubFree : update\n/ re-embed, refresh the voice profile
+PubPremium --> PubPremium : update
+Market --> Market : update
+
+Market --> PubFree : abandon the sale\n[one-way]
+Market --> PubPremium : abandon the sale\n[one-way]
+
+PubFree --> Deleted : soft delete
+PubPremium --> Deleted : soft delete
+Market --> Deleted : soft delete
+Draft --> Deleted : soft delete
+Deleted --> [*]
+
+note right of Market
+  public → marketplace is refused by the API. An article
+  the public has already read has no exclusivity left to
+  sell, so the switch runs one way only.
+end note
+
+note bottom of Deleted
+  A soft delete does not cascade: the row survives, so
+  ON DELETE CASCADE never fires. The chunks are removed
+  by a remove-article-chunks job, or a deleted article's
+  text stays retrievable into prompts.
+end note
+@enduml

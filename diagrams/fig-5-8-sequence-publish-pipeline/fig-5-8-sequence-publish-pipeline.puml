@@ -1,0 +1,76 @@
+@startuml
+' Figure 5.8 – System sequence diagram: what publishing sets in motion
+' The writer's request returns before any of the expensive work happens. This is
+' the figure that answers "why is anything a background job at all".
+!include ../_style.puml
+mainframe interaction SequenceDiagram Publish pipeline
+autonumber "0 :"
+
+participant "Writer" as R
+participant "System" as A
+participant "Database" as D
+participant "Queue" as Q
+participant "Worker" as K
+participant "Embedding\nprovider" as E
+participant "Language\nmodel" as L
+
+ref over R, L : Sign in
+
+R -> A : POST /articles/:id/publish\nwith placement and visibility
+activate A
+A -> A : Check eligibility for premium\nor marketplace placement
+A -> D : Write the article row, the generated tsvector,\nthe word count and the read time
+activate D
+D --> A : Stored
+deactivate D
+A -> Q : Enqueue embed-article
+A --> R : 201, the article is live
+deactivate A
+note right of R
+  The writer waits for one database write, not for
+  an embedding round trip. Everything below happens
+  after the response has been sent.
+end note
+
+|||
+
+Q -> K : embed-article
+activate K
+K -> D : Delete the article's existing chunks
+note right of K
+  Delete before insert: the unique constraint on
+  (article_id, chunk_index) makes an update
+  impossible, so a re-publish replaces the set.
+end note
+K -> K : Split into chunks of 120–1200 characters,\nprefixing headings, splitting on sentence boundaries
+loop for each chunk
+  K -> E : Embed the chunk
+  activate E
+  E --> K : Vector, 1536 dimensions
+  deactivate E
+end
+K -> D : Insert the chunks with their vectors
+K -> D : Delete the writer's cached portfolio insight
+K -> Q : Chain extract-writer-memory
+deactivate K
+
+Q -> K : extract-writer-memory
+activate K
+K -> D : Read the writer's ten most recent published articles
+activate D
+D --> K : Corpus sample
+deactivate D
+K -> L : Ask for tone, style, vocabulary and topics\nas a schema-validated object
+activate L
+L --> K : Structured profile
+deactivate L
+K -> D : Upsert the writer's voice profile
+deactivate K
+
+note over R, L
+  The memory job is chained after embedding rather than
+  enqueued beside it: it reads the chunks the first job
+  writes, so in parallel it would race and lose on a
+  writer's first publish.
+end note
+@enduml

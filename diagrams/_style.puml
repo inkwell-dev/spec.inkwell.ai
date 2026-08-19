@@ -97,3 +97,14 @@ skinparam partition {
   BorderColor #000000
   FontColor #000000
 }
+
+' State diagrams: same monochrome rule.
+skinparam state {
+  BackgroundColor #FFFFFF
+  BorderColor #000000
+  FontColor #000000
+  StartColor #000000
+  EndColor #000000
+  AttributeFontColor #000000
+  AttributeFontSize 11
+}

@@ -1,0 +1,43 @@
+@startgantt
+' Figure 2.4 – Gantt chart: the eight sprints, as executed
+' Dates are the real sprint boundaries recorded in 0-phase-plan.md § Sprint Map,
+' not a plan drawn after the fact.
+!include ../_style.puml
+projectscale weekly
+Project starts 2026-05-22
+saturday are closed
+sunday are closed
+
+-- Release 0: foundation --
+[S0 Foundation, Docker and CI] lasts 5 days
+[S0 Foundation, Docker and CI] is colored in White/Black
+
+-- Release 1: functional foundation --
+[S1 Schema, authentication, article core] lasts 10 days
+[S1 Schema, authentication, article core] starts at [S0 Foundation, Docker and CI]'s end
+[S5 Editor, AI assistance, event capture] lasts 10 days
+[S5 Editor, AI assistance, event capture] starts 2026-07-27
+
+-- Design track --
+[S2 Design system and mobile screens] lasts 10 days
+[S2 Design system and mobile screens] starts 2026-06-12
+[S3 Desktop screens and refinement] lasts 10 days
+[S3 Desktop screens and refinement] starts at [S2 Design system and mobile screens]'s end
+[S4 Figma audit and re-baseline] lasts 13 days
+[S4 Figma audit and re-baseline] starts at [S3 Desktop screens and refinement]'s end
+
+-- Release 2: social, analytics and AI --
+[S6 RAG, insights and hybrid search] lasts 10 days
+[S6 RAG, insights and hybrid search] starts 2026-08-10
+
+-- Release 3: marketplace, testing and deployment --
+[S7 Marketplace, tests and deployment] lasts 10 days
+[S7 Marketplace, tests and deployment] starts 2026-08-24
+
+-- Report and defense --
+[Report writing] lasts 8 days
+[Report writing] starts 2026-08-19
+[Report submission] happens at 2026-08-31
+[Defense] happens at 2026-09-07
+
+@endgantt

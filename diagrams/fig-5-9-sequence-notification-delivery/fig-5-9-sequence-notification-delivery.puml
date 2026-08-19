@@ -1,0 +1,66 @@
+@startuml
+' Figure 5.9 – System sequence diagram: live notification delivery over SSE
+!include ../_style.puml
+mainframe interaction SequenceDiagram Notification delivery
+autonumber "0 :"
+
+participant "Reader" as U
+participant "System" as A
+participant "Database" as D
+participant "Writer's\nbrowser" as W
+
+group Subscription, once per session
+  W -> A : GET /notifications/stream
+  activate A
+  A -> A : Register the writer in the subscriber map
+  A --> W : 200, text/event-stream, unbuffered by nginx
+  loop every 30 seconds
+    A --> W : Heartbeat comment
+  end
+  note right of A
+    The heartbeat exists because nginx closes an idle
+    proxied connection after 60 seconds. Without it the
+    stream dies quietly and the bell stops updating.
+  end note
+end
+
+|||
+
+U -> A : Like the writer's article
+group One database transaction
+  A -> D : Insert the like
+  activate D
+  A -> D : Insert the notification row
+  D --> A : Committed
+  deactivate D
+end
+A -> A : Only now, after the commit,\npush to the subscriber map
+note right of A
+  Emitting inside the transaction would announce
+  something a rollback then un-did.
+end note
+A --> W : Server-sent event with an id
+W --> W : Increment the unread badge, prepend to the dropdown
+A --> U : 201
+deactivate A
+
+|||
+
+group Reconnection
+  W -> W : The connection drops
+  W -> A : GET /notifications/stream with Last-Event-ID
+  activate A
+  A -> D : Read the notifications newer than that id
+  activate D
+  D --> A : Missed rows
+  deactivate D
+  A --> W : Replay, then resume streaming
+  deactivate A
+end
+
+note over U, W
+  Delivery is best-effort; the database is the record. The
+  bell reads the persisted list on load, so a notification
+  missed while offline is never lost, only delayed.
+end note
+@enduml

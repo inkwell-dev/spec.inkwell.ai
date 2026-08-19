@@ -1,0 +1,76 @@
+@startuml
+' Figure 6.1 – Use case diagram, Sprint 5: marketplace, subscriptions and moderation
+!include ../_style.puml
+skinparam nodesep 14
+skinparam ranksep 65
+
+actor "Free reader" as LG
+actor "Writer" as R
+actor "Eligible writer" as RE
+actor "Magazine\n(unsubscribed)" as MN
+actor "Magazine\n(subscribed)" as MA
+actor "Administrator" as AD
+
+R  --|> LG
+RE --|> R
+MA --|> MN
+
+rectangle {
+  usecase "Sign in" as AUTH
+  usecase "Upgrade to\npremium" as UPGRADE
+  usecase "Subscribe as\na magazine" as SUBSCRIBE
+  usecase "Grant the monthly\ncredits" as GRANT
+  usecase "Top up credits" as TOPUP
+  usecase "List an article on\nthe marketplace" as LIST
+  usecase "Set a price" as PRICE
+  usecase "Browse marketplace\narticles" as BROWSE
+  usecase "Purchase\nan article" as BUY
+  usecase "Unlock a preview\n(10% of the price)" as PREVIEW
+  usecase "Move credits in\none transaction" as LEDGER
+  usecase "View the library" as LIB
+  usecase "View earnings" as EARN
+  usecase "Review the\nreport queue" as MOD
+  usecase "Dismiss a report" as MOD1
+  usecase "Delete an article" as MOD2
+  usecase "Ban a user" as MOD3
+  usecase "Grant eligibility\nmanually" as ELIG
+  usecase "Manage users" as USERS
+  usecase "Classify content\nat publish time" as CLASSIFY
+}
+
+LG --> UPGRADE
+RE --> LIST
+R  --> EARN
+MN --> SUBSCRIBE
+MA --> BROWSE
+MA --> BUY
+MA --> TOPUP
+MA --> LIB
+AD --> MOD
+AD --> ELIG
+AD --> USERS
+
+MOD1 --|> MOD
+MOD2 --|> MOD
+MOD3 --|> MOD
+
+SUBSCRIBE ..> GRANT : <<include>>
+SUBSCRIBE ..> AUTH : <<include>>
+LIST      ..> PRICE : <<include>>
+LIST      ..> AUTH : <<include>>
+BUY       ..> LEDGER : <<include>>
+BUY       <.. PREVIEW : <<extend>>
+PREVIEW   ..> LEDGER : <<include>>
+TOPUP     ..> LEDGER : <<include>>
+GRANT     ..> LEDGER : <<include>>
+BROWSE    ..> AUTH : <<include>>
+MOD       ..> AUTH : <<include>>
+LIST      ..> CLASSIFY : <<include>>
+
+
+note as N1
+  Listing on the marketplace requires eligibility:
+  5,000 identified readers and 1,000 reactions,
+  lifetime and monotonic, or an administrator's grant.
+end note
+@enduml

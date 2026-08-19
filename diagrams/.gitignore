@@ -1,9 +1,9 @@
 # PNGs are review-only: they exist so a figure can be eyeballed quickly, and
-# `make` regenerates them from the sources beside them. The SVGs are committed
-# because those are what goes into the report, and because a reader who clones
-# this repository should get the figures without installing Docker or draw.io.
-*.png
-drawio/*.png
+# `make` regenerates them from the source in the same folder. The SVGs are
+# committed because those are what goes into the report, and because a reader
+# who clones this repository should get the figures without installing Docker
+# or draw.io.
+*/*.png
 
 # PlantUML in Docker writes a Java font cache into $HOME. The Makefile sets
 # HOME=/tmp, but a direct `docker run` without it creates a literal "?" folder

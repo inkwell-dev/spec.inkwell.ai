@@ -20,12 +20,35 @@ spreads to 2091×957 with the actors scattered. Hand-placing it fixes containmen
 gives the ordered actor column, and lets all eight `«include»` arrows to *Sign
 in* be drawn — which is what the example report does per sprint.
 
+## Layout
+
+One folder per figure, named after the figure, holding its source and its two
+renders:
+
+```
+diagrams/
+├── _style.puml                          shared style, included by every .puml
+├── Makefile
+├── tools/                               the draw.io generators
+│   ├── gen-fig-2-1.py
+│   └── gen-architecture.py
+└── fig-5-4-sequence-ai-chat-rag/
+    ├── fig-5-4-sequence-ai-chat-rag.puml
+    ├── fig-5-4-sequence-ai-chat-rag.svg
+    └── fig-5-4-sequence-ai-chat-rag.png   (ignored by git)
+```
+
+A figure's folder name, source name and caption number all match, so a figure
+referenced in the report resolves to exactly one directory.
+
 ## Rendering
 
 ```bash
-make            # SVG + PNG for everything
-make one F=fig-2-1-cas-utilisation-global
-make check      # parse without rendering
+make                                       # everything, both tools
+make one F=fig-5-4-sequence-ai-chat-rag    # a single figure, either tool
+make check                                 # parse the PlantUML sources
+make regen                                 # re-run the draw.io generators
+make clean
 ```
 
 Docker is the only requirement — `plantuml/plantuml` carries PlantUML 1.2026.6
@@ -121,36 +144,42 @@ diagrams need it.
 
 | File | Report | Tool | Size |
 |------|--------|------|------|
-| `drawio/fig-2-1-use-case-global` | Ch.2 §2.2 | draw.io | 2189×1446 |
-| `fig-2-2-classes-core-domain` | Ch.2 §2.3 | PlantUML | 1560×581 |
-| `fig-2-3-classes-ai-marketplace-analytics` | Ch.2 §2.3 | PlantUML | 1409×1115 |
-| `fig-2-4-gantt` | Ch.2 §2.4.3 | PlantUML gantt | 762×446 |
-| `drawio/fig-3-1-architecture-frontend` | Ch.3 §3.1.1 | draw.io | 1715×905 |
-| `drawio/fig-3-2-architecture-backend` | Ch.3 §3.1.1 | draw.io | 1835×980 |
-| `drawio/fig-3-3-architecture-physical` | Ch.3 §3.1.2 | draw.io | 1835×1040 |
-| `drawio/fig-3-4-architecture-cicd` | Ch.3 §3.3 | draw.io | 1865×1010 |
-| `fig-4-1-use-case-sprint-1` | Ch.4 §4.1 | PlantUML | 1337×602 |
-| `fig-4-2-classes-sprint-1` | Ch.4 §4.1 | PlantUML | 802×646 |
-| `fig-4-3-sequence-authentication` | Ch.4 §4.1 | PlantUML | 1000×924 |
-| `fig-4-4-use-case-sprint-2` | Ch.4 §4.2 | PlantUML | 1241×519 |
-| `fig-4-5-classes-sprint-2` | Ch.4 §4.2 | PlantUML | 862×517 |
-| `fig-4-6-sequence-inline-ai-edit` | Ch.4 §4.2 | PlantUML | 1176×975 |
-| `fig-5-1-use-case-sprint-3` | Ch.5 §5.1 | PlantUML | 1188×545 |
-| `fig-5-2-classes-sprint-3` | Ch.5 §5.1 | PlantUML | 1443×698 |
-| `fig-5-3-sequence-analytics-aggregation` | Ch.5 §5.1 | PlantUML | 1178×962 |
-| `fig-5-4-sequence-ai-chat-rag` | Ch.5 §5.2 | PlantUML | 1048×836 |
-| `fig-5-5-use-case-sprint-4` | Ch.5 §5.2 | PlantUML | 1174×648 |
-| `fig-5-6-classes-sprint-4` | Ch.5 §5.2 | PlantUML | 1189×443 |
-| `fig-5-7-sequence-hybrid-search` | Ch.5 §5.2 | PlantUML | 851×682 |
-| `fig-6-1-use-case-sprint-5` | Ch.6 §6.1 | PlantUML | 1375×921 |
-| `fig-6-2-classes-sprint-5` | Ch.6 §6.1 | PlantUML | 1378×670 |
-| `fig-6-3-sequence-two-stage-purchase` | Ch.6 §6.1 | PlantUML | 878×1049 |
-| `fig-6-4-activity-eligibility-gate` | Ch.6 §6.1 | PlantUML | 834×1001 |
-| `fig-6-5-sequence-moderation` | Ch.6 §6.1 | PlantUML | 822×952 |
-| `fig-6-6-activity-article-access` | Ch.6 §6.1 | PlantUML | 1753×875 |
+| `fig-2-1-use-case-global/` | Ch.2 §2.2 | draw.io | 2189×1446 |
+| `fig-2-2-classes-core-domain/` | Ch.2 §2.3 | PlantUML | 1560×581 |
+| `fig-2-3-classes-ai-marketplace-analytics/` | Ch.2 §2.3 | PlantUML | 1409×1115 |
+| `fig-2-4-gantt/` | Ch.2 §2.4.3 | PlantUML gantt | 762×446 |
+| `fig-3-1-architecture-frontend/` | Ch.3 §3.1.1 | draw.io | 1715×905 |
+| `fig-3-2-architecture-backend/` | Ch.3 §3.1.1 | draw.io | 1835×980 |
+| `fig-3-3-architecture-physical/` | Ch.3 §3.1.2 | draw.io | 1835×1040 |
+| `fig-3-4-architecture-cicd/` | Ch.3 §3.3 | draw.io | 1865×1010 |
+| `fig-4-1-use-case-sprint-1/` | Ch.4 §4.1 | PlantUML | 1337×602 |
+| `fig-4-2-classes-sprint-1/` | Ch.4 §4.1 | PlantUML | 802×646 |
+| `fig-4-3-sequence-authentication/` | Ch.4 §4.1 | PlantUML | 1000×924 |
+| `fig-4-4-use-case-sprint-2/` | Ch.4 §4.2 | PlantUML | 1241×519 |
+| `fig-4-5-classes-sprint-2/` | Ch.4 §4.2 | PlantUML | 862×517 |
+| `fig-4-6-sequence-inline-ai-edit/` | Ch.4 §4.2 | PlantUML | 1176×975 |
+| `fig-5-1-use-case-sprint-3/` | Ch.5 §5.1 | PlantUML | 1188×545 |
+| `fig-5-2-classes-sprint-3/` | Ch.5 §5.1 | PlantUML | 1443×698 |
+| `fig-5-3-sequence-analytics-aggregation/` | Ch.5 §5.1 | PlantUML | 1178×962 |
+| `fig-5-4-sequence-ai-chat-rag/` | Ch.5 §5.2 | PlantUML | 1048×836 |
+| `fig-5-5-use-case-sprint-4/` | Ch.5 §5.2 | PlantUML | 1174×648 |
+| `fig-5-6-classes-sprint-4/` | Ch.5 §5.2 | PlantUML | 1189×443 |
+| `fig-5-7-sequence-hybrid-search/` | Ch.5 §5.2 | PlantUML | 851×682 |
+| `fig-6-1-use-case-sprint-5/` | Ch.6 §6.1 | PlantUML | 1375×921 |
+| `fig-6-2-classes-sprint-5/` | Ch.6 §6.1 | PlantUML | 1378×670 |
+| `fig-6-3-sequence-two-stage-purchase/` | Ch.6 §6.1 | PlantUML | 878×1049 |
+| `fig-6-4-activity-eligibility-gate/` | Ch.6 §6.1 | PlantUML | 834×1001 |
+| `fig-6-5-sequence-moderation/` | Ch.6 §6.1 | PlantUML | 822×952 |
+| `fig-6-6-activity-article-access/` | Ch.6 §6.1 | PlantUML | 1753×875 |
 
-**26 figures. Still to produce:** 30–40 interface screenshots against seeded data,
-and the test and deployment evidence captures. No further UML is outstanding.
+| `fig-1-1-scrum-framework/` | Ch.1 §1.4.2 | draw.io | 1625×755 |
+| `fig-1-2-waterfall-vs-agile/` | Ch.1 §1.4.1 | draw.io | 1625×905 |
+| `fig-5-8-sequence-publish-pipeline/` | Ch.5 §5.2 | PlantUML | 1390×1090 |
+| `fig-5-9-sequence-notification-delivery/` | Ch.5 §5.1 | PlantUML | 948×1031 |
+| `fig-6-7-test-strategy/` | Ch.6 §6.2 | draw.io | 1715×855 |
+| `fig-6-8-state-article-lifecycle/` | Ch.6 §6.1 | PlantUML | 1238×743 |
+
+**33 figures.** Still to produce, and none of it is diagram work: 30–40 interface screenshots against seeded data, the test and deployment evidence captures, the Intuitiv logo as a downloaded asset, and the report's own tables.
 
 **The global class diagram is two figures, not one.** All 24 classes in a single
 diagram renders as a 3851×583 strip: `Utilisateur` is related to fifteen other

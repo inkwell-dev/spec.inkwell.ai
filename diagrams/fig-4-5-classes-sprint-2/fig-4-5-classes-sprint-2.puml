@@ -1,0 +1,75 @@
+@startuml
+' Figure 4.5 – Class diagram, Sprint 2: editor, AI interactions and raw events
+!include ../_style.puml
+skinparam nodesep 18
+skinparam ranksep 45
+hide circle
+hide methods
+
+class User {
+  - id : UUID
+  - plan : Plan
+  - aiTokensRemaining : Integer
+  - aiTokensResetAt : Timestamp
+}
+class Article {
+  - id : UUID
+  - content : Json
+  - contentSearch : TsVector
+  - wordCount : Integer
+  - readTime : Integer
+  - thumbnailUrl : String
+}
+class AiInteraction {
+  - id : UUID
+  - actionType : AiActionType
+  - inputText : Text
+  - outputText : Text
+  - tokensUsed : Integer
+  - model : String
+}
+class AnalyticsEvent {
+  - id : UUID
+  - eventType : AnalyticsEventType
+  - metadata : Json
+  - createdAt : Timestamp
+}
+
+class AiActionType <<Enumeration>> {
+  chat
+  inline_reformulate
+  inline_shorten
+  inline_expand
+  inline_simplify
+  inline_improve
+  voice_transcribe
+  portfolio_insight
+}
+class AnalyticsEventType <<Enumeration>> {
+  view
+  scroll
+  time_on_page
+  like
+  comment
+  repost
+}
+class Plan <<Enumeration>> {
+  free
+  premium
+}
+
+User "1" -- "0..*" Article : writes
+User "1" -- "0..*" AiInteraction : triggers
+Article "0..1" -- "0..*" AiInteraction : is the context of
+Article "1" -- "0..*" AnalyticsEvent : is measured by
+User "0..1" -- "0..*" AnalyticsEvent : viewer
+
+note as N1
+  voice_transcribe exists in the enumeration but has
+  no implementation: voice input was descoped in the
+  2026-07-26 re-baseline and is reported as future work.
+end note
+
+AiActionType -[hidden]down- AnalyticsEventType
+AnalyticsEventType -[hidden]down- Plan
+@enduml
