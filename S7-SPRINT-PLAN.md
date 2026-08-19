@@ -43,8 +43,9 @@ Both statements were written when feature work was unfinished, and the point was
 that deploy must not steal time from features. **Features are now finished** —
 Phases 1–5 are closed and verified. The rationale has lapsed, and the S7 row is
 additionally stale on its own terms: the Phase 6 section already supersedes it,
-noting the Student Pack supplies a free `.me` domain and $200 of DigitalOcean
-credit, making it *"a scheduling decision rather than a hard block"*.
+noting the Student Pack supplies a free `.me` domain and ~~$200 of DigitalOcean
+credit~~ ($100 of Azure for Students credit — DigitalOcean left the pack on
+2026-08-01), making it *"a scheduling decision rather than a hard block"*.
 
 Holding deploy to the end **now** converts a de-risking decision into a risk.
 Deployment is the only work in Phase 6 with dependencies this project does not
@@ -61,11 +62,17 @@ fail on someone else's timetable.
 Nothing is scheduled here. Spend it on the things with external latency, so S7
 opens with the risk already retired.
 
-- [ ] **Claim the `.me` domain** (Namecheap, Student Pack). Registration plus DNS
-      propagation is wall-clock time nobody can compress.
-- [ ] **Provision the VPS** (DigitalOcean, $200 pack credit).
-- [ ] **Configure DNS** — two records, the apex and `storage.` for presigned
-      uploads, per the note in the phase plan.
+- [x] **Claim the `.me` domain** — **`inkwell-ai.me`**, registered 2026-08-16.
+      Wired into the production configs 2026-08-17; dev hostnames left alone (see
+      the correction on the phase-plan item — `inkwell.ai` was never purely a
+      placeholder, it is the local `/etc/hosts` name the E2E suite runs on).
+- [ ] **Provision the VPS** — ~~DigitalOcean, $200~~ **withdrawn**: DigitalOcean
+      left the Student Pack and revoked all pack credits, redeemed ones included,
+      on 2026-08-01. **Azure for Students, size B2s** (2 vCPU / 4 GiB, ~3 months
+      on the $100 credit, no card). Oracle's free ARM tier is ruled out by
+      amd64-only CI builds. Fallback: Cloudflare Tunnel.
+- [ ] **Configure DNS** — three A records: apex, `www`, and `storage.` for
+      presigned uploads. All three must resolve before certbot runs.
 - [ ] **Create the Sentry project**, get both DSNs.
 - [x] Tick the nine already-satisfied boxes above — *done 2026-08-15; Phase 6 now reads 34 open.*
 
@@ -79,11 +86,30 @@ it at all.
 - [ ] Set the four GitHub repository variables — deliberately empty today so
       images do not bake in a domain nobody owns; that reason is gone once the
       domain is real
-- [ ] GitHub Actions deploy workflow: `repository_dispatch` trigger → SSH → pull
-      → `docker compose up -d`
-- [ ] Automatic migrations on deploy. The one pending migration is additive
-      (`notification_type` gained `'repost'`) and production has never existed,
-      so it lands with the value present — but the *mechanism* still needs to work
+- [x] GitHub Actions deploy workflow: `repository_dispatch` trigger → SSH → pull
+      → `docker compose up -d` — *written 2026-08-17,
+      `docker.inkwell.ai/.github/workflows/deploy.yml`. Cannot run until the VPS
+      exists and six secrets are set (`VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`,
+      `VPS_PORT`, `GHCR_USER`, `GHCR_TOKEN`).*
+- [x] **Automatic migrations on deploy** — *built and verified 2026-08-17.*
+      **The note this replaces was wrong on its central claim.** It said "the
+      *mechanism* still needs to work"; there was no mechanism. `drizzle.config.ts`
+      pointed at a `./drizzle` directory that did not exist, the repo held zero
+      `.sql` files, and the schema was being applied with `drizzle-kit push`.
+      The production image could not have run migrations either way: the runner
+      stage installs `--prod` (drizzle-kit is a devDependency) and copies only
+      `dist/`.
+      Built instead on `drizzle-orm/node-postgres/migrator`, which ships inside
+      `drizzle-orm` — already a production dependency, so nothing new is
+      installed. Baseline migration generated (24 tables, 17 enums); one-shot
+      `migrate` service added to the production compose, gating `api` and
+      `worker` on `service_completed_successfully`.
+      **It also fixes a first-deploy failure nobody had hit yet:** the migration
+      declares `vector(1536)` and drizzle-kit never emits `CREATE EXTENSION`.
+      Measured on a virgin database — aborts at `type "vector" does not exist`
+      after creating 14 of 24 tables. The runner now creates the extension first.
+      Verified: clean apply on a virgin DB, idempotent on re-run, and a no-op
+      against the baselined dev database with its 60 users / 112 articles intact.
 - [ ] Verify the full stack at the production URL
 
 **Then quality, against the deployed instance where it matters:**
