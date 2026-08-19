@@ -1,0 +1,54 @@
+@startuml
+' Figure 4.3 – System sequence diagram: sign in and silent token refresh
+!include _style.puml
+mainframe interaction SequenceDiagram Sign in
+autonumber "0 :"
+
+participant "User" as U
+participant "Browser\napplication" as W
+participant "System" as A
+participant "Database" as D
+
+U -> W : Submit email and password
+activate W
+W -> A : POST /auth/login
+activate A
+A -> D : Read the account by email
+activate D
+D --> A : Account row
+deactivate D
+A -> A : Compare the password against the bcrypt hash
+
+alt credentials invalid, or the account is banned
+  A --> W : 401, generic message
+  W --> U : Display "invalid credentials"
+else credentials valid
+  A -> A : Issue an access token (15 min)\nand a refresh token (7 days)
+  A --> W : Tokens and the account profile
+  W -> W : Store the access token and set the auth cookie
+  W --> U : Redirect to the feed
+end
+deactivate A
+deactivate W
+
+|||
+
+group Silent refresh, on any later request
+  W -> A : GET a protected resource
+  activate A
+  A --> W : 401, the access token has expired
+  W -> A : POST /auth/refresh with the refresh token
+  A -> A : Rotate the refresh token and issue a new access token
+  A --> W : New tokens
+  W -> W : Refresh the auth cookie as well as the store
+  W -> A : Retry the original request
+  A --> W : 200
+  deactivate A
+end
+
+note over U, D
+  The cookie is refreshed as well as the client store. Before
+  Phase Q it was written only at sign-in, so every session died
+  silently after 15 minutes and unsaved editor work was lost.
+end note
+@enduml

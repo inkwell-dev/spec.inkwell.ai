@@ -1,0 +1,61 @@
+@startuml
+' Figure 5.1 – Use case diagram, Sprint 3: social interactions and analytics
+!include _style.puml
+left to right direction
+skinparam nodesep 14
+skinparam ranksep 60
+
+actor "Free reader" as LG
+actor "Writer" as R
+actor "Magazine\n(subscribed)" as MA
+
+R --|> LG
+
+rectangle {
+  usecase "Sign in" as AUTH
+  usecase "Interact with\nan article" as INT
+  usecase "Like an article" as INT1
+  usecase "Comment on\nan article" as INT2
+  usecase "Reply to\na comment" as INT3
+  usecase "Repost an article" as INT4
+  usecase "Follow a writer" as INT5
+  usecase "Report content" as INT6
+  usecase "Notify the\nrecipient" as NOTIF
+  usecase "Receive live\nnotifications" as NOTIF2
+  usecase "View article\nanalytics" as STATS
+  usecase "Aggregate raw\nevents into metrics" as AGG
+  usecase "Read a writer\nevaluation report" as EVAL
+  usecase "Browse eligible\nwriters" as DISC
+}
+
+LG --> INT
+LG --> NOTIF2
+R  --> STATS
+MA --> DISC
+MA --> EVAL
+
+INT1 --|> INT
+INT2 --|> INT
+INT3 --|> INT2
+INT4 --|> INT
+INT5 --|> INT
+INT6 --|> INT
+
+INT   ..> AUTH : <<include>>
+INT   ..> NOTIF : <<include>>
+STATS ..> AUTH : <<include>>
+STATS ..> AGG : <<include>>
+EVAL  ..> AGG : <<include>>
+EVAL  ..> AUTH : <<include>>
+DISC  ..> AUTH : <<include>>
+
+LG -[hidden]down- R
+R -[hidden]down- MA
+
+note as N1
+  Aggregation is a scheduled worker, not a user action:
+  the dashboards read pre-computed rollups rather than
+  raw events. Included here because no metric exists
+  without it.
+end note
+@enduml

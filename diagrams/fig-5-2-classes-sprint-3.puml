@@ -1,0 +1,102 @@
+@startuml
+' Figure 5.2 – Class diagram, Sprint 3: interactions, notifications and metric rollups
+!include _style.puml
+skinparam nodesep 18
+skinparam ranksep 45
+hide circle
+hide methods
+
+class User {
+  - id : UUID
+  - username : String
+}
+class Article {
+  - id : UUID
+  - title : String
+  - publishedAt : Timestamp
+}
+class Like
+class Comment {
+  - content : Text
+  - deletedAt : Timestamp
+}
+class Repost
+class Follow
+class Notification {
+  - type : NotificationType
+  - data : Json
+  - isRead : Boolean
+}
+class AnalyticsEvent {
+  - eventType : AnalyticsEventType
+  - metadata : Json
+}
+class ArticleMetrics {
+  - totalViews : Integer
+  - totalUniqueViews : Integer
+  - avgReadTimeSec : Float
+  - completionRate : Float
+  - engagementRate : Float
+  - paragraphDropoff : Json
+}
+class WriterAudienceMetrics {
+  - totalUniqueReaders : Integer
+  - returningReaderRate : Float
+  - topCountries : Json
+  - deviceSplit : Json
+}
+class WriterContentMetrics {
+  - totalPublished : Integer
+  - postingFrequency : Float
+  - postingConsistency : Float
+  - topTags : Json
+}
+class WriterQualityMetrics {
+  - engagementRate : Float
+  - repostRate : Float
+  - commentDepth : Float
+  - retentionCurve : Json
+}
+
+class NotificationType <<Enumeration>> {
+  follow
+  like
+  comment
+  reply
+  repost
+}
+class AnalyticsEventType <<Enumeration>> {
+  view
+  scroll
+  time_on_page
+  like
+  comment
+  repost
+}
+
+User "1" -- "0..*" Like
+User "1" -- "0..*" Comment
+User "1" -- "0..*" Repost
+User "1" -- "0..*" Follow
+User "1" -- "0..*" Notification : receives
+Article "1" -- "0..*" Like
+Article "1" -- "0..*" Comment
+Article "1" -- "0..*" Repost
+Article "1" -- "0..*" AnalyticsEvent
+Article "1" -- "0..1" ArticleMetrics : is rolled up into
+User "1" -- "0..1" WriterAudienceMetrics
+User "1" -- "0..1" WriterContentMetrics
+User "1" -- "0..1" WriterQualityMetrics
+
+note as N1
+  paragraphDropoff, topCountries and deviceSplit are
+  written NULL: no client-side capture source exists.
+  NULL rather than zero, so "not measured" stays
+  distinguishable from "measured, and none".
+end note
+
+ArticleMetrics -[hidden]down- WriterAudienceMetrics
+WriterAudienceMetrics -[hidden]down- WriterContentMetrics
+WriterContentMetrics -[hidden]down- WriterQualityMetrics
+NotificationType -[hidden]down- AnalyticsEventType
+@enduml

@@ -1,0 +1,93 @@
+@startuml
+' Figure 4.2 – Class diagram, Sprint 1: accounts and article core
+!include _style.puml
+skinparam nodesep 18
+skinparam ranksep 45
+hide circle
+hide methods
+
+class User {
+  - id : UUID
+  - accountType : AccountType
+  - email : String
+  - username : String
+  - passwordHash : String
+  - provider : Provider
+  - role : Role
+  - plan : Plan
+  - deletedAt : Timestamp
+}
+class MagazineProfile {
+  - displayName : String
+  - slug : String
+  - websiteUrl : String
+  - description : Text
+  - logoUrl : String
+}
+class Article {
+  - id : UUID
+  - title : String
+  - slug : String
+  - content : Json
+  - excerpt : Text
+  - status : ArticleStatus
+  - placement : Placement
+  - visibility : Visibility
+  - publishedAt : Timestamp
+  - deletedAt : Timestamp
+}
+class Tag {
+  - name : String
+  - slug : String
+}
+class ArticleTag
+class Comment {
+  - content : Text
+  - deletedAt : Timestamp
+}
+
+class AccountType <<Enumeration>> {
+  personal
+  magazine
+}
+class Provider <<Enumeration>> {
+  local
+  google
+}
+class Role <<Enumeration>> {
+  reader
+  writer
+  admin
+}
+class Plan <<Enumeration>> {
+  free
+  premium
+}
+class ArticleStatus <<Enumeration>> {
+  draft
+  published
+}
+class Placement <<Enumeration>> {
+  public
+  marketplace
+}
+class Visibility <<Enumeration>> {
+  free
+  premium
+}
+
+User "1" -- "0..1" MagazineProfile : extends
+User "1" -- "0..*" Article : writes
+User "1" -- "0..*" Comment : posts
+Article "1" -- "0..*" Comment : carries
+Article "1" -- "0..*" ArticleTag
+Tag "1" -- "0..*" ArticleTag
+Comment "0..1" -- "0..*" Comment : replies to
+
+AccountType -[hidden]down- Provider
+Provider -[hidden]down- Role
+Role -[hidden]down- Plan
+ArticleStatus -[hidden]down- Placement
+Placement -[hidden]down- Visibility
+AccountType -[hidden]right- ArticleStatus
+@enduml

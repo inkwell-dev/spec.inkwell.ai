@@ -1,0 +1,64 @@
+@startuml
+' Figure 6.3 – System sequence diagram: preview unlock then full purchase
+!include _style.puml
+mainframe interaction SequenceDiagram Two-stage article purchase
+autonumber "0 :"
+
+participant "Magazine" as M
+participant "System" as A
+participant "Database" as D
+
+ref over M, D : Sign in
+
+M -> A : POST /purchases/preview with an idempotency key
+activate A
+A -> A : Check the account type, the active subscription,\nthe placement and that the buyer is not the author
+
+group One database transaction
+  A -> D : SELECT the credit balance FOR UPDATE
+  activate D
+  D --> A : Locked balance
+  alt balance below the preview price
+    A --> M : 402, offer to top up
+  else balance sufficient
+    A -> D : Debit the magazine by 10% of the price
+    A -> D : Credit the writer with the payout
+    A -> D : Insert the purchase row, stage preview_unlock
+    A -> D : Insert three transaction rows\n(debit, writer payout, platform fee)
+    D --> A : Committed
+  end
+  deactivate D
+end
+A --> M : Preview unlocked, new balance
+deactivate A
+M -> A : Read the full article
+
+|||
+
+M -> A : POST /purchases/buy with an idempotency key
+activate A
+A -> D : Look up the prior preview for this article and magazine
+activate D
+D --> A : Preview row, or none
+deactivate D
+A -> A : Remaining = price minus what the preview already paid
+
+group One database transaction
+  A -> D : SELECT the credit balance FOR UPDATE
+  activate D
+  A -> D : Debit the remaining amount, credit the writer
+  A -> D : Insert the purchase row, stage full_purchase,\nlinked to the preview
+  A -> D : Insert three transaction rows
+  D --> A : Committed
+  deactivate D
+end
+A --> M : Republish rights granted, article added to the library
+deactivate A
+
+note over M, D
+  Measured on a 100-credit article: 445 to 435 for the preview,
+  then 435 to 345 for the remainder. Ledger rows: 10 = 8 payout
+  + 2 fee, then 90 = 72 payout + 18 fee. The row lock is what
+  stops two concurrent purchases spending the same credits.
+end note
+@enduml

@@ -1,0 +1,79 @@
+@startuml
+' Figure 5.6 – Class diagram, Sprint 4: retrieval corpus, writer memory and cached insights
+!include _style.puml
+skinparam nodesep 18
+skinparam ranksep 45
+hide circle
+hide methods
+
+class User {
+  - id : UUID
+  - username : String
+}
+class Article {
+  - id : UUID
+  - title : String
+  - content : Json
+  - contentSearch : TsVector
+  - status : ArticleStatus
+  - publishedAt : Timestamp
+}
+class ArticleChunk {
+  - id : UUID
+  - chunkIndex : Integer
+  - content : Text
+  - embedding : Vector
+}
+class WriterMemory {
+  - tonePreferences : Json
+  - styleExamples : Json
+  - vocabularyPatterns : Json
+  - topics : Json
+  - updatedAt : Timestamp
+}
+class PortfolioInsight {
+  - voiceSummary : Text
+  - topicExpertise : Json
+  - consistencyScore : Integer
+  - suggestedUseCases : Json
+  - strengthsGaps : Text
+  - generatedAt : Timestamp
+  - expiresAt : Timestamp
+}
+class AiInteraction {
+  - actionType : AiActionType
+  - tokensUsed : Integer
+  - model : String
+}
+
+class ArticleStatus <<Enumeration>> {
+  draft
+  published
+}
+class AiActionType <<Enumeration>> {
+  chat
+  inline_reformulate
+  inline_shorten
+  inline_expand
+  inline_simplify
+  inline_improve
+  voice_transcribe
+  portfolio_insight
+}
+
+User "1" -- "0..*" Article : writes
+Article "1" -- "0..*" ArticleChunk : is chunked into
+User "1" -- "0..1" WriterMemory : is profiled by
+User "1" -- "0..1" PortfolioInsight : is assessed by
+User "1" -- "0..*" AiInteraction : triggers
+
+note as N1
+  A chunk carries a 1536-dimension vector and is indexed
+  with HNSW using vector_cosine_ops. Chunks exist only for
+  published articles, and are deleted and re-created on
+  every re-publish; the same job drops the writer's
+  cached insight.
+end note
+
+ArticleStatus -[hidden]down- AiActionType
+@enduml

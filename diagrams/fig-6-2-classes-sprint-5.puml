@@ -1,0 +1,127 @@
+@startuml
+' Figure 6.2 – Class diagram, Sprint 5: purchases, the credit ledger and moderation
+!include _style.puml
+skinparam nodesep 18
+skinparam ranksep 45
+hide circle
+hide methods
+
+class User {
+  - id : UUID
+  - accountType : AccountType
+  - plan : Plan
+  - earningsBalance : Integer
+  - isMarketplaceEligible : Boolean
+  - marketplaceEligibleAt : Timestamp
+  - marketplaceEligibleSource : EligibilitySource
+}
+class MagazineProfile {
+  - subscriptionStatus : SubscriptionStatus
+  - subscriptionExpiresAt : Timestamp
+  - creditBalance : Integer
+  - monthlyCreditAllowance : Integer
+}
+class Article {
+  - id : UUID
+  - placement : Placement
+  - marketplacePrice : Integer
+}
+class Purchase {
+  - id : UUID
+  - stage : PurchaseStage
+  - creditsPaid : Integer
+  - platformFee : Integer
+  - writerPayout : Integer
+  - purchasedAt : Timestamp
+}
+class Transaction {
+  - id : UUID
+  - type : TransactionType
+  - amount : Integer
+  - idempotencyKey : String
+  - status : TransactionStatus
+  - metadata : Json
+}
+class MagazineSubscription {
+  - status : SubscriptionStatus
+  - creditsGranted : Integer
+  - startedAt : Timestamp
+  - expiresAt : Timestamp
+}
+class EligibilityAuditLog {
+  - source : EligibilitySource
+  - grantedBy : UUID
+  - readersAt : Integer
+  - reactionsAt : Integer
+}
+class Report {
+  - targetType : ReportTargetType
+  - targetId : UUID
+  - reason : Text
+  - status : ReportStatus
+  - resolvedBy : UUID
+}
+
+class PurchaseStage <<Enumeration>> {
+  preview_unlock
+  full_purchase
+}
+class TransactionType <<Enumeration>> {
+  subscription_charge
+  monthly_credit_grant
+  credit_topup
+  preview_unlock
+  article_full_purchase
+  writer_payout
+  platform_fee
+  refund
+}
+class TransactionStatus <<Enumeration>> {
+  pending
+  completed
+  failed
+  refunded
+}
+class SubscriptionStatus <<Enumeration>> {
+  active
+  past_due
+  cancelled
+  refunded
+}
+class EligibilitySource <<Enumeration>> {
+  threshold
+  admin_grant
+}
+class ReportStatus <<Enumeration>> {
+  pending
+  reviewed
+  resolved
+  dismissed
+}
+
+User "1" -- "0..1" MagazineProfile
+User "1" -- "0..*" Article : writes
+Article "1" -- "0..*" Purchase
+User "1" -- "0..*" Purchase : magazine
+Purchase "0..1" -- "0..1" Purchase : prior preview
+Purchase "1" -- "2..3" Transaction : records
+User "1" -- "0..*" Transaction
+User "1" -- "0..*" MagazineSubscription
+User "1" -- "0..*" EligibilityAuditLog
+User "0..1" -- "0..*" Report : files
+
+note as N1
+  Three transaction rows per stage, not two: the magazine
+  debit, the writer payout, and the platform fee. The fee
+  row is invisible to both balance invariants, so it adds
+  information without moving a balance.
+  amount is always positive; direction comes from type
+  plus the from/to user, enforced by a CHECK constraint.
+end note
+
+PurchaseStage -[hidden]down- TransactionType
+TransactionType -[hidden]down- TransactionStatus
+SubscriptionStatus -[hidden]down- EligibilitySource
+EligibilitySource -[hidden]down- ReportStatus
+PurchaseStage -[hidden]right- SubscriptionStatus
+@enduml

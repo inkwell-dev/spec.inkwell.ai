@@ -1,0 +1,69 @@
+@startuml
+' Figure 6.5 – System sequence diagram: reporting and moderation
+!include _style.puml
+mainframe interaction SequenceDiagram Moderation
+autonumber "0 :"
+
+participant "Reader" as U
+participant "System" as A
+participant "Classifier" as C
+participant "Database" as D
+participant "Administrator" as AD
+
+ref over U, D : Sign in
+
+group Automatic flag, at publish time
+  A -> C : Classify the article being published
+  activate A
+  activate C
+  C --> A : Verdict
+  deactivate C
+  alt the content is flagged
+    A -> D : File a pending report with no reporter
+    note right of A
+      reporter_id is nullable: a classifier is not
+      a user, and naming the author would be false.
+      The queue joins users with a LEFT join so the
+      automatic flags are not dropped.
+    end note
+  end
+  A -> D : Publish the article regardless
+  deactivate A
+end
+
+|||
+
+U -> A : Report an article, a user or a comment
+activate A
+A -> D : Insert the report, status pending
+activate D
+D --> A : Stored
+deactivate D
+A --> U : Acknowledge
+deactivate A
+
+AD -> A : Open the report queue
+activate A
+A -> D : Read pending reports with their targets
+activate D
+D --> AD : Queue
+deactivate D
+
+alt dismiss
+  AD -> A : Dismiss the report
+  A -> D : Set the status to dismissed, record the reviewer
+else remove the article
+  AD -> A : Delete the article
+  A -> D : Set deleted_at on the article, resolve the report
+else ban the author
+  AD -> A : Ban the user
+  A -> D : Set deleted_at on the account, resolve the report
+  note right of A
+    A ban takes effect at the next authentication:
+    the strategy does not re-read the database, so an
+    issued access token stays valid for its 15 minutes.
+  end note
+end
+A --> AD : Queue updated
+deactivate A
+@enduml

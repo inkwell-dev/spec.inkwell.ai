@@ -1,0 +1,99 @@
+' ─────────────────────────────────────────────────────────────
+' Inkwell.ai — shared figure style for UML diagrams
+'
+' Matched against the 38 figures extracted from the example
+' report (Wael Abidi / AI Algora), 2026-08-19. Its rule is
+' strict and worth keeping: UML is BLACK ON WHITE. Colour is
+' reserved for architecture and infrastructure figures, which
+' are drawn in draw.io, not here.
+'
+' The only colour permitted below is the light blue enumeration
+' header (#DAE8FC) and the yellow note (#FFF2CC) — both taken
+' from their figures, both draw.io defaults.
+' ─────────────────────────────────────────────────────────────
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 12
+skinparam roundCorner 0
+skinparam ArrowColor #000000
+skinparam ArrowFontColor #000000
+skinparam ArrowFontSize 11
+
+' Actors: PlantUML's default stick figure, matching theirs.
+' Do NOT set actorStyle awesome — that draws a filled person.
+skinparam actor {
+  BackgroundColor #FFFFFF
+  BorderColor #000000
+  FontColor #000000
+  FontStyle bold
+}
+skinparam usecase {
+  BackgroundColor #FFFFFF
+  BorderColor #000000
+  FontColor #000000
+  FontStyle bold
+  BorderThickness 1
+}
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #000000
+  FontColor #000000
+  FontStyle bold
+}
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #000000
+  HeaderBackgroundColor #FFFFFF
+  FontColor #000000
+  AttributeFontSize 11
+  AttributeFontColor #000000
+}
+skinparam classBackgroundColor<<Enumeration>> #DAE8FC
+' Their class boxes show plain "- name : Type"; PlantUML draws little
+' visibility icons unless this is zeroed.
+skinparam classAttributeIconSize 0
+skinparam sequence {
+  ArrowColor #000000
+  LifeLineBorderColor #000000
+  LifeLineBackgroundColor #FFFFFF
+  ParticipantBackgroundColor #FFFFFF
+  ParticipantBorderColor #000000
+  ParticipantFontColor #000000
+  ParticipantFontStyle bold
+  ActorBackgroundColor #FFFFFF
+  ActorBorderColor #000000
+  BoxBackgroundColor #FFFFFF
+  BoxBorderColor #000000
+  GroupBackgroundColor #FFFFFF
+  GroupBorderColor #000000
+  ReferenceBackgroundColor #FFFFFF
+  ReferenceBorderColor #000000
+  DividerBackgroundColor #FFFFFF
+  DividerBorderColor #000000
+}
+skinparam note {
+  BackgroundColor #FFF2CC
+  BorderColor #D6B656
+  FontColor #000000
+  FontSize 11
+  FontStyle italic
+}
+
+' Activity diagrams: same monochrome rule.
+skinparam activity {
+  BackgroundColor #FFFFFF
+  BorderColor #000000
+  FontColor #000000
+  DiamondBackgroundColor #FFFFFF
+  DiamondBorderColor #000000
+  DiamondFontColor #000000
+  StartColor #000000
+  EndColor #000000
+  BarColor #000000
+}
+skinparam partition {
+  BackgroundColor #FFFFFF
+  BorderColor #000000
+  FontColor #000000
+}

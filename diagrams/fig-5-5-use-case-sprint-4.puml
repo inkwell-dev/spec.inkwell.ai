@@ -1,0 +1,62 @@
+@startuml
+' Figure 5.5 – Use case diagram, Sprint 4: retrieval, insights and hybrid search
+!include _style.puml
+skinparam nodesep 14
+skinparam ranksep 60
+
+actor "Visitor" as V
+actor "Premium reader" as LP
+actor "Writer" as R
+actor "Magazine\n(subscribed)" as MA
+
+rectangle {
+  usecase "Sign in" as AUTH
+  usecase "Search" as SEARCH
+  usecase "Search by\nkeyword" as SEARCH1
+  usecase "Search by\nmeaning" as SEARCH2
+  usecase "Merge results by\nreciprocal rank fusion" as RRF
+  usecase "Use the AI\nassistant" as AI
+  usecase "Retrieve passages from\nthe writer's own corpus" as RETRIEVE
+  usecase "Show the\nsources used" as SOURCES
+  usecase "Publish an article" as PUBLISH
+  usecase "Embed a published\narticle" as EMBED
+  usecase "Extract the writer's\nvoice profile" as MEMORY
+  usecase "Invalidate the\ninsights cache" as INVAL
+  usecase "Read a writer\nevaluation report" as EVAL
+  usecase "Generate portfolio\ninsights" as INSIGHTS
+}
+
+rectangle "Embedding\nprovider" as EXT1
+rectangle "Large language model\nprovider" as EXT2
+
+V  --> SEARCH
+LP --> AI
+R  --> PUBLISH
+MA --> EVAL
+
+SEARCH1 --|> SEARCH
+SEARCH2 --|> SEARCH
+
+SEARCH  ..> RRF : <<include>>
+SEARCH2 ..> RETRIEVE : <<include>>
+AI      ..> AUTH : <<include>>
+AI      ..> RETRIEVE : <<include>>
+AI      <.. SOURCES : <<extend>>
+PUBLISH ..> EMBED : <<include>>
+EMBED   ..> MEMORY : <<include>>
+EMBED   ..> INVAL : <<include>>
+EVAL    <.. INSIGHTS : <<extend>>
+INSIGHTS ..> RETRIEVE : <<include>>
+
+RETRIEVE -- EXT1
+INSIGHTS -- EXT2
+AI -- EXT2
+
+
+note as N1
+  Insight generation is an explicit action, never a
+  page-load side effect: each generation costs a model
+  call, so browsing writers must not spend a magazine's
+  budget.
+end note
+@enduml

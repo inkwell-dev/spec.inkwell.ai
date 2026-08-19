@@ -1,0 +1,150 @@
+@startuml
+' Figure 2.2 – Class diagram: core domain
+' 11 of the 24 persisted classes, plus the enumerations they reference.
+' Audit columns (created_at, updated_at) are omitted for legibility.
+' Behaviour is not shown: the model is relational and operations live in
+' the service layer, so the classes carry no methods of their own.
+!include _style.puml
+skinparam nodesep 20
+skinparam ranksep 45
+hide circle
+hide methods
+
+class User {
+  - id : UUID
+  - accountType : AccountType
+  - email : String
+  - username : String
+  - role : Role
+  - plan : Plan
+  - earningsBalance : Integer
+  - isMarketplaceEligible : Boolean
+  - aiTokensRemaining : Integer
+  - deletedAt : Timestamp
+}
+class MagazineProfile {
+  - displayName : String
+  - slug : String
+  - subscriptionStatus : SubscriptionStatus
+  - creditBalance : Integer
+  - monthlyCreditAllowance : Integer
+  - subscriptionExpiresAt : Timestamp
+}
+class Article {
+  - id : UUID
+  - title : String
+  - slug : String
+  - content : Json
+  - contentSearch : TsVector
+  - status : ArticleStatus
+  - placement : Placement
+  - visibility : Visibility
+  - marketplacePrice : Integer
+  - wordCount : Integer
+  - publishedAt : Timestamp
+  - deletedAt : Timestamp
+}
+class Tag {
+  - name : String
+  - slug : String
+}
+class ArticleTag
+class Comment {
+  - content : Text
+  - deletedAt : Timestamp
+}
+class Like
+class Repost
+class Follow
+class Notification {
+  - type : NotificationType
+  - data : Json
+  - isRead : Boolean
+}
+class Report {
+  - targetType : ReportTargetType
+  - targetId : UUID
+  - reason : Text
+  - status : ReportStatus
+}
+
+class AccountType <<Enumeration>> {
+  personal
+  magazine
+}
+class Role <<Enumeration>> {
+  reader
+  writer
+  admin
+}
+class Plan <<Enumeration>> {
+  free
+  premium
+}
+class ArticleStatus <<Enumeration>> {
+  draft
+  published
+}
+class Placement <<Enumeration>> {
+  public
+  marketplace
+}
+class Visibility <<Enumeration>> {
+  free
+  premium
+}
+class NotificationType <<Enumeration>> {
+  follow
+  like
+  comment
+  reply
+  repost
+  article_previewed
+  article_purchased
+  earnings_credited
+  subscription_renewed
+}
+class ReportTargetType <<Enumeration>> {
+  article
+  user
+  comment
+}
+class ReportStatus <<Enumeration>> {
+  pending
+  reviewed
+  resolved
+  dismissed
+}
+
+User "1" -- "0..1" MagazineProfile : extends
+User "1" -- "0..*" Article : writes
+User "1" -- "0..*" Comment : posts
+User "1" -- "0..*" Like : gives
+User "1" -- "0..*" Repost : shares
+User "1" -- "0..*" Follow : follows
+User "1" -- "0..*" Notification : receives
+User "0..1" -- "0..*" Report : files
+Article "1" -- "0..*" Comment : carries
+Article "1" -- "0..*" Like
+Article "1" -- "0..*" Repost
+Article "1" -- "0..*" ArticleTag
+Tag "1" -- "0..*" ArticleTag
+Comment "0..1" -- "0..*" Comment : replies to
+
+note as N1
+  role and plan are NULL for a magazine account,
+  enforced by a CHECK constraint. They are
+  orthogonal: a writer may stay on the free plan.
+end note
+
+' Keep the enumerations in one column to the side, as the example
+' report places them, instead of letting them widen the figure.
+AccountType -[hidden]down- Role
+Role -[hidden]down- Plan
+ArticleStatus -[hidden]down- Placement
+Placement -[hidden]down- Visibility
+NotificationType -[hidden]down- ReportTargetType
+ReportTargetType -[hidden]down- ReportStatus
+AccountType -[hidden]right- ArticleStatus
+ArticleStatus -[hidden]right- NotificationType
+@enduml
