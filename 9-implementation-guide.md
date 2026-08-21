@@ -156,22 +156,38 @@ const isValid = await bcrypt.compare(password, hash);
 }
 ```
 
-**Refresh token** (7 days): opaque UUID stored in Redis. NOT a JWT — this allows revocation.
+**Refresh token** (7 days): a **JWT**, signed with `JWT_REFRESH_SECRET`.
 
-### 2.3 Refresh token storage (Redis)
+### 2.3 Refresh token storage — NOT IMPLEMENTED AS SPECIFIED
+
+> **Corrected 2026-08-21.** This section specified opaque UUIDs in Redis,
+> explicitly "NOT a JWT — this allows revocation". The built system does the
+> opposite: `auth.service.ts` issues a second JWT and validates it with
+> `this.jwt.verify(refreshToken, { secret: … })`. There is no `refresh_tokens`
+> table, no Redis key, and nothing is stored server-side.
+>
+> **The consequence is the property this section was written to obtain: refresh
+> tokens cannot be revoked.** Logout clears the client's copy only. Until it
+> expires, a captured refresh token stays valid across a password change and a
+> ban, and none of the four flows below exist:
+>
+> - ~~Login: store `tokenId` in Redis~~
+> - ~~Refresh: look the token up, rotate it~~
+> - ~~Logout: delete the key~~
+> - ~~Password change / ban: delete all keys for that user~~
+>
+> Recorded rather than quietly dropped because it is a **security limitation the
+> report should state**, not a detail. Closing it means either the Redis key
+> structure originally specified here or a `refresh_tokens` table; the 7-day TTL
+> bounds the exposure in the meantime.
+
+The original design, kept for reference:
 
 ```
 Key:    refresh:{userId}:{tokenId}
 Value:  { userAgent, createdAt }
 TTL:    7 days (604800 seconds)
 ```
-
-**Flows:**
-- **Login:** generate UUID `tokenId`, store in Redis, return to client as `HttpOnly` cookie
-- **Refresh:** client sends refresh token → lookup `refresh:{userId}:{tokenId}` → if exists, issue new access token + rotate refresh token (delete old, create new)
-- **Logout:** delete `refresh:{userId}:{tokenId}`
-- **Password change:** delete all keys matching `refresh:{userId}:*`
-- **Soft delete / ban:** delete all keys matching `refresh:{userId}:*`
 
 ### 2.4 AI token quota
 
@@ -788,16 +804,25 @@ private async semanticSearch(embedding: number[], limit: number) {
 
 ## 9. Redis Key Conventions
 
+> **Corrected 2026-08-21.** Of the six prefixes originally listed here, exactly
+> one is real. Redis holds BullMQ's queues and nothing else.
+
 ```
 Prefix               Example key                          TTL     Purpose
 ──────────────────────────────────────────────────────────────────────────
-refresh:             refresh:{userId}:{tokenId}           7d      Refresh tokens
-throttle:            throttle:{ip}:{endpoint}             per-window  Rate limiting (@nestjs/throttler)
-bull:                bull:{queueName}:{jobId}             varies  BullMQ internal
-cache:insights:      cache:insights:{writerId}            24h     Portfolio insights (optional Redis cache)
-cache:metrics:       cache:metrics:{articleId}            5m      Article metrics (optional)
-sse:heartbeat:       sse:heartbeat:{userId}               —       Not stored; heartbeat is in-process
+bull:                bull:{queueName}:{jobId}             varies  BullMQ internal — the ONLY use of Redis
 ```
+
+The five that were specified and never built, and where that state actually
+lives instead:
+
+| Prefix | Status |
+|--------|--------|
+| `refresh:` | Never built. Refresh tokens are JWTs — see §2.3. |
+| `throttle:` | Never built. `@nestjs/throttler` is declared with no storage option, so it uses its in-memory store — per process, not shared. |
+| `cache:insights:` | Built as a **Postgres table**, `portfolio_insights`, keyed by writer with an index on `expires_at`. Same 24h TTL, different substrate. |
+| `cache:metrics:` | Never built. `article_metrics` is read straight from Postgres. |
+| `sse:heartbeat:` | Correctly described as not stored; the heartbeat is in-process. |
 
 BullMQ queue names:
 ```

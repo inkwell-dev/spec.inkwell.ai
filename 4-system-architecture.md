@@ -22,7 +22,7 @@ The system is composed of the following main components:
 - Backend API + AI Gateway (NestJS 11)
 - Background Worker (shares backend image, runs BullMQ jobs)
 - Database Layer (PostgreSQL 16 + pgvector)
-- Caching & Queue System (Redis + BullMQ)
+- Queue System (Redis + BullMQ)
 - Object Storage (MinIO, S3-compatible)
 - Reverse Proxy (Nginx)
 - External AI APIs (Groq, Gemini, OpenAI)
@@ -216,20 +216,34 @@ No additional search engine (Elasticsearch) or vector database (Pinecone, Weavia
 
 ---
 
-## 8. Caching & Queue Layer (Redis + BullMQ)
+## 8. Queue Layer (Redis + BullMQ)
+
+> **Corrected 2026-08-21 — Redis is BullMQ-only.** This section was headed
+> "Caching & Queue Layer" and listed caching and rate limiting among its use
+> cases. Neither is true of the built system, and the report must not claim them:
+>
+> | Claimed | Reality |
+> |---------|---------|
+> | Application caching in Redis | The one cache that exists — Portfolio Insights, 24h — is a **Postgres table**, `portfolio_insights`, with an index on `expires_at`. No article-metrics cache was ever built. |
+> | Rate limiting in Redis | `ThrottlerModule.forRoot({ throttlers: [...] })` in `app.module.ts` is declared with **no storage option**, so `@nestjs/throttler` uses its default in-memory store. Redis is not consulted. |
+> | Refresh tokens in Redis | JWTs verified against `JWT_REFRESH_SECRET` — see §2.3 of `9-implementation-guide.md`, corrected in the same pass. |
+>
+> What Redis actually does, in full: it is the transport for the four BullMQ
+> queues below. That is the whole of it.
+>
+> The in-memory throttler has a consequence worth stating rather than hiding: the
+> rate limit is **per process**. It is correct on this single-container deploy and
+> would need a shared store before the API is ever replicated.
 
 ### Purpose
 
-- Improve performance  
-- Handle asynchronous processing  
-- Manage background jobs  
+- Handle asynchronous processing
+- Manage background jobs
 
 ---
 
 ### Use Cases
 
-- Rate limiting (`@nestjs/throttler`)
-- Caching frequently accessed data (portfolio insights, article metrics)
 - Analytics aggregation (article metrics, writer rollups)
 - Writer eligibility computation (runs after each analytics batch)
 - Magazine subscription renewal (monthly cron — grant credits + update subscription state)
@@ -349,7 +363,7 @@ Event Trigger → Backend → Notification Created → Stored → Delivered via 
 ### Health Checks
 
 - `GET /health` — liveness probe (returns 200 if the process is running). Used by Docker Compose healthcheck and Nginx upstream checks.
-- `GET /ready` — readiness probe (checks PostgreSQL + Redis connectivity). Used for dependency ordering in compose and for demo confidence.
+- `GET /ready` — readiness probe. Checks **PostgreSQL only** (`health.controller.ts` runs one `SELECT` and returns `{ status, db }`); the Redis half of this claim was never implemented. Used for dependency ordering in compose and for demo confidence.
 
 ### Error Tracking
 

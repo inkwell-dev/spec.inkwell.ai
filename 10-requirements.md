@@ -181,7 +181,7 @@ evidence that supports it, so the report can cite code rather than assert.
 | ID | Requirement | Evidence |
 |----|-------------|----------|
 | NFR-01 | Passwords stored as bcrypt hashes, cost factor 12 | `auth` module |
-| NFR-02 | Access tokens expire in 15 minutes; refresh tokens in 7 days and are revocable | `ACCESS_TOKEN_MAX_AGE = 900` |
+| NFR-02 | Access tokens expire in 15 minutes; refresh tokens in 7 days | `ACCESS_TOKEN_MAX_AGE = 900`. **Not revocable** — corrected 2026-08-21. `9-implementation-guide.md` §2.3 specified opaque UUIDs in Redis expressly to allow revocation; `auth.service.ts` issues a second JWT and verifies it against `JWT_REFRESH_SECRET`, storing nothing. Logout clears the client's copy only, so until it expires a captured refresh token survives a password change and a ban. The 7-day TTL is the whole of the bound. |
 | NFR-03 | Every protected route passes a guard stack composed once via `@Auth()` | 6 guards: Jwt, Roles, Plans, AccountType, Subscription, AiQuota |
 | NFR-04 | Authorisation is decided server-side; the client is told the verdict and never computes it | §7.4 matrix in `article-access.ts` |
 | NFR-05 | Per-IP rate limits on every endpoint, tightened on auth, AI and purchase routes | `@nestjs/throttler`, enforced behind nginx as trusted proxy |
@@ -213,8 +213,8 @@ evidence that supports it, so the report can cite code rather than assert.
 | NFR-21 | Schema changes are versioned and applied before the app starts | one-shot `migrate` service, gated `service_completed_successfully` |
 | NFR-22 | The vector extension exists before any migration that needs it | runner issues `CREATE EXTENSION IF NOT EXISTS vector` first — measured failure otherwise |
 | NFR-23 | Failed background jobs retry with exponential backoff, 3 attempts | BullMQ `defaultJobOptions` |
-| NFR-24 | An AI provider outage degrades AI only; the rest of the product keeps working | Groq → Gemini fallback chain |
-| NFR-25 | Every service reports liveness and readiness | `GET /health`, `GET /ready` (Postgres + Redis) |
+| NFR-24 | A single AI **model** failing degrades AI only; the rest of the product keeps working | Corrected 2026-08-21. The specified Groq → Gemini chain was never implemented and **cannot be**: `portfolio-insights.service.ts` records that Gemini's free tier grants `generateContent` a quota of 0 for every model offered to new projects, which is why Insights runs on Groq. What exists is per-model failover *within* Groq — `llama-3.3-70b-versatile` → `openai/gpt-oss-120b`, first-chunk-deferred so failover is still possible, 503 + "AI is temporarily unavailable" when both refuse. This survives one model's rate limit, **not** a total Groq outage. |
+| NFR-25 | Every service reports liveness and readiness | `GET /health`, `GET /ready` — **Postgres only**. The Redis half was specified in three documents and never built (`health.controller.ts` returns `{ status, db }`). |
 
 ### 3.4 Scalability
 
@@ -390,6 +390,27 @@ it.
   generation as an explicit action, absent topic-relevance sort, the three NULL
   analytics columns, voice descoped). The report reports them; recorded deviations
   read as maturity, hidden ones read as luck.
+- **Resolved 2026-08-21 — the three NULL analytics columns.** `total_unique_readers`,
+  `returning_reader_rate` and `total_unique_views` were empty because
+  `analytics_events.viewer_id` was NULL on every row ever written: the tracker sent
+  events with `sendBeacon`, which cannot set headers and so never carried the access
+  token, while the endpoint took the viewer from the request body. Fixed in two
+  halves that do not work apart — backend `af73d47` takes the viewer from the token,
+  frontend `e5bd528` sends one. Marketplace eligibility, which counts
+  `DISTINCT viewer_id` against a 5,000-reader threshold, was unreachable organically
+  until then. **This is no longer a deviation and should not be reported as one.**
+- **Added 2026-08-21 — four Redis claims corrected across the specs.** Redis is
+  BullMQ-only. It does not cache (Portfolio Insights is a Postgres table), does not
+  back rate limiting (`@nestjs/throttler` is in-memory, therefore **per process**),
+  does not store refresh tokens (see NFR-02), and `/ready` does not check it (NFR-25).
+  Corrected in `4-system-architecture.md` §8, `8-devops.md`, and
+  `9-implementation-guide.md` §2.3 and §9.
+- **Spec-lags-code drift, still open.** Two items found in the schema conformance
+  pass and not yet reconciled: `articles.search_vector` (a generated `tsvector`
+  column with a GIN index, backing NFR-12) is documented in no spec; and the
+  notification type enum differs three ways — 8 values in the spec, 9 in the backend,
+  10 in the frontend, where `system` exists in `types/index.ts` alone and no backend
+  path can ever emit it.
 - **NFR-37** (Lighthouse, `axe-core`) is the only unsatisfied requirement.
 - **Open:** the AI token top-up (US absent by design — the decision and the column
   shape to build are recorded on the item in `0-phase-plan.md` Phase 5).
