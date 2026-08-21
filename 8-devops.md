@@ -30,7 +30,7 @@ The DevOps setup must:
 | Backend API | NestJS 11 | REST + SSE endpoints |
 | Worker | NestJS (same image, different entrypoint) | BullMQ job processor |
 | Database | PostgreSQL 16 + pgvector | Relational + vector + full-text search |
-| Cache & Queues | Redis 7 | BullMQ queues + rate limiting + caching |
+| Queues | Redis 7 | BullMQ queues **only** — see `4-system-architecture.md` §8. Rate limiting is `@nestjs/throttler`'s in-memory store, and the only application cache (Portfolio Insights) is a Postgres table. |
 | Object Storage | MinIO | S3-compatible, article images + avatars |
 | Reverse Proxy | Nginx | TLS termination, routing, SSE support |
 
@@ -303,7 +303,7 @@ signature covers the `Host` header.
 ### 10.1 Health Endpoints (Mandatory)
 
 - `GET /health` — liveness probe: returns 200 if the process is running. Used by Docker healthcheck.
-- `GET /ready` — readiness probe: checks PostgreSQL and Redis connectivity. Used for compose dependency ordering and demo confidence.
+- `GET /ready` — readiness probe: checks **PostgreSQL only**. The Redis half of this was specified and never built (`health.controller.ts`). Used for compose dependency ordering and demo confidence.
 
 ### 10.2 Error Tracking
 
