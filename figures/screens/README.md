@@ -40,19 +40,32 @@ the only sales on another:
 | `magazine-` | `editors@longformreview.example.com` | subscribed, 953 credits, one article licensed |
 | `admin-` | `admin@inkwell.ai` | the moderation console |
 
-## One figure is out of step
+## Captured whole, 2026-08-23
 
-`magazine-03-purchase-confirm` is the only figure NOT from the Phase 6 sitting, so it
-still shows the pre-Phase-6 sidebar.
+All 37 figures come from one sitting against a freshly seeded database, which is what
+this directory has always asked for and had not had.
 
-Its capture is skipped when the listing has no `Preview ·` control, and all three of the
-seed's marketplace articles have since been previewed or purchased by E2E runs against
-this database — so there is no clean listing left to open the dialog on. The untouched
-listings are all `e2e-` artefacts, which do not belong in a report figure.
+Getting there took three things worth knowing, because each will recur:
 
-The fix is a reseed followed by a full capture run, in that order, per the steps above.
-Until then, treat this one figure as stale chrome rather than stale content: the dialog
-it shows is unchanged.
+**The seed could not re-run.** Its cleanup deleted `ai_interactions` but not
+`user_ai_memory`, which carries the same foreign key to `users` — so the first reseed
+after anyone used the AI chat failed on `user_ai_memory_user_id_users_id_fk` having
+already deleted everything else. Fixed in the backend.
+
+**Seven of nineteen published articles were E2E artefacts.** The suite prefixes what it
+creates with `E2E:` precisely so it is identifiable as debris, but the seed only removes
+users it owns, so E2E-created accounts and their articles survive every reseed. They were
+appearing in the feed, search and profile figures. Removed before capturing.
+
+**`magazine-03-purchase-confirm` had never captured.** Its test skips when the listing has
+no `Preview ·` control, and every seeded marketplace article had been previewed or
+purchased by earlier E2E runs. A reseed restores an untouched listing; the figure now
+shows the dialog with real arithmetic — 12 credits against a 120-credit listing, balance
+953 → 941.
+
+A reseed regenerates article ids, so `e2e/fixtures/seed-data.ts` and the capture spec's
+own `draftId` both need re-verifying afterwards. Everything else in both is addressed by
+slug for exactly this reason.
 
 ## Recaptured in Phase 6
 
