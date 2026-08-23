@@ -1,6 +1,12 @@
 # 11 — Magazine Subscription & Credits Dashboard [GENERATED]
 
-**Route:** `/m/dashboard/subscription` · **Role:** Magazine (active subscription) · **Stitch mode:** Standard
+**Route:** `/subscription` · **Role:** Magazine (active subscription) · **Stitch mode:** Standard
+
+> **Route corrected 2026-08-23.** Shared with personal accounts, deliberately: one page is both the magazine's subscription and the personal plan switch.
+> `9-design.md` §6 is the authoritative page inventory. The route also appears inside
+> the generation prompt below, which is kept verbatim as the text that was actually
+> sent — it records what was asked for, not where the screen ended up.
+
 
 Subscription management + credit balance + top-up + transaction history.
 

@@ -1,6 +1,12 @@
 # 10 — Magazine Library [GENERATED]
 
-**Route:** `/m/dashboard/library` · **Role:** Magazine (active subscription) · **Stitch mode:** Standard
+**Route:** `/library` · **Role:** Magazine (active subscription) · **Stitch mode:** Standard
+
+> **Route corrected 2026-08-23.** There is no `/m/dashboard/*` tree — see §6. The route needs no magazine prefix to say whose it is: the API refuses a personal account.
+> `9-design.md` §6 is the authoritative page inventory. The route also appears inside
+> the generation prompt below, which is kept verbatim as the text that was actually
+> sent — it records what was asked for, not where the screen ended up.
+
 
 The magazine's curated collection of fully purchased articles with republish rights.
 

@@ -140,12 +140,34 @@ Examples:
 
 ## 6. 📋 Page Inventory
 
+> **Reconciled with the build, 2026-08-23 (Phase 6).**
+>
+> This section was written before implementation and described a URL tree that was
+> never built. Fifteen of its eighteen dashboard-area routes returned 404. It has been
+> corrected against the running application, route by route; the notes below record
+> which way each discrepancy was resolved and why, rather than silently replacing the
+> old paths.
+>
+> **The one structural decision worth stating up front.** The writer's workspace nests
+> under `/dashboard`, as originally designed — `/dashboard/articles`,
+> `/dashboard/analytics`, `/dashboard/earnings` were built in Phase 6 to close that
+> gap. Everything serving BOTH account types stays flat and shared: one
+> `/notifications`, one `/settings`, one `/subscription`. The original scheme gave
+> magazines a parallel `/m/dashboard/*` tree, which would have meant two URLs rendering
+> the same settings page — and `design/prompts/16-settings.md` is explicit that there is
+> one settings page for both account types, with role-specific sections inside it.
+> Account type is resolved server-side from the token, not encoded in the path.
+
 ### Auth
 | Frame | Role | Route |
 |-------|------|-------|
 | Login | GUEST | `/login` |
-| Sign Up — Personal | GUEST | `/signup` |
-| Sign Up — Magazine | GUEST | `/signup/magazine` |
+| Sign Up — Personal | GUEST | `/register` |
+| Sign Up — Magazine | GUEST | `/register/magazine` |
+
+> `/register`, not `/signup`. The route has been `/register` since Phase 1 — it matches
+> the API's `POST /auth/register`, so the page and the endpoint it posts to share a
+> name.
 
 ### Home Feed
 | Frame | Role | Route | Notes |
@@ -176,7 +198,13 @@ Examples:
 |-------|------|-------|
 | Search | GUEST | `/search` |
 | Search | ANY AUTH | `/search` |
-| Tag Browse | ANY AUTH | `/tag/[tag]` |
+| Tag Browse | ANY AUTH | `/search?tag=[slug]` |
+
+> Tag browse is a parameter on search, not a route of its own. It renders the same
+> results list with the same controls, differing only in which filter arrives
+> pre-applied — a separate `/tag/[tag]` page would have been a second copy of `/search`
+> maintained in parallel. The "Topics" links in the sidebar, the mobile drawer and the
+> trending-topics widget all point at this form.
 
 ### Writer Profile `/u/[username]`
 | Frame | Role | Notes |
@@ -211,34 +239,82 @@ Examples:
 ### Marketplace (Magazine)
 | Frame | Role | Route | Notes |
 |-------|------|-------|-------|
-| Subscription Wall | MAGAZINE UNSUB | `/m/subscribe` | Mandatory before marketplace access |
+| Subscription Wall | MAGAZINE UNSUB | in-page state on `/marketplace` and `/discover` | Mandatory before marketplace access |
 | Marketplace Browse | MAGAZINE | `/discover` | Writer discovery, filterable grid. **Built at `/discover`, not `/marketplace`** (2026-08-10): the writer evaluation report already lives at `/discover/writers/[username]`, so the browse surface sits directly above it. `/marketplace` stays reserved for Phase 5's browse of marketplace-listed *articles*. |
 
 ### Writer Dashboard `/dashboard`
 | Frame | Role | Route |
 |-------|------|-------|
+| Overview | WRITER | `/dashboard` |
 | My Articles | WRITER | `/dashboard/articles` |
 | Analytics + Eligibility | WRITER | `/dashboard/analytics` |
 | Earnings | WRITER | `/dashboard/earnings` |
-| Notifications | ANY AUTH | `/dashboard/notifications` |
-| Settings | ANY AUTH | `/dashboard/settings` |
 
-### Magazine Dashboard `/m/dashboard`
+> **Personal accounts only.** Every endpoint behind these four answers a magazine with
+> 403 (`accountTypes: ['personal']` on `/me/analytics`, `/me/earnings`,
+> `/me/eligibility`), so `src/proxy.ts` redirects a magazine off `/dashboard` to
+> `/marketplace` rather than rendering four empty states.
+>
+> **Overview** is the root of the tree rather than a redirect to My Articles. It answers
+> a question the deeper pages cannot — "is anything happening" — with four figures on one
+> line, and is the layout specified in `design/prompts/desktop-refinement.md` §B.
+>
+> **`/dashboard/earnings` moved here from `/earnings`** in Phase 6. The old path still
+> redirects: it is five phases old, appears in the E2E matrix, and is the subject of a
+> committed report figure.
+>
+> **Notifications and Settings have moved out of this table** — see Shared Surfaces
+> below. Both serve every account type from one page, so filing them under a writer
+> prefix would have been wrong twice over.
+
+### Magazine Surfaces
 | Frame | Role | Route |
 |-------|------|-------|
-| Library | MAGAZINE | `/m/dashboard/library` |
-| Subscription & Credits | MAGAZINE | `/m/dashboard/subscription` |
-| Credit Top-Up Modal | MAGAZINE | `/m/dashboard/subscription` (modal overlay) |
-| Notifications | MAGAZINE | `/m/dashboard/notifications` |
-| Settings | MAGAZINE | `/m/dashboard/settings` |
+| Library | MAGAZINE | `/library` |
+| Subscription & Credits | MAGAZINE | `/subscription` |
+| Credit Top-Up Modal | MAGAZINE | `/subscription` (modal overlay) |
+
+> There is no `/m/dashboard/*` tree. It was specified as a mirror of the writer's, but
+> three of its five frames were pages every account type shares, and the two that are
+> genuinely magazine-only need no prefix to say so — the API refuses a personal account
+> on both. `/subscription` in particular is deliberately shared: it is the magazine's
+> subscription AND the personal plan switch, which is why the two use one route.
+
+### Shared Surfaces
+| Frame | Role | Route |
+|-------|------|-------|
+| Notifications | ANY AUTH | `/notifications` |
+| Settings | ANY AUTH | `/settings` |
+
+> One page each, for every account type, with role-specific sections inside — stated
+> outright in `design/prompts/16-settings.md`, and the reason Figma files both under
+> "11 — Common" rather than under either dashboard. Settings shows a Magazine profile
+> section to magazine accounts and a Password section only to accounts that have a
+> password (an OAuth account has none).
 
 ### Admin `/admin`
 | Frame | Role | Route |
 |-------|------|-------|
 | Admin Panel | ADMIN | `/admin` |
-| Reports Queue | ADMIN | `/admin/reports` |
-| User Management | ADMIN | `/admin/users` |
-| Article Management | ADMIN | `/admin/articles` |
+| Reports Queue | ADMIN | `/admin` (section) |
+| User Management | ADMIN | `/admin` (section) |
+| Grant Eligibility | ADMIN | `/admin` (section) |
+
+> `/admin` is one scrolling page with stacked sections, not a set of sub-routes. The
+> moderation surface is small enough that splitting it across three URLs would add
+> navigation without adding capability, and an admin working a queue wants the user
+> table on the same screen.
+>
+> **Article Management is not here.** It was specified as `/admin/articles` and never
+> built. Article removal is report-driven: an admin removes an article from the row of
+> the report that flagged it, backed by `DELETE /admin/articles/:id`. There is no
+> browse-all-articles surface and no `GET /admin/articles` endpoint behind one.
+>
+> This is a deliberate product position rather than an omission — you moderate what
+> someone flags, not the whole corpus — and `10-requirements.md` agrees: FR-51 to FR-55
+> cover the report queue, dismissal, deletion, user search, plan editing and eligibility
+> grants, and none of them asks for a corpus browser. Recorded as future work in the
+> report's perspectives section rather than dropped silently.
 
 ---
 

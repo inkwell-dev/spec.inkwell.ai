@@ -34,12 +34,12 @@ every screen prompt to keep the design language consistent.
 | [`03-editor-ai-chat.md`](./03-editor-ai-chat.md) | Editor + AI Chat panel (`/editor/[id]`) | Experimental |
 | [`04-editor-inline-popup.md`](./04-editor-inline-popup.md) | Editor + inline AI selection popup (`/editor/[id]`) | Experimental |
 | [`05-writer-analytics.md`](./05-writer-analytics.md) | Writer Analytics dashboard + eligibility progress (`/dashboard/analytics`) | Standard |
-| [`06-auth.md`](./06-auth.md) | Login, Personal Sign Up, Magazine Sign Up (`/login`, `/signup`, `/signup/magazine`) | Standard |
-| [`07-magazine-subscription.md`](./07-magazine-subscription.md) | Magazine Subscription Wall — mandatory before marketplace access (`/m/subscribe`) | Standard |
+| [`06-auth.md`](./06-auth.md) | Login, Personal Sign Up, Magazine Sign Up (`/login`, `/register`, `/register/magazine`) | Standard |
+| [`07-magazine-subscription.md`](./07-magazine-subscription.md) | Magazine Subscription Wall — mandatory before marketplace access (in-page state on `/marketplace` and `/discover`) | Standard |
 | [`08-marketplace-browse.md`](./08-marketplace-browse.md) | Marketplace writer discovery for magazines (`/marketplace`) | Standard |
-| [`09-writer-evaluation.md`](./09-writer-evaluation.md) | Writer Profile in evaluation mode — analytics + Portfolio Insights + articles (`/u/[username]?as=magazine`) | Standard |
-| [`10-magazine-library.md`](./10-magazine-library.md) | Magazine's curated library of purchased articles (`/m/dashboard/library`) | Standard |
-| [`11-magazine-subscription-dashboard.md`](./11-magazine-subscription-dashboard.md) | Subscription management + credit balance + transactions (`/m/dashboard/subscription`) | Standard |
+| [`09-writer-evaluation.md`](./09-writer-evaluation.md) | Writer Profile in evaluation mode — analytics + Portfolio Insights + articles (`/discover/writers/[username]`) | Standard |
+| [`10-magazine-library.md`](./10-magazine-library.md) | Magazine's curated library of purchased articles (`/library`) | Standard |
+| [`11-magazine-subscription-dashboard.md`](./11-magazine-subscription-dashboard.md) | Subscription management + credit balance + transactions (`/subscription`) | Standard |
 | [`12-writer-earnings.md`](./12-writer-earnings.md) | Writer Earnings dashboard — payouts + eligibility progress (`/dashboard/earnings`) | Standard |
 | [`13-publish-flow.md`](./13-publish-flow.md) | Article Publish modal — placement choice + pricing (`/editor/[id]` overlay) | Standard |
 | [`14-writer-profile.md`](./14-writer-profile.md) | Writer public profile — articles, bio, followers (`/u/[username]`) | Standard |

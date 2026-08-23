@@ -60,6 +60,10 @@ MAIN AREA:
     Clean, modern, minimal — no 3D effects, no decorative elements.
 
   TWO-COLUMN ROW (24px below chart):
+    ⚠ BOTH CARDS IN THIS ROW WERE SUPERSEDED WHEN THE PAGE WAS BUILT (2026-08-23).
+      The prompt below is kept as the original design intent; what shipped, and why,
+      is recorded at the end of this file under "What was built instead".
+
     LEFT CARD — "Scroll depth":
       White card, rounded-xl. Horizontal bar chart / funnel:
       Paragraph labels on left (text-xs Slate-500: "Intro", "Para 2", "Para 3"...),
@@ -86,3 +90,39 @@ Mobile (375px): sidebar collapses into bottom tab bar. KPI cards become a 2x2 gr
 Charts stack vertically full-width. Top-articles table becomes stacked cards (title +
 key metrics per card). Eligibility banner stacks progress bars vertically.
 ```
+
+---
+
+## What was built instead (2026-08-23)
+
+Two blocks in the two-column row could not be built as specified. Both replacements
+show real measured data rather than approximating the design with invented numbers.
+
+### "Scroll depth" → a retention curve
+
+The paragraph funnel needs a per-paragraph signal and the client does not produce one:
+it records a single page-level maximum scroll percentage when the reader leaves. There
+is nothing to attribute to "Intro" or "Para 3", and it cannot be backfilled — the events
+that would have carried it were never written.
+
+What shipped is a four-step retention curve: the share of readers reaching 25%, 50%, 75%
+and 90% of an article, which is exactly what a page-level maximum supports. Restoring the
+funnel needs an `IntersectionObserver` at capture time first, and would only describe
+articles read after that ships.
+
+The stored key for the last step is `p100`, but the aggregation counts a reader at
+`>= 90%` — so the page captions the real thresholds. Labelling it 100% would tell a
+writer that a third of their readers finished the piece when the data says they reached
+nine tenths of it.
+
+### "AI feedback" → a content mix
+
+Writer-facing AI feedback has no functional requirement, no user story and no endpoint
+behind it — it appears in `7-analytics-model.md` §12.1 and in this prompt, and nowhere
+else. Two of its three example insights ("readers drop off at paragraph 3", the
+weak-introduction hint) read the same per-paragraph data that does not exist.
+
+The slot holds a Content mix card instead: topic distribution and top tags from
+`writer_content_metrics`, plus average article length. Already aggregated, genuinely
+writer-facing, and about the writer's own work rather than their audience — which is the
+line this page holds against the magazine's evaluation report.
