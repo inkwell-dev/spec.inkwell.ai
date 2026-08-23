@@ -93,7 +93,9 @@ Notes for whoever picks this up:
 | `/m/[slug]` | ✓ | ✗ | ✗ | ✗ | · | ✗ |
 | `/editor/new` | ✓→ | ✓ | ✓ | ✓ | n/a | · |
 | `/editor/[id]` | ✓→ | · | **✗** | n/a | n/a | · |
-| `/dashboard` | ✓→ | ✓ | ✓ | ✓ | · | ✓ |
+| `/dashboard` | ✓→ | ✓ | ✓ | ✓→ | · | ✓ |
+| `/dashboard/articles` | ✓→ | · | ✓ | ✓→ | · | · |
+| `/dashboard/analytics` | ✓→ | · | ✓ | ✓→ | · | · |
 | `/notifications` | ✓→ | ✓ | ✗ | ✓ | · | ✓ |
 | `/settings` | ✓→ | ✗ | ✗ | ✗ | · | ✗ |
 | `/search` | ✓ | ✓ | ✓ | ✓ | · | ✓ |
@@ -101,9 +103,23 @@ Notes for whoever picks this up:
 | `/discover/writers/[username]` | ✓→ | ✓→ | ✓→ | ✓ | → | · |
 | `/marketplace` | ✓→ | ✓→ | ✓→ | ✓ | → | ✓→ |
 | `/library` | ✓→ | ✓→ | ✓→ | ✓ | → | ✓→ |
-| `/earnings` | ✓→ | ✓ | ✓ | ✓→ | · | · |
+| `/dashboard/earnings` | ✓→ | ✓ | ✓ | ✓→ | · | · |
 | `/subscription` | ✓→ | ✗ | ✗ | ✗ | · | ✗ |
 | `/admin` | ✓→ | ✓→ | ✓→ | ✓→ | → | ✓ |
+
+> **Rows changed 2026-08-23.** The writer's workspace nests under `/dashboard`, so
+> `/dashboard/articles` and `/dashboard/analytics` join the matrix and `/earnings`
+> becomes `/dashboard/earnings`. The legacy path still redirects and that redirect is
+> asserted in `23-writer-dashboard.spec.ts` rather than assumed.
+>
+> The magazine column on all four writer rows moved from `✓` to `✓→`: those routes are
+> personal-account territory — every endpoint behind them answers a magazine with 403 —
+> so `proxy.ts` now sends a magazine to `/marketplace` instead of rendering four empty
+> states. Previously this cell was recorded rather than asserted, on the grounds that the
+> expected behaviour was unclear. It is no longer unclear.
+>
+> `·` on reader and admin for the two new rows is honest rather than lazy: both are
+> personal accounts and both routes render for them, but no spec asserts it yet.
 
 **Remaining cells (4):** the whole `mag. lapsed` column, which is blocked — cancelling a
 subscription requires `/subscription`, and that page does not load for a magazine

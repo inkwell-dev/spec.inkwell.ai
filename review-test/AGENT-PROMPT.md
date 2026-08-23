@@ -110,9 +110,15 @@ Every route, for every persona that can reach it:
 
 `/` · `/login` · `/register` · `/register/magazine` · `/articles/[slug]` ·
 `/u/[username]` · `/m/[slug]` · `/editor/new` · `/editor/[id]` · `/dashboard` ·
+`/dashboard/articles` · `/dashboard/analytics` · `/dashboard/earnings` ·
 `/notifications` · `/settings` · `/search` · `/discover` ·
-`/discover/writers/[username]` · `/marketplace` · `/library` · `/earnings` ·
+`/discover/writers/[username]` · `/marketplace` · `/library` ·
 `/subscription` · `/admin`
+
+> **Updated 2026-08-23.** The writer's workspace nests under `/dashboard`; `/earnings`
+> moved to `/dashboard/earnings` and the old path permanently redirects. Assert the
+> redirect as well as the destination — a moved route that quietly 404s is the failure
+> this list exists to catch.
 
 Where a persona should be **refused**, assert the refusal rather than skipping the cell:
 
@@ -137,7 +143,7 @@ Screens in isolation miss the interesting failures. Drive these end to end:
 5. **The marketplace, whole.** Admin grants eligibility on `/admin` → writer publishes to
    the marketplace with a price → magazine browses `/marketplace` → previews (10% of
    price) → purchases (the remainder) → the article appears in `/library` → the writer's
-   `/earnings` shows both payouts. **Check the arithmetic on screen**, not just that the
+   `/dashboard/earnings` shows both payouts. **Check the arithmetic on screen**, not just that the
    buttons work.
 6. **Moderation.** Report an article as a reader → it appears in `/admin` → dismiss it;
    then report another and remove the article; then ban an account you created.

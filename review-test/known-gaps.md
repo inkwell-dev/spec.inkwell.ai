@@ -37,16 +37,24 @@ only the click handler is missing.
 
 ## Navigation
 
-### "Following" and "Analytics" are greyed out
+### "Following" is greyed out
 
-`src/components/layout/nav-items.tsx:72, 90`
+`src/components/layout/nav-items.tsx:74`
 
 > TODO(Phase 3): Wire to following feed
-> TODO(S6): Analytics dashboards ship in S6 — disabled so it can't 404
 
-Rendered as `<span>`, not a disabled link, deliberately — an `aria-disabled` anchor stays
-in the tab order and still navigates on Enter. Neither route exists, so the greying is
-what stops a 404.
+Rendered as a `<span>`, not a disabled link, deliberately — an `aria-disabled` anchor
+stays in the tab order and still navigates on Enter. The route does not exist, so the
+greying is what stops a 404.
+
+**"Analytics" is no longer here — resolved 2026-08-23.** Its marker read
+`TODO(S6): Analytics dashboards ship in S6`, and S6 had closed, which by this file's own
+rule at the top made it a real finding rather than a known gap. `/dashboard/analytics`
+was built in Phase 6 and the entry is now a live link.
+
+It also pointed at the wrong URL. The nav said `/analytics` while `9-design.md` §6 said
+`/dashboard/analytics` — two answers for a page that existed at neither, which is the
+kind of thing a greyed-out control hides indefinitely.
 
 ---
 
