@@ -198,8 +198,8 @@ evidence that supports it, so the report can cite code rather than assert.
 | NFR-11 | Semantic retrieval stays sub-linear at corpus scale | HNSW index, `m=16`, `ef_construction=64`, `vector_cosine_ops` matching the query operator |
 | NFR-12 | Full-text search is index-backed with weighted ranking | Generated `tsvector` column, weights A/B/C, GIN index |
 | NFR-13 | Prompt context is bounded | top-K ≤ 5 chunks, memory block < 200 tokens, ≈2000 tokens total |
-| NFR-14 | Feed and notification pagination is cursor-based, stable under insertion | `(created_at DESC, id)` |
-| NFR-15 | Dashboards read pre-aggregated single rows, never raw events | 4 rollup tables refreshed by the worker |
+| NFR-14 | Feed pagination is cursor-based, stable under insertion | `(created_at DESC, id)` — see §6 on notifications |
+| NFR-15 | Dashboard panels reporting totals and rates read pre-aggregated rows; time-series panels may query `analytics_events` directly, bounded and labelled | 4 rollup tables refreshed by the worker; `GET /me/analytics/timeseries` returns `source: 'events'` |
 | NFR-16 | Analytics aggregation is incremental and idempotent | reads only events since `last_aggregated_at` |
 | NFR-17 | Expensive AI output is cached and invalidated by the job that changes its basis | `portfolio_insights`, 24 h TTL, dropped by `embed-article` |
 | NFR-18 | Streaming responses are not buffered end to end | `proxy_buffering off`, `X-Accel-Buffering: no`, 300 s read timeout |
@@ -229,7 +229,7 @@ evidence that supports it, so the report can cite code rather than assert.
 | ID | Requirement | Evidence |
 |----|-------------|----------|
 | NFR-29 | Both repositories compile under `strict: true` with zero lint warnings | `tsc --noEmit`, `eslint --max-warnings=0` in CI |
-| NFR-30 | The API contract is generated, never hand-copied | OpenAPI → `pnpm api:codegen` |
+| NFR-30 | The API contract is generated from OpenAPI and verified in CI against the committed types | `pnpm api:codegen`; hook signatures are hand-written against it — see §6 |
 | NFR-31 | Business rules are tested, not asserted | 479 backend tests, 155 Playwright specs across 23 files |
 | NFR-32 | CI fails when the schema and the migrations disagree | schema-drift check |
 | NFR-33 | Errors are captured in four runtimes with no PII | Sentry in API, worker, Next server, browser; `sendDefaultPii: false`, traces 0.1 |
@@ -388,7 +388,8 @@ it.
 - Requirements record the **built** system. Six deviations from the original specs
   are noted inline (guest access to free articles, `/discover` gating, insights
   generation as an explicit action, absent topic-relevance sort, the three NULL
-  analytics columns, voice descoped). The report reports them; recorded deviations
+  analytics columns, voice descoped) — plus the §6 route topology, reconciled in
+  Phase 6 and recorded below. The report reports them; recorded deviations
   read as maturity, hidden ones read as luck.
 - **Resolved 2026-08-21 — the three NULL analytics columns.** `total_unique_readers`,
   `returning_reader_rate` and `total_unique_views` were empty because
@@ -405,12 +406,63 @@ it.
   does not store refresh tokens (see NFR-02), and `/ready` does not check it (NFR-25).
   Corrected in `4-system-architecture.md` §8, `8-devops.md`, and
   `9-implementation-guide.md` §2.3 and §9.
-- **Spec-lags-code drift, still open.** Two items found in the schema conformance
+- **Spec-lags-code drift, still open.** One item found in the schema conformance
   pass and not yet reconciled: `articles.search_vector` (a generated `tsvector`
-  column with a GIN index, backing NFR-12) is documented in no spec; and the
-  notification type enum differs three ways — 8 values in the spec, 9 in the backend,
-  10 in the frontend, where `system` exists in `types/index.ts` alone and no backend
-  path can ever emit it.
+  column with a GIN index, backing NFR-12) is documented in no spec.
+
+  The notification enum half of this is **resolved 2026-08-23**: the frontend's tenth
+  value, `system`, was deleted. It existed in `types/index.ts` alone and no backend
+  path could emit it, so the renderer carried a branch for a notification that could
+  never arrive — which is what stopped its `switch` from being exhaustive in any useful
+  sense. Spec and code now both hold the nine emittable values.
+- **Amended 2026-08-23 — NFR-15 now distinguishes totals from series.** The original
+  wording ("never raw events") was written when every dashboard figure came from a
+  rollup, and the writer analytics page contradicted it: its 30-day chart reads
+  `analytics_events` directly.
+
+  It has to. All four rollup tables hold one row per entity, written with
+  `ON CONFLICT DO UPDATE`, so each aggregation run OVERWRITES the previous values —
+  there is no history in them to chart, and the raw event log is the only place a past
+  day still exists. Adding a per-day rollup would be a schema change, a worker step and
+  a new staleness story for a query that is already index-supported.
+
+  The exemption is bounded rather than open: the window is a whitelist (7/30/90) so a
+  query parameter cannot widen the scan, the join is scoped to one author, and the
+  response carries `source: 'events'` with a generation timestamp so the client can
+  tell a live figure from an aggregated one. Every other panel on that page — the KPI
+  row, the retention curve, the content mix, the top-articles table — still reads
+  rollups. The same exemption was already taken and documented for the per-article
+  `dailyViews` series in `analytics-reports.service.ts`; this makes it a stated rule
+  rather than a silent precedent.
+- **Amended 2026-08-23 — NFR-30 describes verification, not consumption.** The
+  contract IS generated (`pnpm api:codegen` → `src/types/api.generated.ts`), but the
+  TanStack hooks hand-write their response types against it rather than importing
+  from it, because the backend declares few `@ApiResponse` decorators and most
+  generated response types come out as `never`. Claiming "never hand-copied" was
+  therefore false of the response side. CI regenerates and fails on a diff, so the
+  contract is verified even where it is not imported.
+- **Amended 2026-08-23 — NFR-14 no longer claims cursor pagination on notifications.**
+  Feed pagination is cursor-based as stated. Notifications are served by offset behind
+  the `{ items, page, limit, total, hasMore }` envelope that `paginated-response.ts`
+  calls a frozen contract with the frontend, and the list grows its limit rather than
+  paging. Converting would change that envelope and every paginated hook with it.
+  Recorded as knowingly unmet rather than quietly satisfied by a looser reading.
+- **Delivered 2026-08-23 — the writer surfaces §6 specified and the build lacked.**
+  `9-design.md` §6 has been reconciled with the application route by route; fifteen of
+  its eighteen dashboard-area routes returned 404 before this pass. Three were built
+  (`/dashboard/articles`, `/dashboard/analytics`, `/dashboard/earnings`), the rest were
+  corrected in the spec to the flat, shared topology the application actually uses.
+
+  Two requirements were only half-met until then and are now whole:
+  **FR-33** ranked a writer's work but gave them no page listing it — `/dashboard/articles`
+  adds search and a date range over `GET /articles/me`. **FR-37** says earnings are
+  "lifetime, **per article**, itemised by preview and purchase"; the per-article half
+  existed in neither API nor UI, and is now `GET /me/earnings/by-article` behind a
+  revenue table.
+
+  One frame in §6 was **removed rather than built**: an admin Article Management page at
+  `/admin/articles`. Moderation is report-driven by design and FR-51–FR-55 never asked
+  for a corpus browser. Recorded as future work rather than dropped silently.
 - **NFR-37** (Lighthouse, `axe-core`) is the only unsatisfied requirement.
 - **Open:** the AI token top-up (US absent by design — the decision and the column
   shape to build are recorded on the item in `0-phase-plan.md` Phase 5).

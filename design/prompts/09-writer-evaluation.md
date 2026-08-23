@@ -1,6 +1,12 @@
 # 09 — Writer Profile: Evaluation Mode (Magazine View) [GENERATED]
 
-**Route:** `/u/[username]?as=magazine` · **Role:** Magazine (active subscription) · **Stitch mode:** Standard
+**Route:** `/discover/writers/[username]` · **Role:** Magazine (active subscription) · **Stitch mode:** Standard
+
+> **Route corrected 2026-08-23.** Built as its own route rather than a query parameter: `?as=magazine` would make one public URL render two different, access-controlled pages depending on who is looking.
+> `9-design.md` §6 is the authoritative page inventory. The route also appears inside
+> the generation prompt below, which is kept verbatim as the text that was actually
+> sent — it records what was asked for, not where the screen ended up.
+
 
 The magazine's decision-support view of a writer — analytics + Portfolio Insights + marketplace articles.
 

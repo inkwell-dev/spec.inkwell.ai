@@ -1,6 +1,12 @@
 # 06 — Auth Screens [GENERATED]
 
-**Routes:** `/login`, `/signup`, `/signup/magazine` · **Role:** Guest · **Stitch mode:** Standard
+**Routes:** `/login`, `/register`, `/register/magazine` · **Role:** Guest · **Stitch mode:** Standard
+
+> **Route corrected 2026-08-23.** Built at `/register` and `/register/magazine`, matching the API's `POST /auth/register` so the page and the endpoint it posts to share a name.
+> `9-design.md` §6 is the authoritative page inventory. The route also appears inside
+> the generation prompt below, which is kept verbatim as the text that was actually
+> sent — it records what was asked for, not where the screen ended up.
+
 
 > Paste [`00-design-system.md`](./00-design-system.md) first, then the block below.
 

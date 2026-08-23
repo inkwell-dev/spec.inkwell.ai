@@ -160,7 +160,13 @@ Magazines see writer evaluation dashboards on each writer's profile. **This is t
 
 **Access requirement**: active magazine subscription. Unauthenticated visitors and non-subscribed magazine accounts cannot view writer evaluation dashboards or Portfolio Insights.
 
-Magazines view: `/u/[writer-username]?as=magazine` → renders the evaluation view rather than the standard public profile.
+Magazines view: `/discover/writers/[writer-username]` → the evaluation report, a route of its own rather than a mode of the public profile.
+
+> **Corrected 2026-08-23.** This read `/u/[writer-username]?as=magazine` until now. It was
+> built as a separate route in Phase 3 (`0-phase-plan.md` §Phase 3) because a query
+> parameter would make ONE public URL render two different, access-controlled pages
+> depending on who is looking — the access requirement stated above is precisely what
+> makes that a bad shape for a URL.
 
 ### 7.1 Audience Analytics
 

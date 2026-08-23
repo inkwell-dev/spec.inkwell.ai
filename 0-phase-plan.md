@@ -715,6 +715,111 @@ Phase 5 screen has been looked at in a browser.**
 ## Phase 6 — Polish, Deploy & Defense Prep
 > Sprint S7 (parallel with Phase 5) · Aug 24 – defense · *(re-dated from Aug 7–end of August)*
 
+### Writer Surfaces — closing the §6 route gap
+
+> **Built 2026-08-23.** `9-design.md` §6 specified a nested writer dashboard from the
+> start and the application was built flat, so fifteen of §6's eighteen dashboard-area
+> routes returned 404. Two of them named pages that existed nowhere at all. This block
+> built the three that were missing, moved one, and reconciled §6 with the rest rather
+> than building a URL tree nobody needed.
+>
+> The reconciliation went both ways, which is the point: the writer's workspace nests
+> because that grouping is real, and everything serving BOTH account types stays flat
+> and shared because a `/m/dashboard/settings` twin would have meant two URLs rendering
+> one page. `design/prompts/16-settings.md` says so outright.
+
+- [x] **`/dashboard/articles`** — the writer's full article list, searchable and
+      narrowable by date. Closes the other half of FR-33: the API could already rank a
+      writer's whole body of work, but no page listed it. The dashboard's list was a
+      hardcoded first page of 20 with no page state anywhere, so **a writer with 21
+      articles could not reach the 21st from any surface in the product**. Backed by
+      `q`/`from`/`to` on `GET /articles/me`. The date filter reads
+      `COALESCE(published_at, created_at)`: `published_at` is NULL for every draft, and
+      a date filter that silently drops drafts is wrong on the one page whose primary
+      content is drafts.
+- [x] **`/dashboard/analytics`** — the writer-facing surface of the two-surface
+      analytics doctrine (`7-analytics-model.md` §1). The nav had carried a *disabled*
+      "Analytics" entry behind a `TODO(S6)` marker pointing at `/analytics`, while §6
+      said `/dashboard/analytics` — two answers for a page that existed at neither.
+      Backed by `GET /me/analytics`, which re-points the three existing writer rollups
+      at the caller, and `GET /me/analytics/timeseries`.
+  - [x] Two specified blocks were **replaced rather than built**, both because the data
+        cannot exist. The per-paragraph scroll funnel became the quartile retention
+        curve — same reason recorded under Phase 5's heatmap item, and it still holds.
+        The "AI feedback" card became a Content mix: writer-facing AI feedback has no
+        FR, no user story and no endpoint, and two of its three specified insights read
+        `paragraph_dropoff`, which is permanently NULL.
+  - [x] The per-article report the old master/detail dashboard carried was **re-homed
+        here, not dropped** — it is the only surface delivering FR-32, and losing it in
+        a restructure would have silently dropped a requirement.
+- [x] **`/dashboard`** — the overview `design/prompts/desktop-refinement.md` §B
+      specified: welcome row, four KPI cards, recent articles, quick actions,
+      eligibility, recent activity. Fires **no new requests** — every figure was already
+      served for another surface. "Total readers" comes from `GET /me/eligibility`
+      rather than `SUM(article_metrics.total_unique_views)`, which double-counts anyone
+      who read two articles and would disagree with the eligibility bar directly below
+      it.
+- [x] **`/earnings` → `/dashboard/earnings`**, with a permanent redirect. The old path
+      is five phases old, sits in the E2E matrix and is the subject of a committed
+      report figure. The redirect is placed BEFORE the auth check in `proxy.ts`, so a
+      signed-out visitor lands at `/login?redirect=/dashboard/earnings` — the new URL.
+  - [x] **FR-37's per-article half** shipped with it. The requirement reads "lifetime,
+        **per article**, itemised by preview and purchase"; the per-article rollup
+        existed in neither API nor UI. Now `GET /me/earnings/by-article`. Its join to
+        `article_purchases` is LEFT, preserving the invariant that a payout need not
+        have a purchase behind it — so `preview + purchase` can be less than the total,
+        and the client renders `total_revenue` directly rather than adding two columns.
+- [x] **`middleware.ts` → `proxy.ts`** — Next 16 deprecated the `middleware` file
+      convention and renamed it (bundled docs, `v16.0.0`). Renamed by hand rather than
+      running the canary codemod, since the change is a filename and a function name.
+      Also carries the magazine redirect off `/dashboard`: those four routes are
+      personal-account territory and every endpoint behind them 403s a magazine, so the
+      alternative was a page of four empty states.
+- [x] **Migration `0001`** — `users.location`, `users.website_url`. The project's second
+      migration; the first had been the Phase 1 baseline. Both nullable, no backfill.
+- [x] Notifications quality pass — rows now **link through** to their subject (the
+      payloads gained `articleSlug`; `articleId` alone was unusable because no public
+      reader route is keyed by id), filter pills, date grouping, mark-all-as-read
+      (`PATCH /notifications/read-all`), a skeleton in place of a bare "Loading…"
+      string, and the actor's avatar with the event type badged onto it.
+- [x] `/u/[username]` — the Articles tab showed **four hardcoded articles attributed to
+      a "Placeholder Writer", every slug `#`, identical on every profile in the
+      product**, and the component took no props at all. The endpoint it had been
+      waiting for since Phase 1 (`GET /u/:username/articles`) was never built; it ships
+      here. The hardcoded "Lagos, Nigeria" location and the four invented "Topics" went
+      with it.
+- [x] Settings expansion — location and website, a **Magazine profile section**
+      (`magazine_profiles` had carried five editable fields since the schema was written
+      and nothing in the product could write them), and a password change. The password
+      form renders only for `provider === 'local'`: an OAuth account has no password
+      hash, so offering the form would mean the only way to learn it does not apply is
+      to fill it in.
+- [x] `POST /auth/password` — the first credential-changing endpoint in the product. It
+      does **not** invalidate other sessions, and the copy says so: there is no
+      refresh-token store to revoke against (see NFR-02).
+- [ ] ~~Admin Article Management (`/admin/articles`)~~ — **not built, and removed from
+      §6.** Moderation is report-driven: an admin removes an article from the row of the
+      report that flagged it. `10-requirements.md` agrees — FR-51 to FR-55 never ask for
+      a corpus browser. Recorded as future work in the report's perspectives section
+      rather than dropped silently.
+
+> **Two defects found and fixed while building this, both predating it.**
+>
+> **Avatar upload had never worked.** `uploads.service.ts` returns a relative
+> `/storage/<bucket>/<key>` so nginx can proxy it, while `UpdateUserDto` validated
+> `avatarUrl` with `@IsUrl()`, which requires an absolute URL. Every profile-picture
+> save in the product's history failed. It hid because the column legitimately holds two
+> shapes — Google OAuth writes an absolute provider URL — and because the only other
+> consumer of the same uploader, `thumbnailUrl`, has no URL validator at all, so article
+> images worked and avatars did not.
+>
+> **`ScrollArea` never scrolled when constrained by `max-h-*`.** The primitive puts the
+> caller's className on the Root and hardcodes the Viewport as `size-full`; a percentage
+> height does not resolve against an auto-height parent, so the content grew past the cap
+> and painted over whatever followed. It worked only where the Root had a definite height
+> (`flex-1`). Two call sites were affected — the notification dropdown and the AI inline
+> edit popup.
+
 ### Quality
 - [x] Playwright E2E tests — cover all critical flows: *all five verified 2026-08-15 against the existing suite, which stands at 155 passing.*
   - [x] Sign up → create → publish → read cycle — *`08-flow-register-publish-read`, 3 tests*

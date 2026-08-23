@@ -1,6 +1,12 @@
 # 07 — Magazine Subscription Wall [GENERATED]
 
-**Route:** `/m/subscribe` · **Role:** Magazine (no active subscription) · **Stitch mode:** Standard
+**Route:** in-page state on `/marketplace` and `/discover` · **Role:** Magazine (no active subscription) · **Stitch mode:** Standard
+
+> **Route corrected 2026-08-23.** There is no `/m/subscribe` page. The wall is the 403 state the two gated surfaces render in place of their content, carrying a CTA to `/subscription` — so an unsubscribed magazine sees why it was stopped on the page it was trying to reach, rather than being redirected away from it.
+> `9-design.md` §6 is the authoritative page inventory. The route also appears inside
+> the generation prompt below, which is kept verbatim as the text that was actually
+> sent — it records what was asked for, not where the screen ended up.
+
 
 Mandatory gate after magazine sign-up — no marketplace access until subscribed.
 
