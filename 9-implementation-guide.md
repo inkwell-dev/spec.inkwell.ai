@@ -86,32 +86,64 @@ function countWords(doc: TipTapNode): number {
   return extractFullText(doc).split(/\s+/).filter(Boolean).length;
 }
 
-// Estimated read time (250 wpm average)
+// Estimated read time (200 wpm average)
 function estimateReadTime(doc: TipTapNode): number {
-  return Math.max(1, Math.ceil(countWords(doc) / 250));
+  return Math.max(1, Math.ceil(countWords(doc) / WORDS_PER_MINUTE));
 }
 ```
 
+> **Corrected 2026-08-24.** This specified **250** wpm; the implementation uses
+> **200** (`WORDS_PER_MINUTE` in `common/constants.ts:42`, applied in
+> `tiptap-utils.ts:106`). 200 wpm is the conventional figure for reading prose on
+> screen and is the more conservative of the two — it over-estimates rather than
+> under-estimates the time a reader is asked for. The difference is not cosmetic:
+> at 250 wpm a 2,000-word essay advertises 8 minutes, at 200 wpm it advertises 10.
+
 ### 1.4 tsvector population
 
-**Strategy:** application-layer, not a database trigger.
+> **Corrected 2026-08-24.** This described a single application-written `tsvector`
+> column. What exists is a **split**: the application writes flattened *text*, and
+> Postgres derives the vector from it as a `GENERATED ALWAYS ... STORED` column.
+> The strategy below is half right — the flattening is application-layer, the
+> vectorising is not, and it is not a trigger either.
 
-On every article `INSERT` or `UPDATE` that changes `content`:
+**Strategy:** the application writes plain text; the database derives the vector.
+
+On every article `INSERT` or `UPDATE` that changes `content`, the app flattens the
+TipTap document and stores the result as **text**:
 
 ```typescript
-const plainText = extractFullText(content);
-const searchText = `${title} ${excerpt ?? ''} ${plainText}`;
-
 await db.update(articles)
   .set({
-    content_search: sql`to_tsvector('english', ${searchText})`,
-    word_count: countWords(content),
-    read_time: estimateReadTime(content),
+    contentSearch: extractFullText(content),   // TEXT, not tsvector
+    wordCount:     countWords(content),
+    readTime:      estimateReadTime(content),
   })
   .where(eq(articles.id, articleId));
 ```
 
-This runs synchronously inside the article save/publish endpoint — not as a background job. The tsvector must be current for search to work.
+`articles.search_vector` is then maintained by Postgres itself:
+
+```sql
+search_vector tsvector GENERATED ALWAYS AS (
+  setweight(to_tsvector('english', coalesce(title,          '')), 'A') ||
+  setweight(to_tsvector('english', coalesce(excerpt,        '')), 'B') ||
+  setweight(to_tsvector('english', coalesce(content_search, '')), 'C')
+) STORED
+```
+
+**Why the split rather than one application-written column.** Extracting readable
+text from a TipTap tree is a tree walk and belongs in application code. Turning
+that text into a weighted vector is a pure function of the row, and a generated
+column cannot drift from its inputs: there is no code path that can update the
+title and forget the index. The weighting is the other half of the reason — a
+title match outranks an excerpt match outranks a body match, which a single
+`to_tsvector` over one concatenated string cannot express.
+
+Still true from the original: this is synchronous inside the save/publish endpoint,
+never a background job. The index must be current the moment the article is
+searchable. See `6-database-schema.md` §3.3 for the full column pair, and note that
+`'english'` is hard-coded because a generated column must be `IMMUTABLE`.
 
 ### 1.5 RAG chunking rules
 
@@ -191,25 +223,55 @@ TTL:    7 days (604800 seconds)
 
 ### 2.4 AI token quota
 
+> **Corrected 2026-08-24.** The allowances here were wrong by a factor of fifty,
+> and the magazine row describes an entitlement that does not exist. Premium
+> accounts receive **1,000** tokens a day (`PREMIUM_DAILY_AI_TOKENS` in
+> `common/constants.ts:14`), not 50,000, and **magazine accounts are excluded from
+> the AI quota entirely** — the grant is filtered on `account_type = 'personal'`
+> (`ai/ai-token-allowance.ts`). The exclusion is a product rule, not an oversight:
+> the AI assistant is a *writing* tool and a magazine account does not write.
+
 | Plan | Daily AI tokens | Reset time |
 |------|----------------|------------|
-| Free | 0 (no AI access) | — |
-| Premium | 50,000 | Daily at midnight UTC |
-| Magazine | 20,000 | Daily at midnight UTC |
+| Free (personal) | 0 — no AI access | — |
+| Premium (personal) | 1,000 | Daily at 00:00 UTC |
+| Magazine | none — excluded | — |
 
-One "AI token" = one LLM token consumed (input + output combined). The `ai_tokens_remaining` field on the `users` table is decremented after each AI response by the actual `tokens_used` value reported by the Vercel AI SDK.
+One "AI token" = one LLM token consumed (input + output combined). The
+`ai_tokens_remaining` field on the `users` table is decremented after each AI
+response by the actual `tokens_used` value reported by the Vercel AI SDK.
 
-The `reset-ai-tokens` BullMQ cron runs daily at 00:00 UTC:
+The allowance exists once, as a SQL fragment (`dailyAllowanceSql`), and has two
+consumers: the nightly `reset-ai-tokens` cron and a lazy top-up on the read path.
+
 ```sql
-UPDATE users
-SET ai_tokens_remaining = CASE
-  WHEN plan = 'premium' THEN 50000
-  WHEN account_type = 'magazine' THEN 20000
-  ELSE 0
-END,
-ai_tokens_reset_at = NOW()
-WHERE deleted_at IS NULL;
+-- dailyAllowanceSql
+CASE WHEN plan = 'premium' THEN 1000 ELSE 0 END
 ```
+
+```sql
+-- the nightly reset, 00:00 UTC
+UPDATE users
+SET ai_tokens_remaining = <dailyAllowanceSql>,
+    ai_tokens_reset_at  = now()
+WHERE deleted_at IS NULL
+  AND account_type = 'personal';
+```
+
+**Why a lazy top-up as well as a cron.** A nightly job alone means an account that
+upgrades to premium at 09:00 sees a balance of 0 until midnight — and because the
+client derives "exhausted" from that balance and disables the composer, the user
+cannot make the request that would have granted their tokens. Every path that
+*reports* the balance therefore also grants it if a grant is due
+(`readQuotaGrantingIfDue`), in one atomic `UPDATE … WHERE <due>` so two concurrent
+callers cannot both grant.
+
+**Why free accounts are skipped rather than granted 0.** Writing "0" would stamp
+`ai_tokens_reset_at` with today's date, consuming the only signal that says "this
+account has never been granted" — so an upgrade an hour later would find the reset
+no longer due and sit at 0 until midnight. The grant is guarded on
+`(<dailyAllowanceSql>) > 0` so a free account's `reset_at` stays NULL and its first
+read after upgrading pays out immediately.
 
 ---
 
@@ -328,15 +390,42 @@ In production, Nginx proxies both services on the same origin, so CORS is not ne
 
 ### 5.1 Platform fee
 
-Platform fee is a **configurable percentage** defined as an environment variable:
+> **Corrected 2026-08-24.** This section specified a **10%** fee read from an
+> environment variable `PLATFORM_FEE_PERCENT`. Both halves are wrong: the rate is
+> **20%**, and no such environment variable exists — the value is a compile-time
+> constant. `PLATFORM_FEE_PERCENT` has been dropped from the §13 catalogue with
+> this edit. Evidence: `common/constants.ts:119`, `purchases/pricing.ts:94`.
+>
+> Note this is **not** the 10% that appears throughout `2-features.md`,
+> `3-user-flows.md` and `1-product-overview.md`. That is the *preview fraction* —
+> what a magazine pays to unlock a preview — and it is correct at 10%. The two
+> percentages are unrelated and only one of them drifted.
 
-```
-PLATFORM_FEE_PERCENT=10
+The platform fee is a **fixed rate expressed in basis points**, defined in code:
+
+```ts
+// common/constants.ts
+export const PLATFORM_FEE_BPS = 2000;   // 20%
+export const BPS_DENOMINATOR = 10_000;  // 100%
 ```
 
-Fee calculation: `platformFee = Math.floor(creditsPaid * PLATFORM_FEE_PERCENT / 100)`
+Fee calculation: `platformFee = Math.floor(creditsPaid * PLATFORM_FEE_BPS / BPS_DENOMINATOR)`
 
 Writer payout: `writerPayout = creditsPaid - platformFee`
+
+**Why basis points rather than a percentage or a float.** Credits are integers and
+the ledger must reconcile exactly; `price * 0.2` is floating-point multiplication,
+and `105 * 0.2` evaluates to `21.000000000000004`. Basis points keep the entire
+calculation in integer arithmetic with a single floor at the end. The fee is
+floored and the payout takes the remainder, so the writer absorbs no rounding loss
+and the two always sum back to `creditsPaid` — which is what ledger invariant (c),
+`credits_paid == platform_fee + writer_payout`, checks on every transaction.
+
+**Why a constant rather than configuration.** Changing the rate changes what
+writers earn, which is a product decision and not a deployment knob. It needs no
+migration either way: each `article_purchases` row stores its own `platform_fee`
+and `writer_payout`, so historical rows keep the split they were written with
+rather than being recomputed from whatever the current rate happens to be.
 
 ### 5.2 Preview unlock flow
 
@@ -356,7 +445,7 @@ Body: { articleId, idempotencyKey }
       WHERE id = magazineId FOR UPDATE
    b. previewPrice = Math.floor(article.marketplace_price * 0.10)
    c. IF credit_balance < previewPrice → ROLLBACK, return 402
-   d. platformFee = Math.floor(previewPrice * PLATFORM_FEE_PERCENT / 100)
+   d. platformFee = Math.floor(previewPrice * PLATFORM_FEE_BPS / BPS_DENOMINATOR)
    e. writerPayout = previewPrice - platformFee
    f. UPDATE magazine_profiles
       SET credit_balance = credit_balance - previewPrice
@@ -417,7 +506,7 @@ Body: { articleId, idempotencyKey }
    a. SELECT credit_balance FROM magazine_profiles
       WHERE id = magazineId FOR UPDATE
    b. IF credit_balance < remainingAmount → ROLLBACK, return 402
-   c. platformFee = Math.floor(remainingAmount * PLATFORM_FEE_PERCENT / 100)
+   c. platformFee = Math.floor(remainingAmount * PLATFORM_FEE_BPS / BPS_DENOMINATOR)
    d. writerPayout = remainingAmount - platformFee
    e–j. Same pattern: debit magazine, credit writer,
         insert purchase row (stage='full_purchase', parent_purchase_id),
@@ -954,70 +1043,108 @@ Per-endpoint overrides:
 
 ## 13. Environment Variable Catalog
 
+> **Corrected 2026-08-24.** This catalogue was written before the backend existed
+> and was never reconciled against it. Roughly half of what it listed does not
+> exist: variable names that were never adopted (`JWT_ACCESS_EXPIRY`,
+> `SENTRY_DSN_BACKEND`), knobs that turned out to be compile-time constants
+> (`PLATFORM_FEE_PERCENT`, the AI token allowances, the eligibility thresholds),
+> pluggability that was never built (`EMBEDDING_PROVIDER`, the four `LLM_*`
+> variables), and a feature that was never started (`RESEND_*`, `DEMO_MODE`).
+>
+> The catalogue below is now generated from `config/env.validation.ts`, which is
+> the single Zod schema every variable must pass at boot — a misspelled name is a
+> startup failure, not a silent default. What was removed, and why, is tabulated
+> after it.
+
 ```bash
+# ── Runtime ──
+NODE_ENV=development            # development | production | test
+PORT=3000
+
 # ── Database ──
 DATABASE_URL=postgresql://user:pass@db:5432/inkwell
-DATABASE_URL_TEST=postgresql://user:pass@db:5432/inkwell_test
 
 # ── Redis ──
 REDIS_URL=redis://redis:6379
 
 # ── JWT ──
-JWT_SECRET=<random-64-char>
-JWT_ACCESS_EXPIRY=15m
-JWT_REFRESH_EXPIRY=7d
+JWT_SECRET=<min 32 chars>
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_SECRET=<min 32 chars>       # distinct from JWT_SECRET
+JWT_REFRESH_EXPIRES_IN=7d
 
 # ── MinIO ──
 MINIO_ENDPOINT=minio
 MINIO_PORT=9000
+MINIO_USE_SSL=false
 MINIO_ACCESS_KEY=<key>
 MINIO_SECRET_KEY=<secret>
-MINIO_BUCKET=inkwell-images
-MINIO_PUBLIC_URL=/storage  # URL prefix for public access via Nginx
+MINIO_BUCKET=inkwell
+
+# ── Origins ──
+FRONTEND_URL=http://localhost:3000      # also the OAuth callback's return target
+CORS_ORIGINS=                           # empty in production: FRONTEND_URL is the allow-list
 
 # ── AI Providers ──
-GROQ_API_KEY=<key>
-GEMINI_API_KEY=<key>
-COHERE_API_KEY=<key>
-OPENAI_API_KEY=<key>           # fallback embeddings
-
-# ── AI Config ──
-LLM_PRIMARY_PROVIDER=groq      # groq | gemini
-LLM_PRIMARY_MODEL=llama-3.3-70b-versatile
-LLM_FALLBACK_PROVIDER=gemini
-LLM_FALLBACK_MODEL=gemini-2.0-flash
-EMBEDDING_PROVIDER=cohere       # cohere | openai
-EMBEDDING_MODEL=embed-multilingual-v3.0
-
-# ── Platform ──
-PLATFORM_FEE_PERCENT=10
-DAILY_AI_TOKENS_PREMIUM=50000
-DAILY_AI_TOKENS_MAGAZINE=20000
-
-# ── Eligibility (overridden in DEMO_MODE) ──
-ELIGIBILITY_READER_THRESHOLD=5000
-ELIGIBILITY_REACTION_THRESHOLD=1000
-
-# ── Demo ──
-DEMO_MODE=false
+GROQ_API_KEY=<key>              # the LLM. Both chat models live here.
+GEMINI_API_KEY=<key>            # LLM fallback AND all embeddings
+OPENAI_API_KEY=<key>            # optional: moderation only, not embeddings
 
 # ── Observability ──
-SENTRY_DSN_BACKEND=<dsn>
-SENTRY_DSN_FRONTEND=<dsn>
-
-# ── Email ──
-RESEND_API_KEY=<key>
-RESEND_FROM_EMAIL=noreply@inkwell.ai
-
-# ── Frontend ──
-NEXT_PUBLIC_API_URL=/api
-NEXT_PUBLIC_SENTRY_DSN=<dsn>
+SENTRY_DSN=<dsn>                # optional; the SDK no-ops without it
 
 # ── Google OAuth ──
 GOOGLE_CLIENT_ID=<id>
 GOOGLE_CLIENT_SECRET=<secret>
-GOOGLE_CALLBACK_URL=/api/auth/google/callback
+GOOGLE_CALLBACK_URL=http://localhost:8080/api/auth/google/callback
 ```
+
+Two more are **build-time** variables belonging to the web image, not to this
+schema. Next.js inlines `NEXT_PUBLIC_*` into the browser bundle during
+`next build`, so setting them at runtime configures nothing:
+
+```bash
+NEXT_PUBLIC_API_URL=/api
+NEXT_PUBLIC_SITE_URL=https://inkwell.ai
+NEXT_PUBLIC_SENTRY_DSN=<dsn>            # the browser DSN; distinct from SENTRY_DSN
+NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED=false  # renders the "Continue with Google" button
+```
+
+`NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED` is separate from `GOOGLE_CLIENT_ID` because that
+value is a server secret and never reaches the browser, and because
+`GoogleStrategy` falls back to the literal client id `'not-configured'` rather than
+failing at boot — so on a deployment with no credentials a rendered button would
+send the user to Google's own `invalid_client` error page. The flag is the
+deployment asserting that the server half is configured.
+
+### What was removed, and why
+
+| Removed | Why |
+|---|---|
+| `PLATFORM_FEE_PERCENT` | The fee is the compile-time constant `PLATFORM_FEE_BPS = 2000`. See §5.1. |
+| `DAILY_AI_TOKENS_PREMIUM`, `DAILY_AI_TOKENS_MAGAZINE` | The allowance is `PREMIUM_DAILY_AI_TOKENS = 1000`, and magazines have no allowance at all. See §2.4. |
+| `ELIGIBILITY_READER_THRESHOLD`, `ELIGIBILITY_REACTION_THRESHOLD` | Constants: `ELIGIBILITY_MIN_READERS = 5_000`, `ELIGIBILITY_MIN_REACTIONS = 1_000`. The values are right; their configurability was not. |
+| `COHERE_API_KEY`, `EMBEDDING_PROVIDER`, `EMBEDDING_MODEL` | Embeddings are not pluggable. `EmbeddingsService` names `gemini-embedding-001` directly and validates the returned vector against the column's 1536 dimensions — a provider swap is a migration, not an environment change. See §18. |
+| `LLM_PRIMARY_PROVIDER`, `LLM_PRIMARY_MODEL`, `LLM_FALLBACK_PROVIDER`, `LLM_FALLBACK_MODEL` | The model list is the constant `LLM_MODELS = ['openai/gpt-oss-120b', 'openai/gpt-oss-20b']`, and failover runs *within* Groq. The specified Groq → Gemini chain was never built and cannot be — see NFR-24. |
+| `DEMO_MODE` | Never implemented. No code reads it. |
+| `RESEND_API_KEY`, `RESEND_FROM_EMAIL` | Transactional email was never built. Notifications are in-app only. |
+| `MINIO_PUBLIC_URL` | Public object URLs are served by nginx at `/storage`, an nginx concern rather than an application one. |
+
+One variable is **not removed but re-filed**: `DATABASE_URL_TEST` is real and
+required, but it belongs to the *test harness*, not to the application. It is read
+directly by `test/global-setup.ts` from `.env.test` and never passes through the
+Zod schema, because the running API must never be able to reach the test database:
+
+```bash
+# .env.test — test harness only
+DATABASE_URL_TEST=postgresql://user:pass@db:5432/inkwell_test
+```
+
+**Renamed** rather than removed: `JWT_ACCESS_EXPIRY` → `JWT_EXPIRES_IN`,
+`JWT_REFRESH_EXPIRY` → `JWT_REFRESH_EXPIRES_IN`, `SENTRY_DSN_BACKEND` →
+`SENTRY_DSN`, `SENTRY_DSN_FRONTEND` → `NEXT_PUBLIC_SENTRY_DSN`. `JWT_REFRESH_SECRET`
+is **new** and mandatory: the refresh token is signed with its own secret, so a
+leaked access-token secret cannot mint refresh tokens.
 
 ---
 
@@ -1212,12 +1339,55 @@ const corpusText = recentArticles
 
 ## 18. Embedding Provider — Final Decision
 
-**Provider:** OpenAI `text-embedding-3-small` (1536 dimensions). This is now reflected in all specs.
+> **Superseded 2026-08-24.** The decision recorded below was taken before
+> implementation and did not survive it. Embeddings are produced by **Gemini
+> `gemini-embedding-001`**, not by OpenAI. The section is kept rather than
+> rewritten, because the reasoning that led here — and the fact that it was
+> overturned by something the reasoning could not have known — is part of the
+> record. See "What actually shipped" beneath it.
+
+### The decision as taken (superseded)
+
+**Provider:** OpenAI `text-embedding-3-small` (1536 dimensions).
 
 - Costs $0.02 per million tokens — under $0.10 total at PFE scale
 - No trial expiry risk (was the primary concern with Cohere)
 - No fallback or provider-switching logic needed
 - Schema uses `VECTOR(1536)` throughout
+
+### What actually shipped
+
+**Provider:** Gemini `gemini-embedding-001`, requested at
+`outputDimensionality: 1536` (`ai/embeddings.service.ts:35,128`).
+
+The reasoning above holds on every point except the one that decided it: cost was
+never the binding constraint, *having a working key* was. `GEMINI_API_KEY` was
+already in the deployment for the LLM fallback, so embeddings could ship without
+adding a second paid provider to a student project. `OPENAI_API_KEY` remains in the
+schema but is optional and unrelated — when present it selects OpenAI's
+`/v1/moderations` endpoint over the Groq classifier.
+
+Three consequences worth stating, because they are what make this a decision
+rather than a substitution:
+
+1. **1536 dimensions was preserved deliberately.** `gemini-embedding-001` emits
+   3072 by default; the service asks for 1536 so the existing `VECTOR(1536)` column
+   and its ivfflat index stand unchanged. Every dimension count in the schema
+   documents remains correct.
+2. **The dimension is asserted, not assumed.** `EmbeddingsService` compares each
+   returned vector's length against `EMBEDDING_DIMENSIONS` and throws on a
+   mismatch. A provider silently changing its output width would otherwise write
+   garbage into a typed column.
+3. **The provider is not configurable, and that is the design.** The model name is
+   a constant, not an environment variable. Swapping providers changes the vector
+   space itself, which invalidates every stored embedding — it is a migration and a
+   full re-index, not a redeploy. The `EMBEDDING_PROVIDER` / `EMBEDDING_MODEL`
+   variables this document once listed have been removed from §13 for that reason.
+
+One property of this model shapes the retrieval code and is documented at
+`retrieval.service.ts:38`: `gemini-embedding-001` does not use the full [0,1]
+similarity range, so the relevance threshold is tuned to the model rather than set
+at an intuitive-looking round number.
 
 ---
 

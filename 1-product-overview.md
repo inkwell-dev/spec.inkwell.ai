@@ -146,10 +146,21 @@ Plans are orthogonal to role — a user can be a `writer` with `free` plan or `p
 ---
 
 ### 6.2 AI Usage Model
-- AI usage is limited by **daily token quota**
-- Users can:
-  - Consume tokens through AI actions
-  - Purchase additional tokens (simulated in MVP)
+- AI usage is limited by a **daily token quota**, reset at 00:00 UTC
+- **Premium personal accounts** receive 1,000 tokens a day
+- **Free accounts receive none.** No AI assistance at all is the design, not a
+  degraded tier — it is the single clearest reason to upgrade
+- **Magazine accounts are excluded from the quota entirely.** The assistant is a
+  *writing* tool and a magazine account does not write; it evaluates and licenses.
+  Its AI is the portfolio-insights report, which is paid for by the subscription
+  rather than metered in tokens
+- Purchasing additional tokens is **not implemented** — it was scoped for the MVP
+  and never built
+
+> **Corrected 2026-08-24.** The magazine exclusion was recorded nowhere, and
+> `9-implementation-guide.md` §2.4 positively contradicted it by specifying a
+> 20,000-token magazine allowance. Neither the allowance nor the top-up purchase
+> exists. See that section for the mechanism and the evidence.
 
 ---
 

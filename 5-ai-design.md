@@ -288,14 +288,25 @@ To avoid token overflow from double-injecting memory and RAG chunks:
 - External AI provider unavailable or rate-limited
 - Timeout from external API  
 - Invalid or malformed LLM responses (fails Zod validation)
-- Embedding provider quota exhausted (Cohere free trial expiry)
+- Embedding provider quota exhausted or key absent
 
 ---
 
 ### 11.2 Handling Strategy
 
 - Retry failed requests (Vercel AI SDK built-in retry)
-- **Provider fallback chain**: Groq → Gemini for LLM; Gemini `gemini-embedding-001` is the sole embedding provider (free tier, no card required)
+- **Model failover, within Groq**: `openai/gpt-oss-120b` → `openai/gpt-oss-20b`.
+  Gemini `gemini-embedding-001` is the sole embedding provider (free tier, no card
+  required), with no fallback of its own.
+
+  > **Corrected 2026-08-24.** This read "Groq → Gemini for LLM", a cross-provider
+  > chain that was never implemented and **cannot be**: Gemini's free tier grants
+  > `generateContent` a quota of 0 on every model offered to new projects (recorded
+  > in `portfolio-insights.service.ts`), which is why Insights runs on Groq too.
+  > What exists is per-model failover *inside* Groq — `LLM_MODELS` in
+  > `ai.service.ts:84` — which survives one model being rate-limited but **not** a
+  > total Groq outage. The distinction matters: the specified design claimed
+  > provider-level resilience the system does not have. See NFR-24.
 - Return user-facing fallback message ("AI is temporarily unavailable")
 - Log errors to Sentry for monitoring
 - Non-AI features continue working during AI provider outages  
@@ -325,7 +336,7 @@ To avoid token overflow from double-injecting memory and RAG chunks:
 | LLM (chat, inline edit, Portfolio Insights) | **Groq** (Llama 3.3 70B) | **Gemini 2.0 Flash** | Both have generous free tiers |
 | Speech-to-text | **Groq Whisper-large-v3-turbo** | OpenAI Whisper API | Free, very fast |
 | Embeddings (RAG) | **Gemini `gemini-embedding-001`** | — | Free tier, no payment method required. Emits **1536 dimensions** via `outputDimensionality`, matching the original OpenAI width so the schema is unaffected. |
-| Content moderation | **OpenAI Moderation API** | — | Free |
+| Content moderation | **Groq classifier** (OpenAI `/v1/moderations` when a key is present) | — | Free. `OPENAI_API_KEY` is absent in this deployment, so the Groq path is the one that runs; adding a key switches the primary with no code change. |
 | Premium AI (optional) | **Anthropic Claude** | — | Small paid budget for higher-quality "premium" actions |
 
 Provider abstraction is implemented via **Vercel AI SDK** in the NestJS backend, allowing one-line provider swaps.

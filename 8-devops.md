@@ -26,7 +26,7 @@ The DevOps setup must:
 
 | Component | Service | Notes |
 |-----------|---------|-------|
-| Frontend | Next.js 15 (standalone build) | Served by Nginx |
+| Frontend | Next.js 16 (standalone build) | Served by Nginx |
 | Backend API | NestJS 11 | REST + SSE endpoints |
 | Worker | NestJS (same image, different entrypoint) | BullMQ job processor |
 | Database | PostgreSQL 16 + pgvector | Relational + vector + full-text search |
@@ -166,9 +166,33 @@ Deploy workflow in `docker.inkwell.ai`:
 
 ### 6.2 Hosting
 
-- **VPS**: Hetzner CX22 (2 vCPU, 4 GB RAM, 40 GB SSD) or Oracle Cloud free tier
-- All 7 services run on a single VPS via Docker Compose
+- **VPS**: Hetzner CX22 (2 vCPU, 4 GB RAM, 40 GB SSD). **x86-64 required** — see
+  the architecture note below.
+- All **8** services run on a single VPS via Docker Compose
 - Optional: lift PostgreSQL to managed (Neon or Render Postgres) if ops overhead becomes a concern
+
+> **Corrected 2026-08-24, two points.**
+>
+> **The service count is eight, not seven.** The eighth is `migrate`, which is easy
+> to overlook because it runs to completion and exits rather than staying up, so
+> `docker ps` never lists it. It is not optional: `api` and `worker` both declare
+> `depends_on: migrate: condition: service_completed_successfully`, and it is the
+> only thing that issues `CREATE EXTENSION IF NOT EXISTS vector` — which drizzle-kit
+> never emits, so without it a fresh database fails on the first `VECTOR(1536)`
+> column. See `4-system-architecture.md` §14.
+>
+> **Oracle Cloud's free tier has been withdrawn as an option.** Its free
+> allocation is Ampere A1 — **ARM64**. Every image in this project is built
+> single-architecture for **amd64**: CI runs on `ubuntu-latest` with no `buildx`,
+> no QEMU emulation layer and no `platforms:` key in either compose file, so the
+> published images will not start on an ARM host. Supporting one would mean
+> multi-arch builds in CI, which is real work and buys this project nothing —
+> so the constraint is recorded as a constraint rather than designed around.
+>
+> **The production host is still unchosen.** Hetzner CX22 is the intended target
+> and the only one the sizing above reflects; nothing has been provisioned. This
+> is stated rather than left implied, because a specification that names a host it
+> does not have reads as a deployment that happened.
 
 ### 6.3 Domain & TLS
 

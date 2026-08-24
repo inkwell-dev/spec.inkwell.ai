@@ -57,8 +57,24 @@ deleted_at                   TIMESTAMPTZ NULL                       -- soft dele
 ```
 
 Constraints:
-- For `account_type = 'magazine'`, `role` and `plan` are NULL (enforced via CHECK constraint)
-- For `account_type = 'personal'`, `role` and `plan` are NOT NULL
+- For `account_type = 'magazine'`, `role` and `plan` are NULL — **application-enforced**
+- For `account_type = 'personal'`, `role` and `plan` are NOT NULL — **application-enforced**
+
+> **Corrected 2026-08-24.** These two rules were described as "enforced via CHECK
+> constraint". No such constraint exists. The schema has exactly **two** CHECK
+> constraints in total — `no_self_follow` on `follows` and
+> `transactions_amount_positive` on `transactions` — and neither is this one.
+>
+> The rules are real and are enforced, but by the registration and update paths in
+> `AuthService` and `UsersService`, not by the database. That is a weaker guarantee
+> and the specification should say so: a direct `UPDATE` in psql, or a future code
+> path that forgets, can write a magazine row carrying a role, and nothing will
+> stop it.
+>
+> It is left application-enforced rather than fixed in passing because adding the
+> constraint now means validating every existing row against it, and a migration
+> that can fail on live data is a change to make deliberately rather than as a
+> footnote to a documentation pass. Recorded here as known, not as done.
 
 Indexes:
 - `email` (UNIQUE)
@@ -109,7 +125,8 @@ title           VARCHAR(255) NOT NULL
 slug            VARCHAR(255) UNIQUE NOT NULL              -- /articles/[slug]
 excerpt         TEXT
 content         JSONB NOT NULL                            -- TipTap JSON
-content_search  TSVECTOR                                  -- full-text search index
+content_search  TEXT                                      -- flattened plain text, written by the app
+search_vector   TSVECTOR GENERATED ALWAYS AS (...) STORED  -- the searchable index; see below
 thumbnail_url   VARCHAR(500)
 status           ENUM('draft', 'published') NOT NULL DEFAULT 'draft'
 placement        ENUM('public', 'marketplace') NOT NULL DEFAULT 'public'
@@ -137,8 +154,42 @@ Indexes:
 - `placement`
 - `visibility`
 - `published_at DESC` (for feed pagination)
-- `content_search` (GIN index for full-text search)
+- `search_vector` (GIN index for full-text search — `articles_search_vector_idx`)
 - `deleted_at` (partial index `WHERE deleted_at IS NULL`)
+
+**Full-text search: two columns, one written and one derived.**
+
+> **Added 2026-08-24.** `search_vector` backs NFR-12 and, since Phase 6, the search
+> box on My Articles — and it appeared in no specification document. `content_search`
+> was listed, but as `TSVECTOR`; it is `TEXT`. The distinction is the whole design:
+
+| Column | Type | Written by |
+|---|---|---|
+| `content_search` | `TEXT` | the application, on insert/update — TipTap JSON flattened to plain text |
+| `search_vector` | `TSVECTOR`, `GENERATED ALWAYS ... STORED` | Postgres, from the three columns below |
+
+```sql
+search_vector tsvector GENERATED ALWAYS AS (
+  setweight(to_tsvector('english', coalesce(title,          '')), 'A') ||
+  setweight(to_tsvector('english', coalesce(excerpt,        '')), 'B') ||
+  setweight(to_tsvector('english', coalesce(content_search, '')), 'C')
+) STORED
+```
+
+Three properties are load-bearing:
+
+1. **The application flattens, the database indexes.** Extracting readable text from
+   a TipTap document is a tree walk that belongs in application code; turning that
+   text into a searchable vector is a pure function of the row, so it belongs to the
+   row. A generated column cannot drift from its inputs — there is no update path
+   that writes `content_search` and forgets `search_vector`.
+2. **Weighting is the reason a vector is stored at all.** A title match (`A`)
+   outranks an excerpt match (`B`), which outranks a body match (`C`), so a search
+   for a word that happens to appear once in someone's third paragraph does not
+   outrank the article named after it.
+3. **`'english'` is hard-coded, and must be.** A generated column must be
+   `IMMUTABLE`. The two-argument `to_tsvector(text)` is only `STABLE` — it reads
+   `default_text_search_config` at runtime — and Postgres rejects it here outright.
 
 ---
 
@@ -522,7 +573,7 @@ last_aggregated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 ```
 id          UUID PK
 user_id     UUID NOT NULL FK → users.id
-type        ENUM('follow', 'like', 'comment', 'reply',
+type        ENUM('follow', 'like', 'repost', 'comment', 'reply',
                  'article_previewed',    -- magazine previewed the writer's article
                  'article_purchased',    -- magazine fully purchased the writer's article
                  'earnings_credited',    -- writer earnings_balance increased
@@ -535,6 +586,18 @@ created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 Indexes:
 - `(user_id, created_at DESC)`
 - `(user_id, is_read) WHERE is_read = FALSE`
+
+> **Corrected 2026-08-24.** `'repost'` was missing. It was added to the pg enum when
+> the Reposts module shipped and is emitted like any other social notification;
+> nine values exist, and this listed eight. Postgres applies an enum addition as
+> `ALTER TYPE ... ADD VALUE`, which cannot run inside a transaction block — worth
+> knowing before the next one.
+>
+> The frontend half of this drift was the mirror image and shipped in Phase 6: the
+> TypeScript union carried a tenth value, `'system'`, that **no backend path could
+> emit**. Because that union keys the renderer's exhaustive switch, a dead branch
+> there is what stops the switch from being exhaustive in any useful sense, so it
+> was deleted rather than kept "just in case".
 
 ---
 
