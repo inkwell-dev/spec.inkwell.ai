@@ -141,10 +141,18 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-49 | Purchase the remainder (90%) and gain republish rights | Must | 5 |
 | FR-50 | See the curated library of fully purchased articles | Must | 5 |
 
-> **Deviations recorded.** `/discover` gates on account type, not on an active
-> subscription, until Sprint 5 lands the subscription state. Portfolio Insights
-> generation is an explicit click, never a page-load side effect, because each
-> generation costs a model call. "Topic relevance" sorting is not implemented.
+> **Deviations recorded.** Portfolio Insights generation is an explicit click,
+> never a page-load side effect, because each generation costs a model call.
+> "Topic relevance" sorting is not implemented.
+>
+> **Retired 2026-08-24 — the `/discover` gating deviation.** This note said
+> `/discover` gates on account type rather than on an active subscription "until
+> Sprint 5 lands the subscription state". Sprint 5 landed it: both routes on
+> `discover.controller.ts` (:56, :80) carry `subscription: true`, which appends
+> `SubscriptionGuard` to the same `@UseGuards` as the account-type check. The
+> deviation described a state the system left months ago, and a stale deviation is
+> worse than none — it invites a reader to distrust the ones that are still true.
+> The deviation count in §6 drops from six to five.
 
 ### 2.5 A8 — Administrator
 
@@ -184,7 +192,7 @@ evidence that supports it, so the report can cite code rather than assert.
 | NFR-02 | Access tokens expire in 15 minutes; refresh tokens in 7 days | `ACCESS_TOKEN_MAX_AGE = 900`. **Not revocable** — corrected 2026-08-21. `9-implementation-guide.md` §2.3 specified opaque UUIDs in Redis expressly to allow revocation; `auth.service.ts` issues a second JWT and verifies it against `JWT_REFRESH_SECRET`, storing nothing. Logout clears the client's copy only, so until it expires a captured refresh token survives a password change and a ban. The 7-day TTL is the whole of the bound. |
 | NFR-03 | Every protected route passes a guard stack composed once via `@Auth()` | 6 guards: Jwt, Roles, Plans, AccountType, Subscription, AiQuota |
 | NFR-04 | Authorisation is decided server-side; the client is told the verdict and never computes it | §7.4 matrix in `article-access.ts` |
-| NFR-05 | Per-IP rate limits on every endpoint, tightened on auth, AI and purchase routes | `@nestjs/throttler`, enforced behind nginx as trusted proxy |
+| NFR-05 | Per-IP rate limits on every endpoint, tightened on the credential routes | `@nestjs/throttler`: 60/min globally, **10/min on `POST /auth/login` and 5/min on `POST /auth/register`**, 10 per 10s on analytics ingest. Keyed on the real client IP — `app.set('trust proxy', 1)` plus nginx's `X-Forwarded-For`, without which every request would share nginx's container IP and the limit would be global rather than per-IP. **Counters are in-process memory** — the module is configured with no `storage`, so limits are per API process and reset on restart. Corrected 2026-08-24: the auth tightening this row claimed was not implemented until that date, and "AI and purchase routes" was never true — AI spend is capped by the token quota, which is the more meaningful limit, and purchases by idempotency keys. |
 | NFR-06 | Financial operations are idempotent under retry | `transactions.idempotency_key` UNIQUE |
 | NFR-07 | Uploads are presigned, time-limited, and never routed through the API | 10-minute PUT TTL; bucket grants `s3:GetObject` only, never `s3:ListBucket` |
 | NFR-08 | Datastore ports bind to loopback only, never `0.0.0.0` | Phase V fixed this in dev and production |
@@ -213,7 +221,7 @@ evidence that supports it, so the report can cite code rather than assert.
 | NFR-21 | Schema changes are versioned and applied before the app starts | one-shot `migrate` service, gated `service_completed_successfully` |
 | NFR-22 | The vector extension exists before any migration that needs it | runner issues `CREATE EXTENSION IF NOT EXISTS vector` first — measured failure otherwise |
 | NFR-23 | Failed background jobs retry with exponential backoff, 3 attempts | BullMQ `defaultJobOptions` |
-| NFR-24 | A single AI **model** failing degrades AI only; the rest of the product keeps working | Corrected 2026-08-21. The specified Groq → Gemini chain was never implemented and **cannot be**: `portfolio-insights.service.ts` records that Gemini's free tier grants `generateContent` a quota of 0 for every model offered to new projects, which is why Insights runs on Groq. What exists is per-model failover *within* Groq — `llama-3.3-70b-versatile` → `openai/gpt-oss-120b`, first-chunk-deferred so failover is still possible, 503 + "AI is temporarily unavailable" when both refuse. This survives one model's rate limit, **not** a total Groq outage. |
+| NFR-24 | A single AI **model** failing degrades AI only; the rest of the product keeps working | Corrected 2026-08-21, **re-corrected 2026-08-24** — the first correction had itself gone stale. The specified Groq → Gemini chain was never implemented and **cannot be**: `portfolio-insights.service.ts` records that Gemini's free tier grants `generateContent` a quota of 0 for every model offered to new projects, which is why Insights runs on Groq. What exists is per-model failover *within* Groq. The chain is **`openai/gpt-oss-120b` → `openai/gpt-oss-20b`** (`LLM_MODELS`, `ai.service.ts:84`); the 2026-08-21 note named `llama-3.3-70b-versatile` as the primary, which had already been replaced — llama returns its reasoning inside `content` as a literal `<think>` block, so a writer asking for a rewrite would watch the model deliberate, while the gpt-oss pair put reasoning on a separate field the text stream does not carry. Failover works because the first chunk is pulled by hand: `streamText` defers the provider call until the stream is consumed, so a 401/429/unavailable surfaces while nothing has been written to the response and another model can still take over. 503 + "AI is temporarily unavailable" when both refuse. This survives one model's rate limit, **not** a total Groq outage. |
 | NFR-25 | Every service reports liveness and readiness | `GET /health`, `GET /ready` — **Postgres only**. The Redis half was specified in three documents and never built (`health.controller.ts` returns `{ status, db }`). |
 
 ### 3.4 Scalability
@@ -385,12 +393,14 @@ it.
 
 - Every functional requirement traces to a feature in `2-features.md` or a flow in
   `3-user-flows.md`; every non-functional requirement traces to code or config.
-- Requirements record the **built** system. Six deviations from the original specs
-  are noted inline (guest access to free articles, `/discover` gating, insights
-  generation as an explicit action, absent topic-relevance sort, the three NULL
-  analytics columns, voice descoped) — plus the §6 route topology, reconciled in
-  Phase 6 and recorded below. The report reports them; recorded deviations
-  read as maturity, hidden ones read as luck.
+- Requirements record the **built** system. Five deviations from the original specs
+  are noted inline (guest access to free articles, insights generation as an
+  explicit action, absent topic-relevance sort, the three NULL analytics columns,
+  voice descoped) — plus the §6 route topology, reconciled in Phase 6 and recorded
+  below. It was six until 2026-08-24, when the `/discover` gating deviation was
+  retired: Sprint 5 had closed it and the note outlived the drift it described.
+  The report reports them; recorded deviations read as maturity, hidden ones read
+  as luck.
 - **Resolved 2026-08-21 — the three NULL analytics columns.** `total_unique_readers`,
   `returning_reader_rate` and `total_unique_views` were empty because
   `analytics_events.viewer_id` was NULL on every row ever written: the tracker sent

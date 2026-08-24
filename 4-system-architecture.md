@@ -18,7 +18,7 @@ It follows a **modular monolith** architecture: all business logic — including
 
 The system is composed of the following main components:
 
-- Frontend Application (Next.js 15)
+- Frontend Application (Next.js 16)
 - Backend API + AI Gateway (NestJS 11)
 - Background Worker (shares backend image, runs BullMQ jobs)
 - Database Layer (PostgreSQL 16 + pgvector)
@@ -41,7 +41,7 @@ The system is composed of the following main components:
    |                   |
    v                   v
 [ Frontend          [ Backend API
-  (Next.js 15) ]      (NestJS 11) ]
+  (Next.js 16) ]      (NestJS 11) ]
                        |
           -----------------------------------------
           |          |           |          |      |
@@ -135,7 +135,7 @@ The system is composed of the following main components:
   - InlineEditService — reformulate/shorten/expand/simplify/improve
   - VoiceService — Groq Whisper transcription → structured article generation
   - RagService — chunk retrieval via pgvector cosine similarity
-  - EmbeddingService — OpenAI `text-embedding-3-small` (1536 dimensions)
+  - EmbeddingService — Gemini `gemini-embedding-001` (1536 dimensions)
   - MemoryService — structured writer memory extraction and injection
   - PortfolioInsightsService — magazine-facing writer evaluation via RAG
 - **Marketplace Module** — writer eligibility gating, marketplace article browsing, preview unlock + full purchase flow
@@ -181,7 +181,7 @@ Voice Processing:
 - Audio blob → Groq Whisper transcription → LLM structures transcript → TipTap JSON article draft
 
 RAG Retrieval:
-- Query embedded via OpenAI → pgvector cosine similarity search (`<=>`) → top-K chunks returned → injected into prompt context
+- Query embedded via Gemini → pgvector cosine similarity search (`<=>`) → top-K chunks returned → injected into prompt context
 
 Portfolio Insights:
 - Magazine requests evaluation → representative chunks retrieved from writer's corpus → structured prompt → LLM generates Zod-validated report → cached in `portfolio_insights` for 24h
@@ -190,7 +190,15 @@ Portfolio Insights:
 
 ### Provider Abstraction
 
-LLM provider switching is handled by the Vercel AI SDK — changing from Groq to Gemini requires a one-line config change, not a code rewrite. The `EmbeddingService` uses OpenAI `text-embedding-3-small` directly (1536 dimensions, $0.02/1M tokens) — no provider abstraction needed for embeddings since there is a single stable paid provider.
+The Vercel AI SDK makes the *call site* provider-agnostic, but the deployed system
+is not provider-pluggable and does not try to be. `EmbeddingService` names Gemini
+`gemini-embedding-001` directly, requesting `outputDimensionality: 1536` so the
+`VECTOR(1536)` column is unaffected, and asserts the returned width rather than
+trusting it. Swapping embedding providers changes the vector space itself, which
+invalidates every stored embedding — a migration and a full re-index, not a config
+change. The LLM side is likewise a fixed list of two Groq models with failover
+between them; see `9-implementation-guide.md` §18 and NFR-24 for why the
+cross-provider chain earlier drafts described was never built.
 
 ---
 
@@ -247,7 +255,7 @@ No additional search engine (Elasticsearch) or vector database (Pinecone, Weavia
 - Analytics aggregation (article metrics, writer rollups)
 - Writer eligibility computation (runs after each analytics batch)
 - Magazine subscription renewal (monthly cron — grant credits + update subscription state)
-- Article embedding on publish (OpenAI API calls)
+- Article embedding on publish (Gemini API calls)
 - Email dispatch (transactional emails via Resend)
 
 ---
@@ -381,7 +389,14 @@ Event Trigger → Backend → Notification Created → Stored → Delivered via 
 
 ### Services (Docker Compose)
 
-7 containers in a single `docker-compose.yml`:
+**8** services, in `.infra/compose/docker-compose.dev.yml` and
+`.infra/compose/docker-compose.production.yml`.
+
+> **Corrected 2026-08-24.** Six places in the specification said seven. The eighth
+> is `migrate`, which is easy to miss because it is not a long-running process —
+> it runs to completion and exits, and `docker ps` never shows it. It is
+> nonetheless a service the stack cannot start without: `api` and `worker` both
+> declare `depends_on: migrate: condition: service_completed_successfully`.
 
 Ports below are the ports each service listens on **inside** the network. What is
 published to the host is a separate question — see Containerization.
@@ -394,7 +409,13 @@ published to the host is a separate question — see Containerization.
 | `worker` | backend (same image, `node dist/src/worker`) | — |
 | `db` | pgvector/pgvector:pg16 | 5432 |
 | `redis` | redis:7-alpine | 6379 |
+| `migrate` | backend (same image, `node dist/src/database/migrate`) | — (runs once, exits) |
 | `minio` | minio/minio | 9000 (S3), 9001 (console) |
+
+`migrate` does one thing drizzle-kit cannot: it issues
+`CREATE EXTENSION IF NOT EXISTS vector` **before** applying the migration files.
+Drizzle-kit never emits that statement, so a fresh database fails on the first
+`VECTOR(1536)` column — measured, and the reason NFR-22 exists.
 
 `api` listens on **3000**, not 3001. `main.ts` has always bound 3000; the 3001 in
 earlier drafts of this table was copied into nginx and the compose files more
@@ -436,7 +457,7 @@ interface exposes the port to every network the machine has joined.
 ## 16. Failure Handling
 
 - Retry mechanism for AI API calls (Vercel AI SDK built-in retry)
-- Provider fallback chain: Groq → Gemini for LLM; OpenAI for embeddings (single provider, paid tier)
+- Model failover within Groq (`openai/gpt-oss-120b` → `openai/gpt-oss-20b`); Gemini `gemini-embedding-001` for embeddings, no fallback
 - Graceful degradation if AI providers are unavailable (non-AI features continue working)
 - BullMQ job retry with exponential backoff
 - Health check endpoints for container orchestration

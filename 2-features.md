@@ -322,17 +322,25 @@ Magazines have a dedicated discovery interface (requires active subscription):
 > the browse surface sits above it. `/marketplace` is reserved for the Phase 5
 > browse of marketplace-listed *articles*.
 >
-> Two deliberate departures from the paragraph above, both because the
-> subscription and eligibility machinery is Phase 5:
+> One deliberate departure from the paragraph above:
 >
-> - **Access is gated on account type, not on an active subscription.** There is
->   no subscription state to check yet, and a guard against an unwritable column
->   would fail closed for every magazine account.
 > - **"All eligible writers" is the default, not the only option.** The page
->   ships an *Eligible only* toggle, on by default. `check-writer-eligibility` is
->   a Phase 5 worker, so `is_marketplace_eligible` is set only by the demo seed
->   today — a strict filter renders an empty page on any database where the seed
->   has not run, which is the wrong first impression of the feature.
+>   ships an *Eligible only* toggle, on by default. A strict filter renders an
+>   empty page on any database where the seed has not run, which is the wrong
+>   first impression of the feature — and the toggle also lets a magazine see the
+>   writers who are *close* to eligible, which is information the strict view
+>   destroys.
+>
+> **Retired 2026-08-24 — the subscription-gating departure.** A second note here
+> said access was gated on account type "not on an active subscription", because
+> "there is no subscription state to check yet". Phase 5 built that state:
+> `POST /subscriptions/magazine` is what made the gate meaningful, and both routes
+> in `discover.controller.ts` (:56, :80) now carry `subscription: true`, appending
+> `SubscriptionGuard` to the same `@UseGuards` as the account-type check. The
+> paragraph above — "requires active subscription" — is now simply true, which is
+> why the note is gone rather than amended. Both guards must sit in **one**
+> `@UseGuards`: split across two decorators, the second runs before the first has
+> attached the user, and the subscription lookup dereferences `undefined`.
 >
 > Sorting is by engagement, unique readers, posting frequency, or account age.
 > "Topic relevance" is not implemented: it needs the Phase 4 embeddings to mean

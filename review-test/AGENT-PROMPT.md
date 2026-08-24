@@ -108,10 +108,10 @@ Password `InkwellDemo123!` for every one.
 
 Every route, for every persona that can reach it:
 
-`/` · `/login` · `/register` · `/register/magazine` · `/articles/[slug]` ·
-`/u/[username]` · `/m/[slug]` · `/editor/new` · `/editor/[id]` · `/dashboard` ·
-`/dashboard/articles` · `/dashboard/analytics` · `/dashboard/earnings` ·
-`/notifications` · `/settings` · `/search` · `/discover` ·
+`/` · `/login` · `/register` · `/register/magazine` · `/auth/callback` ·
+`/articles/[slug]` · `/u/[username]` · `/m/[slug]` · `/editor/new` · `/editor/[id]` ·
+`/dashboard` · `/dashboard/articles` · `/dashboard/analytics` ·
+`/dashboard/earnings` · `/notifications` · `/settings` · `/search` · `/discover` ·
 `/discover/writers/[username]` · `/marketplace` · `/library` ·
 `/subscription` · `/admin`
 
@@ -119,6 +119,13 @@ Every route, for every persona that can reach it:
 > moved to `/dashboard/earnings` and the old path permanently redirects. Assert the
 > redirect as well as the destination — a moved route that quietly 404s is the failure
 > this list exists to catch.
+>
+> **Updated 2026-08-24.** `/auth/callback` added. It is reached only by redirect from
+> the backend after Google consents, never by a link, which is exactly why it was
+> missing from this list and missing from the app for as long as it was: nothing
+> navigates to it, so nothing noticed it was a 404. Drive it **directly** — the three
+> cases worth asserting are a cancelled consent, a half-delivered token pair, and the
+> bare path with no query string at all. Covered by `e2e/24-google-oauth.spec.ts`.
 
 Where a persona should be **refused**, assert the refusal rather than skipping the cell:
 

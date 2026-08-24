@@ -193,6 +193,88 @@ account is told "Invalid credentials").
 Newest first. Each entry: what was covered, what was found, where to resume, and what
 was changed in the dev database.
 
+### 2026-08-24 — Google sign-in wired; the spec reconciled with the code
+
+Not a sweep. Two code changes and the specification corrections they belong with —
+the remainder of the drift table opened after Phase 6.
+
+- **Google OAuth (`SYNC-01`).** The known gap said "only the click handler is
+  missing". It was not: `auth.controller.ts` redirects to
+  `${FRONTEND_URL}/auth/callback`, and **that page did not exist**. The backend half
+  had been complete and unreachable since it was written — a click handler alone
+  would have delivered users to a 404 with their tokens in the URL. Built the
+  callback route (server shell + client adopter), pointed the button at
+  `/api/auth/google`, and gated the entry point on
+  `NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED` because `GoogleStrategy` falls back to a
+  literal `'not-configured'` client id rather than failing at boot — an
+  unconfigured deployment would otherwise send users to Google's own error page.
+  New spec: `e2e/24-google-oauth.spec.ts`, 6 tests. The round trip past Google's
+  consent screen stays untestable here; `known-gaps.md` says why.
+- **Auth rate limits (`SYNC-04`).** `POST /auth/login` at 10/min and
+  `POST /auth/register` at 5/min, per IP. The global 60/min was a sane browsing
+  ceiling and a useless password-guess ceiling. Counters are in-process memory, so
+  the limit is per API process — NFR-05 now says so rather than implying a
+  cluster-wide guarantee.
+- **Twelve specification corrections.** The fee is 20% and not configurable; the AI
+  quota is 1,000/day for premium personal accounts and magazines are excluded
+  entirely; embeddings are Gemini, not OpenAI; there are eight services, not seven;
+  Next.js 16, not 15; 200 wpm, not 250; `/discover` really is subscription-gated and
+  the deviation saying otherwise was retired; the magazine NULL rule is
+  application-enforced, not a CHECK constraint; `search_vector` documented for the
+  first time; `'repost'` added to the notification enum; NFR-24 re-corrected because
+  its own 2026-08-21 correction had gone stale.
+
+Two things found that the drift table itself had wrong, and one it need not have
+worried about:
+
+- **The §13 environment catalogue was half fiction** — ten variables listed that no
+  code reads, including four `LLM_*` knobs, three embedding knobs and the two
+  eligibility thresholds (real values, but constants). Rewritten from
+  `config/env.validation.ts`, which is the schema every variable must pass at boot.
+- **All fourteen "10%" mentions across the spec are the *preview fraction*, which is
+  correct.** The platform fee drift lived in one document. A find-and-replace on
+  "10%" — the obvious way to execute that item — would have broken a rule that was
+  right.
+- **`fig-3-3-architecture-physical` needed no regeneration.** It already showed
+  eight services with `migrate` named. The diagram was ahead of the prose.
+
+**Four defects in the suite itself, all found by running it.** None were in the app.
+
+1. **The suite depended on debris from its own past runs.** `seed-data.ts` carried
+   three literals built from the timestamp `24136735` — the account and article that
+   one run of flow 1 created in August 2026. Flow 1 mints a fresh stamp every run, so
+   those constants never described the current run; they described rows left in the
+   dev database, and four spec files consumed them. Removing that debris — which was
+   done to get it out of the report's screenshots — broke five specs at once, each
+   reporting something other than the cause: "no Like control on the article page"
+   for an article that no longer existed, three login timeouts for a deleted account.
+   Replaced with `e2e/fixtures/run-state.ts`: flow 1 writes what it created to
+   `e2e/.auth/e2e-content.json`, the consumers read it, and reading before flow 1 has
+   run raises an error that says it is an ordering problem.
+2. **The base URL was written out four times** — `playwright.config.ts`, the auth
+   fixture's hand-built context, three specs' `backend.inkwell.ai`, and the capture
+   config. They only had to agree while nothing overrode them. Pointing the suite at
+   an alternate port left logins going to the old one and **23 specs failed**, with
+   the API calls reporting `SyntaxError: Unexpected token '<'` — the HTML of whatever
+   was answering on port 80. Now one definition, `e2e/fixtures/base-url.ts`,
+   overridable via `E2E_BASE_URL`.
+3. **A search test that never waited.** `23-writer-dashboard` asserted
+   `toHaveCount(await rows.count())` — the count equals itself, which passes instantly
+   and waits for nothing. It then compared the pre-search row count against itself. It
+   passed for months because the list happened to refresh before the next line ran; it
+   started failing when the corpus shrank and the timing changed. Now it waits on the
+   property that defines the result: no row survives that does not match the query.
+4. **A fixture asserting an absence pointed at the wrong account.** "A free writer
+   carries no badge" named `nadia-belhaj`, who is premium in the current seed. A spec
+   that asserts an absence cannot fail loudly when its subject is wrong — it reports
+   "a badge was found" and sends you looking at the badge component. Now
+   `SEED.freeWriterUsername`, with a comment explaining why this one belongs in the
+   fixture file rather than inline.
+
+**One finding filed rather than fixed:** button-styled links announce as
+`role="button"` — see `known-gaps.md`, Accessibility. It is one prop on a shared
+primitive and wants its own pass.
+
 ### Session 2 — 2026-08-14 — flows 3–6 driven
 
 - **Covered:** flows 3, 4, 5 and 6, all passing. Coverage cells unchanged at 62/66 — the
