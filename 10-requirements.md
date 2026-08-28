@@ -79,15 +79,21 @@ report's sprint numbering (§5), not the calendar sprint.
 
 ### 2.2 A2 / A3 — Free and premium reader
 
+> **FR ids are append-only.** FR-60 sits between FR-10 and FR-11 because the
+> table groups by persona and by the feature it belongs beside, not by number.
+> Requirement ids are referenced from the phase plan and from commit messages,
+> so an existing one is never renumbered to close a gap or restore a sequence.
+
 | ID | Requirement | Priority | Sprint |
 |----|-------------|----------|--------|
 | FR-07 | Manage a profile — display name, bio, avatar upload | Must | 1 |
 | FR-08 | Like an article, and un-like it | Must | 3 |
 | FR-09 | Comment on an article, and reply to a comment (threaded) | Must | 3 |
 | FR-10 | Delete one's own comment | Must | 3 |
+| FR-60 | Like a comment or a reply, and un-like it | Must | 7 |
 | FR-11 | Repost an article | Could | 3 |
 | FR-12 | Follow and unfollow a writer | Should | 3 |
-| FR-13 | Receive notifications for follows, likes, comments and replies, delivered live | Must | 3 |
+| FR-13 | Receive notifications for follows, likes, comment likes, comments and replies, delivered live | Must | 3 |
 | FR-14 | List past notifications and mark them read | Must | 3 |
 | FR-15 | Upgrade to premium, and downgrade (simulated payment) | Must | 5 |
 | FR-16 | *(A3 only)* Read premium-visibility articles | Must | 5 |
