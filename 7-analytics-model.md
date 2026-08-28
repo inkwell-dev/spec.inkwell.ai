@@ -259,6 +259,19 @@ A writer becomes marketplace-eligible when their **lifetime public article metri
 - ≥ 5,000 **unique readers** (distinct `viewer_user_id` across all published public articles, guests excluded)
 - ≥ 1,000 **reactions** (likes + comments, counted from the `likes` and `comments` tables)
 
+**Reactions are article likes and comments only.** Three things that might look
+like reactions are deliberately excluded:
+
+| Excluded | Why |
+|---|---|
+| Reposts | The threshold names two signals. Adding a third would move the bar without anyone deciding to. |
+| Comment likes (§3.6.1) | They measure the popularity of a *commenter's* remark, which may not be the writer's. Counting them would let a writer's own commenters raise that writer past the gate, and would let one writer's threshold be moved by another person's activity. |
+| Deleted comments | Already filtered by `deleted_at IS NULL`; otherwise a comment could be written, counted, and removed. |
+
+Because comment likes live in their own table (§3.6.1) rather than as rows in
+`likes`, this exclusion holds by construction — the eligibility query cannot
+pick them up even if someone forgets it should not.
+
 **Computation trigger**: after each aggregation run, the worker queries writers whose current metrics are above threshold but whose `is_marketplace_eligible` is still `FALSE`. For each match:
 1. Sets `users.is_marketplace_eligible = TRUE`
 2. Sets `users.marketplace_eligible_at = NOW()`

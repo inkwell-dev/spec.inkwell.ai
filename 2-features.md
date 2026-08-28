@@ -442,7 +442,10 @@ Each **magazine** profile contains:
 ### 5.4 Likes / Reactions
 
 - Users can like articles
+- Users can like comments and replies (see §5.5)
 - Like count is visible publicly
+- Only article likes count toward marketplace eligibility — see §9.3 of the
+  analytics model for why comment likes are excluded
 
 ---
 
@@ -455,6 +458,8 @@ Each **magazine** profile contains:
 - Add comment
 - Reply to comment
 - Delete own comment
+- Like a comment or a reply, and un-like it — the count is public, and the
+  comment's author is notified of a like that is not their own
 
 ---
 
@@ -471,6 +476,7 @@ Notifications include:
 
 - New follower
 - New like on article
+- New like on one's own comment or reply
 - New comment on article
 
 ---

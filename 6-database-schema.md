@@ -235,9 +235,17 @@ Indexes:
 - `parent_id`
 - `user_id`
 
+> **Known drift:** the implementation declares `parent_id` as a bare `UUID` with
+> no foreign key and no cascade. The self-reference is enforced only by
+> application code. Recorded here rather than silently corrected — closing it is
+> its own change, and comments are soft-deleted (`deleted_at`), so the cascade
+> this clause describes would almost never fire in practice anyway.
+
 ---
 
 ### 3.6 Likes
+
+Likes on **articles**. Likes on comments are a separate table — see §3.6.1.
 
 ```
 id          UUID PK
@@ -249,6 +257,42 @@ UNIQUE (user_id, article_id)
 
 Indexes:
 - `article_id`
+
+---
+
+### 3.6.1 Comment Likes
+
+```
+id          UUID PK
+user_id     UUID NOT NULL FK → users.id
+comment_id  UUID NOT NULL FK → comments.id ON DELETE CASCADE
+created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+UNIQUE (user_id, comment_id)
+```
+
+Indexes:
+- `comment_id`
+
+**Why a separate table rather than a nullable `comment_id` on `likes`.** Two
+consumers read `likes` on the assumption that every row is an article like:
+
+- the article metrics rollup groups it by `article_id`, so comment-like rows
+  would form a NULL group flowing into `article_metrics`;
+- marketplace eligibility counts reactions directly out of it (§9.3).
+
+Making `likes` polymorphic would therefore corrupt the rollup and move the
+eligibility threshold without anyone deciding to. Keeping the two tables apart
+makes both outcomes impossible by construction rather than by remembering a
+`WHERE` clause.
+
+A comment like **does not** count as a reaction for marketplace eligibility —
+see §9.3 of the analytics model. Liking one's own comment is permitted (as it
+is for articles) but produces no notification.
+
+Rows survive the soft-delete of their comment: `comments.deleted_at` hides the
+comment without removing it, so its likes are hidden with it and are still there
+if it is ever restored. The `ON DELETE CASCADE` above applies only to a genuine
+hard delete.
 
 ---
 
@@ -574,6 +618,7 @@ last_aggregated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 id          UUID PK
 user_id     UUID NOT NULL FK → users.id
 type        ENUM('follow', 'like', 'repost', 'comment', 'reply',
+                 'comment_like',         -- someone liked the recipient's comment
                  'article_previewed',    -- magazine previewed the writer's article
                  'article_purchased',    -- magazine fully purchased the writer's article
                  'earnings_credited',    -- writer earnings_balance increased
