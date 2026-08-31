@@ -436,6 +436,22 @@ Each **magazine** profile contains:
 - Users can follow writers
 - Notifications are triggered when:
   - A user gains a new follower
+- A profile's follower and following counts are public, and each opens the
+  corresponding **list** of accounts — on any profile, not only one's own
+- From either list a viewer can follow or unfollow a listed account. An account
+  that already follows the viewer offers **Follow back** rather than Follow —
+  the same action, a truer label
+- Unfollowing asks for confirmation; following does not. The rule is that the
+  destructive direction stops to ask: a follow is trivially undone and instant
+  feedback is the point of the control, whereas an accidental unfollow silently
+  drops a writer out of the reader's feed with nothing on screen afterwards to
+  explain what happened
+
+**Banned accounts are excluded from both the lists and the counts.** A
+soft-deleted account's profile 404s, so listing it produces a row nobody can
+open. The counts follow the same rule so that a badge and the list it links to
+can never disagree — they sit one click apart, which is exactly where a
+discrepancy would be noticed.
 
 ---
 

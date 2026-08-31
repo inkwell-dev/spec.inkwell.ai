@@ -93,6 +93,7 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-60 | Like a comment or a reply, and un-like it | Must | 7 |
 | FR-11 | Repost an article | Could | 3 |
 | FR-12 | Follow and unfollow a writer | Should | 3 |
+| FR-61 | View any profile's followers and following lists, and follow or unfollow from them | Must | 7 |
 | FR-13 | Receive notifications for follows, likes, comment likes, comments and replies, delivered live | Must | 3 |
 | FR-14 | List past notifications and mark them read | Must | 3 |
 | FR-15 | Upgrade to premium, and downgrade (simulated payment) | Must | 5 |
