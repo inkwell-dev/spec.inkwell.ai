@@ -1064,7 +1064,7 @@ Same pattern as Phases Q and I: each had been latent for some time, and none was
 
 ## Notes
 
-- **AI providers used:** Groq (LLM + Whisper, free tier), Gemini 2.0 Flash (LLM fallback) and `gemini-embedding-001` (embeddings) — all free tier, no payment method required
+- **AI providers used:** Groq (LLM + Whisper, free tier), `gemini-3.5-flash` (LLM fallback) and `gemini-embedding-001` (embeddings) — all free tier, no payment method required. *Updated 2026-09-03: this line planned "Gemini 2.0 Flash", an id since retired; the fallback it describes went unbuilt, was documented as impossible, and was then built for real — see NFR-24.*
 - **Shared types strategy:** Backend OpenAPI → auto-generated TS client in frontend CI + `@inkwell/shared` package for non-API types
 - **Worker container** shares the backend image but runs `node dist/src/worker` — handles BullMQ jobs for embedding, analytics aggregation, email
 - **RAG scope:** Only the writer's own articles (not platform-wide) — makes the demo story "it writes like *me*"
