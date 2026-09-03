@@ -295,18 +295,27 @@ To avoid token overflow from double-injecting memory and RAG chunks:
 ### 11.2 Handling Strategy
 
 - Retry failed requests (Vercel AI SDK built-in retry)
-- **Model failover, within Groq**: `openai/gpt-oss-120b` → `openai/gpt-oss-20b`.
-  Gemini `gemini-embedding-001` is the sole embedding provider (free tier, no card
-  required), with no fallback of its own.
+- **Provider failover**: `openai/gpt-oss-120b` → `openai/gpt-oss-20b` →
+  `gemini-3.5-flash`. The first two are Groq, so a single model being rate-limited
+  is absorbed without leaving the provider; Gemini is reached only when Groq as a
+  whole refuses. Gemini `gemini-embedding-001` remains the sole embedding
+  provider (free tier, no card required), with no fallback of its own.
 
-  > **Corrected 2026-08-24.** This read "Groq → Gemini for LLM", a cross-provider
-  > chain that was never implemented and **cannot be**: Gemini's free tier grants
-  > `generateContent` a quota of 0 on every model offered to new projects (recorded
-  > in `portfolio-insights.service.ts`), which is why Insights runs on Groq too.
-  > What exists is per-model failover *inside* Groq — `LLM_MODELS` in
-  > `ai.service.ts:84` — which survives one model being rate-limited but **not** a
-  > total Groq outage. The distinction matters: the specified design claimed
-  > provider-level resilience the system does not have. See NFR-24.
+  > **Corrected 2026-08-24, restored 2026-09-03.** The 2026-08-24 note recorded
+  > that the specified Groq → Gemini chain was never implemented and **could not
+  > be**, because Gemini's free tier granted `generateContent` a quota of 0 on
+  > every model offered to new projects. That was accurate when measured. It is no
+  > longer: re-measured 2026-09-03 against the project's current key,
+  > `generateContent` answers 200, and the chain is now built — see `llm-chain.ts`
+  > for the ordering rule and NFR-24 for the evidence.
+  >
+  > Two things survive the reversal. The model id here is **not** the
+  > `gemini-2.0-flash` of §13.5, which now 404s. And provider-level resilience
+  > stops at *one* provider being down: Groq and Gemini failing together still
+  > yields 503, and no free-tier arrangement changes that.
+  >
+  > Worth keeping as a lesson: this claim was load-bearing for four documents and
+  > went stale in five weeks. Provider free-tier limits are not measured once.
 - Return user-facing fallback message ("AI is temporarily unavailable")
 - Log errors to Sentry for monitoring
 - Non-AI features continue working during AI provider outages  
@@ -333,7 +342,7 @@ To avoid token overflow from double-injecting memory and RAG chunks:
 
 | Capability | Primary Provider | Fallback | Notes |
 |------------|------------------|----------|-------|
-| LLM (chat, inline edit, Portfolio Insights) | **Groq** (Llama 3.3 70B) | **Gemini 2.0 Flash** | Both have generous free tiers |
+| LLM (chat, inline edit, Portfolio Insights) | **Groq** (`openai/gpt-oss-120b`, then `openai/gpt-oss-20b`) | **`gemini-3.5-flash`** | Both free tiers. *Updated 2026-09-03: Llama 3.3 70B and Gemini 2.0 Flash are both retired — the ids here are the ones verified by invocation. Portfolio Insights does **not** use this chain; it pins `openai/gpt-oss-120b` for `json_schema` support.* |
 | Speech-to-text | **Groq Whisper-large-v3-turbo** | OpenAI Whisper API | Free, very fast |
 | Embeddings (RAG) | **Gemini `gemini-embedding-001`** | — | Free tier, no payment method required. Emits **1536 dimensions** via `outputDimensionality`, matching the original OpenAI width so the schema is unaffected. |
 | Content moderation | **Groq classifier** (OpenAI `/v1/moderations` when a key is present) | — | Free. `OPENAI_API_KEY` is absent in this deployment, so the Groq path is the one that runs; adding a key switches the primary with no code change. |

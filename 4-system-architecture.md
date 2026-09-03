@@ -196,9 +196,10 @@ is not provider-pluggable and does not try to be. `EmbeddingService` names Gemin
 `VECTOR(1536)` column is unaffected, and asserts the returned width rather than
 trusting it. Swapping embedding providers changes the vector space itself, which
 invalidates every stored embedding — a migration and a full re-index, not a config
-change. The LLM side is likewise a fixed list of two Groq models with failover
-between them; see `9-implementation-guide.md` §18 and NFR-24 for why the
-cross-provider chain earlier drafts described was never built.
+change. The LLM side is likewise a fixed list rather than configuration, but it is now
+genuinely cross-provider: two Groq models, then Gemini. See `llm-chain.ts`,
+`9-implementation-guide.md` §18 and NFR-24 — including why this was documented as
+impossible between 2026-08-24 and 2026-09-03, and what changed.
 
 ---
 
@@ -457,7 +458,7 @@ interface exposes the port to every network the machine has joined.
 ## 16. Failure Handling
 
 - Retry mechanism for AI API calls (Vercel AI SDK built-in retry)
-- Model failover within Groq (`openai/gpt-oss-120b` → `openai/gpt-oss-20b`); Gemini `gemini-embedding-001` for embeddings, no fallback
+- Cross-provider LLM failover: `openai/gpt-oss-120b` → `openai/gpt-oss-20b` (both Groq) → `gemini-3.5-flash` (Google). *Updated 2026-09-03 — previously Groq-only; see NFR-24.* Gemini `gemini-embedding-001` for embeddings, still no fallback
 - Graceful degradation if AI providers are unavailable (non-AI features continue working)
 - BullMQ job retry with exponential backoff
 - Health check endpoints for container orchestration
