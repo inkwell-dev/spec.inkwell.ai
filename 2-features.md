@@ -486,6 +486,66 @@ discrepancy would be noticed.
 
 ---
 
+### 5.7 Blocking
+
+A signed-in user can **block** another account from the three-dot menu at the
+top right of that account's profile — the same menu that offers **Report**
+(§8.1). Blocking asks for confirmation; unblocking does not, following the same
+rule as unfollow in §5.3.
+
+**A block is mutual in effect, even though one person pressed it.** Neither
+party sees the other anywhere afterwards:
+
+- the blocked account's profile returns 404 — **to the blocker as well**, not
+  only to the person blocked
+- their articles leave the home feed, the following feed and the article page
+- their comments leave every thread
+- they leave search results, both as articles and as writers, including the
+  semantic ranking
+- they leave follower, following and suggested-writer lists, and the counts
+  those lists sit beside
+
+**Blocking removes any follow between the two accounts, in both directions, and
+unblocking does not bring it back.** This is the one consequence a person cannot
+undo by unblocking, so the confirmation dialog states it before they commit.
+
+**The blocked account is never told.** No notification, no marker on the
+profile, no change it can observe directly. That is why the block list shows
+only who *you* blocked and never who blocked you.
+
+**Where blocking deliberately does not reach:**
+
+- **Notification history.** Notifications are stored against their recipient
+  with no actor column, so a like or follow received before the block stays in
+  the list. New ones cannot arrive: the actions that produce them are all
+  unreachable in both directions.
+- **Marketplace and evaluation surfaces.** A magazine browsing listings, an
+  evaluation report, and Portfolio Insights are commercial and analytical
+  paths, not social ones, and they do not filter. Articles already purchased
+  stay readable, and existing purchases are unaffected either way.
+- **Admin surfaces.** The report queue and user administration must show every
+  account regardless of who has blocked whom, or a block would become a way to
+  hide from moderation. Reporting also keeps working in both directions, so
+  blocking someone never costs you the ability to report them.
+- **Anonymous visitors.** A block is a relationship between two accounts. With
+  no viewer there is no relationship to apply, and signed-out readers see the
+  site unchanged.
+
+**The AI paths need no block filter, and this is worth stating.** Semantic
+retrieval looks like an obvious way for a blocked writer's prose to reach
+someone anyway, and it is not one: the writing assistant, writer memory and
+Portfolio Insights all retrieve strictly within the requesting writer's *own*
+corpus, and hybrid search — the one retrieval path that spans everyone — screens
+its semantic candidates against the block **before** they are fused with the
+lexical ranking, not after, so a blocked article cannot reach the results or the
+result count. Recorded because the absence of a filter in the retrieval layer
+reads as an oversight until you know where the filtering happens instead.
+
+A person can review and lift their blocks from **Settings → Blocked accounts**,
+which is the only surface in the product that names a block.
+
+---
+
 ## 6. 🔔 Notifications System
 
 Notifications include:
@@ -543,8 +603,26 @@ Plan is orthogonal to role. A free-plan user can be a writer (just without AI). 
 ### 8.1 Reporting System
 
 Users can:
-- Report articles
-- Report other users
+- Report articles — from the article's action bar
+- Report other users — from the three-dot menu on their profile, beside
+  **Block** (§5.7)
+
+A report is filed for the admin queue (§8.2) and **offers a reason without
+requiring one** — an unexplained report is still a signal an admin can act on,
+and demanding prose is a reliable way to stop people reporting at all. A second
+report on the same target by the same reporter, while the first is still
+pending, is refused as a duplicate rather than queued twice.
+
+Reporting requires a signed-in account: an anonymous report cannot be
+deduplicated, rate limited per person, or weighed against the reporter's
+history. Blocking someone does not remove the ability to report them, in either
+direction.
+
+> **Known drift:** the `reports.target_type` enum, the admin queue and FR-59 all
+> cover a third target — a **comment** — and no control anywhere in the product
+> files one. The reporting API would accept it today; only the UI is missing.
+> Recorded rather than quietly dropped from the requirement, because the data
+> model and the moderation queue are both already built for it.
 
 ---
 
