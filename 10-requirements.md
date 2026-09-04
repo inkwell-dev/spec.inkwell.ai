@@ -94,6 +94,7 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-11 | Repost an article | Could | 3 |
 | FR-12 | Follow and unfollow a writer | Should | 3 |
 | FR-61 | View any profile's followers and following lists, and follow or unfollow from them | Must | 7 |
+| FR-62 | Block an account, and review and lift one's blocks from settings | Must | 7 |
 | FR-13 | Receive notifications for follows, likes, comment likes, comments and replies, delivered live | Must | 3 |
 | FR-14 | List past notifications and mark them read | Must | 3 |
 | FR-15 | Upgrade to premium, and downgrade (simulated payment) | Must | 5 |
@@ -351,6 +352,7 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | ID | User story | Actor | Pri | Pts | Sprint |
 |----|-----------|-------|-----|-----|--------|
 | US-44 | Report content so that abuse has a channel | A2 | Must | 3 | 5 |
+| US-56 | Block an account so that I stop seeing someone without having to explain myself | A2 | Must | 5 | 7 |
 | US-45 | Work a queue of reports so that moderation is systematic | A8 | Must | 5 | 5 |
 | US-46 | Remove an article or ban an author so that decisions are enforceable | A8 | Must | 3 | 5 |
 | US-47 | Grant eligibility manually so that a promising writer is not held back by a counter | A8 | Must | 3 | 5 |
@@ -480,6 +482,13 @@ it.
   One frame in §6 was **removed rather than built**: an admin Article Management page at
   `/admin/articles`. Moderation is report-driven by design and FR-51–FR-55 never asked
   for a corpus browser. Recorded as future work rather than dropped silently.
+- **Added 2026-09-04 — FR-59's comment half has no control.** The `report_target_type`
+  enum carries `comment`, the admin queue renders it, and FR-51 promises a queue over
+  "articles, users and comments" — but the product surfaces a report control on
+  articles and on profiles only, so a comment report can be filed through the API and
+  never through the UI. Recorded rather than narrowing FR-59 to match the build,
+  because both the data model and the moderation queue are already built for it and
+  the gap is one dialog wide.
 - **NFR-37** (Lighthouse, `axe-core`) is the only unsatisfied requirement.
 - **Open:** the AI token top-up (US absent by design — the decision and the column
   shape to build are recorded on the item in `0-phase-plan.md` Phase 5).

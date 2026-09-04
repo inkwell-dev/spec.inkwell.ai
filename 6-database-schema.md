@@ -313,6 +313,57 @@ Indexes:
 
 ---
 
+### 3.7.1 Blocks
+
+```
+id          UUID PK
+blocker_id  UUID NOT NULL FK → users.id
+blocked_id  UUID NOT NULL FK → users.id
+created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+UNIQUE (blocker_id, blocked_id)
+CHECK (blocker_id != blocked_id)
+```
+
+Indexes:
+- `blocker_id`
+- `blocked_id`
+
+**The row is directional; every read predicate is symmetric.** A row records that
+`blocker_id` pressed Block on `blocked_id`. Nothing that *reads* the table cares
+which way round it is: the shared filter matches a row in either direction, so
+one row hides both people from each other everywhere. Direction survives for
+exactly two purposes:
+
+- the block list shows what **you** blocked, never who blocked you — listing the
+  latter would disclose the one fact a block exists to withhold;
+- an unblock may only remove the caller's own row, so you cannot take yourself
+  off someone else's list.
+
+**Both columns are indexed, and a composite would not do.** The predicate probes
+in both directions — `blocker_id` for "did the viewer block this person",
+`blocked_id` for "did this person block the viewer" — and a single composite
+index on `(blocker_id, blocked_id)` serves only the first.
+
+**`CHECK (blocker_id != blocked_id)` is load-bearing, not hygiene.** Because the
+read predicate ORs both directions, a self-block would match on *both* sides for
+the same person: they would vanish from their own feed, their own profile would
+404 to them, and their own comments would disappear from every thread. The
+constraint makes that unrepresentable rather than merely unlikely; the
+application refuses it first, so the caller gets a 400 rather than a driver
+error.
+
+**Blocking severs the follow edges in both directions, and unblocking restores
+nothing.** The two writes run in one transaction — a crash between them would
+leave a block sitting beside a live follow. Deleting the block row later returns
+visibility and nothing else; the follows are gone and have to be re-established
+by hand. That is a product decision, recorded here because the transaction is
+the only place the code shows it.
+
+There is **no notification and no enum value** for a block, deliberately: the
+blocked account is told nothing.
+
+---
+
 ### 3.8 Reposts
 
 ```
