@@ -311,6 +311,42 @@ signature covers the `Host` header.
 | `check-writer-eligibility` | After aggregation | Auto-flip eligible writers |
 | `renew-magazine-subscriptions` | Monthly | Credit grant + renewal record |
 | `reset-ai-tokens` | Daily | Reset daily AI token quotas |
+| `model-liveness-check` | Daily 06:00 UTC | Calls every model id the product uses and logs any that stopped answering. *Added 2026-09-04 — see below.* |
+
+#### Model liveness
+
+Two provider retirements silently broke live features before this existed:
+`llama-3.3-70b-versatile` was the only model chat and inline editing called, and
+`llama-3.1-8b-instant` was the moderation classifier — when it went, the chain
+fell through to CLEAN and every publish passed unmoderated.
+
+Neither was observable from inside the process. The test suite mocks the AI SDK,
+so it passes against ids that no longer exist, and both features fail open by
+design: a dead provider and a healthy one produce the same result. Only calling
+the real API distinguishes them.
+
+Two entry points share one service:
+
+- **`npm run models:check`** — on demand. Prints a table and **exits non-zero**,
+  so it can gate a demo or a CI step.
+- **The daily job above** — logs each dead model together with the features it
+  breaks, and never fails the job (a retirement is news, and throwing would only
+  trigger retry-with-backoff against a provider that is already down).
+
+Two properties matter more than they look:
+
+- It **invokes rather than lists**, because the list endpoint lies — Google's
+  `GET /v1beta/models` advertises `gemini-2.5-flash` on this project's key, and
+  calling it returns 404.
+- It treats an **empty answer as failure**. `openai/gpt-oss-safeguard-20b` is
+  Groq's purpose-built safety classifier and is unusable as ours: at the
+  moderation call's 12-token budget its reasoning consumes the whole allowance
+  and the content is empty, which reads as "safe". Each model is therefore
+  exercised at the token budget its real call site uses.
+
+Model ids live in one place (`ai/model-inventory.ts`) and every service imports
+its own from there, so a model that is not in the inventory is a model no
+service can be using. A test asserts the inventory covers every id.
 
 ### 9.3 Event-Triggered Jobs
 

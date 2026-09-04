@@ -343,10 +343,10 @@ To avoid token overflow from double-injecting memory and RAG chunks:
 | Capability | Primary Provider | Fallback | Notes |
 |------------|------------------|----------|-------|
 | LLM (chat, inline edit, Portfolio Insights) | **Groq** (`openai/gpt-oss-120b`, then `openai/gpt-oss-20b`) | **`gemini-3.5-flash`** | Both free tiers. *Updated 2026-09-03: Llama 3.3 70B and Gemini 2.0 Flash are both retired — the ids here are the ones verified by invocation. Portfolio Insights does **not** use this chain; it pins `openai/gpt-oss-120b` for `json_schema` support.* |
-| Speech-to-text | **Groq Whisper-large-v3-turbo** | OpenAI Whisper API | Free, very fast |
+| Speech-to-text | — | — | **Never built.** *Recorded 2026-09-04:* no `whisper`, `speech` or transcription call exists anywhere in the backend. The `voice_transcribe` value survives in the `ai_action_type` enum (`database/schema/enums.ts`) and nothing ever writes it. The row previously read "**Groq Whisper-large-v3-turbo** / OpenAI Whisper API". |
 | Embeddings (RAG) | **Gemini `gemini-embedding-001`** | — | Free tier, no payment method required. Emits **1536 dimensions** via `outputDimensionality`, matching the original OpenAI width so the schema is unaffected. |
-| Content moderation | **Groq classifier** (OpenAI `/v1/moderations` when a key is present) | — | Free. `OPENAI_API_KEY` is absent in this deployment, so the Groq path is the one that runs; adding a key switches the primary with no code change. |
-| Premium AI (optional) | **Anthropic Claude** | — | Small paid budget for higher-quality "premium" actions |
+| Content moderation | **Groq `groq/compound-mini`** | — | Free. *Updated 2026-09-04:* OpenAI has been **removed**, not merely left unconfigured — its `/v1/moderations` endpoint is free but gated behind a non-empty credit balance, so the key cannot work on a free-tier project and the code path could never run. The classifier was also `llama-3.1-8b-instant` until Groq retired it, which silently disabled moderation entirely (the chain fails open, so a dead provider and a clean verdict are indistinguishable). `npm run models:check` and a daily worker job now call every model id so a third retirement is visible. |
+| Premium AI (optional) | — | — | **Never built.** *Recorded 2026-09-04:* no Anthropic dependency, key or call exists in the codebase, and there is no paid budget. Premium accounts differ by AI token allowance, not by model. The row previously read "**Anthropic Claude** — small paid budget for higher-quality premium actions". |
 
 Provider abstraction is implemented via **Vercel AI SDK** in the NestJS backend, allowing one-line provider swaps.
 

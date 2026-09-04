@@ -214,7 +214,7 @@ Two surfaces, sharing the same underlying event pipeline:
 
 ### 8.6 Moderation
 - Article and user reporting
-- Admin queue, content moderation (OpenAI moderation API)
+- Admin queue, content moderation (Groq classifier — *updated 2026-09-04: OpenAI's moderation API was specified here but removed; its free endpoint requires a paid credit balance*)
 - Soft delete + audit trail
 
 ---

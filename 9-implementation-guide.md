@@ -1088,7 +1088,6 @@ CORS_ORIGINS=                           # empty in production: FRONTEND_URL is t
 # ── AI Providers ──
 GROQ_API_KEY=<key>              # the LLM. Both chat models live here.
 GEMINI_API_KEY=<key>            # LLM fallback AND all embeddings
-OPENAI_API_KEY=<key>            # optional: moderation only, not embeddings
 
 # ── Observability ──
 SENTRY_DSN=<dsn>                # optional; the SDK no-ops without it
@@ -1363,9 +1362,11 @@ const corpusText = recentArticles
 The reasoning above holds on every point except the one that decided it: cost was
 never the binding constraint, *having a working key* was. `GEMINI_API_KEY` was
 already in the deployment for the LLM fallback, so embeddings could ship without
-adding a second paid provider to a student project. `OPENAI_API_KEY` remains in the
-schema but is optional and unrelated — when present it selects OpenAI's
-`/v1/moderations` endpoint over the Groq classifier.
+adding a second paid provider to a student project. `OPENAI_API_KEY` was removed
+entirely on 2026-09-04 — it had been optional and unrelated, selecting OpenAI's
+`/v1/moderations` endpoint over the Groq classifier when present. That endpoint
+is free but gated behind a non-empty credit balance, so on a free-tier project
+the key returns `credit_balance_exhausted` and the path could never run.
 
 Three consequences worth stating, because they are what make this a decision
 rather than a substitution:

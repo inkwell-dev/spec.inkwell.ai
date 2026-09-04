@@ -10,7 +10,7 @@ The system is designed to be:
 - Maintainable  
 - AI-ready  
 
-It follows a **modular monolith** architecture: all business logic — including AI orchestration — lives inside the NestJS backend, structured as independent modules communicating through well-defined interfaces. AI calls to external providers (Groq, Gemini, OpenAI) are made directly from the backend via the Vercel AI SDK — no separate AI service exists.
+It follows a **modular monolith** architecture: all business logic — including AI orchestration — lives inside the NestJS backend, structured as independent modules communicating through well-defined interfaces. AI calls to external providers (Groq, Gemini) are made directly from the backend via the Vercel AI SDK — no separate AI service exists.
 
 ---
 
@@ -25,7 +25,7 @@ The system is composed of the following main components:
 - Queue System (Redis + BullMQ)
 - Object Storage (MinIO, S3-compatible)
 - Reverse Proxy (Nginx)
-- External AI APIs (Groq, Gemini, OpenAI)
+- External AI APIs (Groq, Gemini)
 
 ---
 
@@ -48,12 +48,12 @@ The system is composed of the following main components:
           v          v           v          v      v
        [Auth]   [Core API]  [AI Gateway] [SSE]  [REST]
                                 |
-                    --------------------------
-                    |          |             |
-                    v          v             v
-                 [Groq]    [Gemini]     [OpenAI]
-                 (LLM +    (LLM         (Embeddings)
-                  Whisper)  fallback)
+                    -------------------
+                    |                 |
+                    v                 v
+                 [Groq]           [Gemini]
+                 (LLM primary,    (LLM fallback,
+                  moderation)      embeddings)
 
 [ Worker (BullMQ) ] ← shares backend image
         |
@@ -163,7 +163,7 @@ The system is composed of the following main components:
 
 AI orchestration is consolidated inside the NestJS backend rather than separated into a dedicated Python service. This decision was made because:
 
-- All AI functionality consists of API calls to external providers (Groq, Gemini, OpenAI) — no custom ML training or local model hosting
+- All AI functionality consists of API calls to external providers (Groq, Gemini) — no custom ML training or local model hosting
 - The Vercel AI SDK provides a unified TypeScript interface for all providers with built-in SSE streaming
 - A single codebase eliminates inter-service HTTP hops, reduces deployment complexity, and keeps the type system end-to-end (Zod-validated structured outputs flow directly into Drizzle)
 - For a solo engineer, one language and one deploy unit is significantly easier to maintain and debug
