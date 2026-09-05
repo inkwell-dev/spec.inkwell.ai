@@ -376,6 +376,48 @@ UNIQUE (user_id, article_id)
 
 ---
 
+### 3.9 Saves
+
+One reader keeping one article. See §5.8 of the features document for the
+behaviour; this section covers only what the table is and why it carries the
+indexes it does.
+
+```
+id          UUID PK
+user_id     UUID NOT NULL FK → users.id
+article_id  UUID NOT NULL FK → articles.id ON DELETE CASCADE
+created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+UNIQUE (user_id, article_id)
+```
+
+Indexes:
+- the unique constraint above, and nothing else
+
+**The unique constraint does two jobs here, where its counterpart on `reposts`
+does one.** It makes a repeated save idempotent — the insert is
+`ON CONFLICT DO NOTHING ... RETURNING`, and "no row returned" is what tells the
+service the save already existed, which is what stops a second notification
+being emitted. It is also **the index the list query rides**: the main read is
+`WHERE user_id = $1 ORDER BY created_at DESC`, and `user_id` is the leading
+column, so one reader's shelf is an index scan rather than a sequential one.
+That second job is the structural difference from `reposts`, which only ever
+does point lookups.
+
+**There is deliberately no index on `article_id` alone,** although `likes` and
+`comment_likes` both have one. Both of those serve a grouped per-article count;
+saves expose no public count (§5.8), so nothing ever queries this table by
+article. The other usual justification — indexing the column a cascade
+references — does not apply either, because articles are **soft**-deleted, so
+the `ON DELETE CASCADE` above essentially never fires.
+
+**A save outlives the article's disappearance.** A soft delete does not fire the
+cascade, so the row remains while the list filter hides it; the count is
+computed from the same filter, so the two cannot disagree. A genuine hard delete
+removes the row through the cascade. Both paths end at the same observable
+result, which is why there is no cleanup job.
+
+---
+
 ## 4. Marketplace Entities
 
 ### 4.1 Article Purchases
@@ -668,12 +710,15 @@ last_aggregated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 ```
 id          UUID PK
 user_id     UUID NOT NULL FK → users.id
+-- Listed in the order `enum_range` actually returns them. New values are
+-- APPENDED, never slotted in, so this order is also the order they shipped.
 type        ENUM('follow', 'like', 'repost', 'comment', 'reply',
-                 'comment_like',         -- someone liked the recipient's comment
                  'article_previewed',    -- magazine previewed the writer's article
                  'article_purchased',    -- magazine fully purchased the writer's article
                  'earnings_credited',    -- writer earnings_balance increased
-                 'subscription_renewed') -- magazine's own subscription renewed
+                 'subscription_renewed', -- magazine's own subscription renewed
+                 'comment_like',         -- someone liked the recipient's comment
+                 'save')                 -- someone saved the recipient's article
 data        JSONB                                     -- type-specific payload (actor, target, etc.)
 is_read     BOOLEAN NOT NULL DEFAULT FALSE
 created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -694,6 +739,31 @@ Indexes:
 > emit**. Because that union keys the renderer's exhaustive switch, a dead branch
 > there is what stops the switch from being exhaustive in any useful sense, so it
 > was deleted rather than kept "just in case".
+
+> **Corrected 2026-09-05.** The note above says `ALTER TYPE ... ADD VALUE` "cannot
+> run inside a transaction block." That was true before PostgreSQL 12 and is
+> false here. This database is **16.14**, and the statement runs inside a
+> transaction perfectly well — verified directly against it:
+>
+> ```
+> BEGIN; ALTER TYPE tmp ADD VALUE 'c'; COMMIT;   -- succeeds
+> ```
+>
+> The real restriction is narrower and easy to mistake for the old one: the new
+> value cannot be **used** in the transaction that adds it.
+>
+> ```
+> BEGIN; ALTER TYPE tmp ADD VALUE 'c'; SELECT 'c'::tmp;
+> ERROR:  unsafe use of new value "c" of enum type tmp
+> HINT:   New enum values must be committed before they can be used.
+> ```
+>
+> That distinction is what makes the migrations safe. `0002` added
+> `'comment_like'` and created `comment_likes` in one file, and `0004` does the
+> same for `'save'` and `saves`; neither *writes a notification*, so neither uses
+> the value it just added. Recorded as a correction rather than an edit, because
+> the original was worth knowing and the reason it stopped being true is the
+> useful part.
 
 ---
 
@@ -733,6 +803,7 @@ Indexes:
 - `credit_balance` on magazine profiles is updated only through transaction rows (`monthly_credit_grant`, `credit_topup`, `preview_unlock` debit, `article_full_purchase` debit)
 - Writer eligibility (`is_marketplace_eligible`) is set by the analytics aggregator when lifetime thresholds are crossed, or by an admin action recorded in `writer_eligibility_audit_log`
 - Writers have one row each in the three metrics rollup tables (audience / content / quality)
+- A user of either account type can save many articles (§3.9). A save is private to the saver, and it is a **pointer, not access** — saving a marketplace or premium article does not unlock it, and §7.4 still governs the body on read
 - All deletes on `articles`, `comments`, `users` are soft (set `deleted_at`); hard cascades only on owned children (chunks, metrics)
 
 ---
@@ -740,7 +811,7 @@ Indexes:
 ## 10. Constraints and Integrity
 
 - Foreign keys enforced everywhere
-- Unique constraints on duplicate-sensitive relations (likes, follows, reposts, purchases per stage)
+- Unique constraints on duplicate-sensitive relations (likes, comment likes, follows, reposts, blocks, saves, purchases per stage)
 - `earnings_balance` and `credit_balance` updates always go through a transaction row (no direct UPDATE on balance columns)
 - Preview unlock runs inside a database transaction: validate credit balance → debit magazine credits → credit writer earnings → insert purchase row → insert transaction rows
 - Full purchase runs inside a database transaction: validate credit balance → look up prior preview row → compute remaining amount → debit magazine → credit writer → insert purchase row with `parent_purchase_id` → insert transaction rows
@@ -799,8 +870,13 @@ Automated tests must verify these invariants after every purchase, preview, subs
 - Audit log table for sensitive admin actions
 - Subscription history table (when premium becomes Stripe-integrated)
 - Saved searches for magazines (alerts on new writers matching criteria)
-- Reader bookmarks
 - Writer collaborations (multi-author articles)
+
+> **Delivered 2026-09-05 — "Reader bookmarks" was on this list and has shipped.**
+> It is `saves` (§3.9), and it is open to magazines as well as personal accounts,
+> so the word "reader" in the original entry undersold it. Removed from the list
+> rather than left standing, because an anticipated feature and a built one read
+> identically here.
 
 ---
 
