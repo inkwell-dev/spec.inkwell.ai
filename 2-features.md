@@ -429,6 +429,16 @@ Each **magazine** profile contains:
 - Curated library of licensed articles
 - Wallet balance (visible only to the magazine itself)
 
+**Profile tabs.** A personal profile carries `Articles | Saved | Reposted |
+About`; a magazine profile the same set with `Published articles` first and
+`Writers` last. Two of those four are conditional:
+
+- **Saved** (§5.8) renders **only on your own profile**. A visitor does not see
+  it disabled — they do not see it at all, and cannot learn it exists. The list
+  behind it is private.
+- **Reposted** renders on **every** profile, disabled, for the reason in §5.9:
+  reposting is built, the list surface is not.
+
 ---
 
 ### 5.3 Follow System
@@ -483,6 +493,9 @@ discrepancy would be noticed.
 
 - Users can repost articles to their profile or feed
 - Reposts increase article visibility
+- **There is no list of an account's reposts.** The API can repost, un-repost and
+  answer whether a given article is reposted, and nothing enumerates them — which
+  is why the Reposted profile tab is disabled rather than absent (§5.9)
 
 ---
 
@@ -546,6 +559,57 @@ which is the only surface in the product that names a block.
 
 ---
 
+### 5.8 Saved Articles
+
+A signed-in account of **either type** can save an article to come back to it
+later — personal accounts and magazines alike. A magazine's saves are a
+shortlist of pieces it is considering; they are not the same thing as **Your
+Library** (§4), which holds articles it has actually licensed.
+
+Saving is available from **two controls**: the bookmark on an article card in
+the feed, and the bookmark in the action bar on the article page. Saving again
+un-saves. A signed-out visitor who presses either one is sent to sign in and
+returned to where they were.
+
+**The author is notified, and the notification names the saver** — "*{user}
+saved your article*" — like every other social notification. Saving your **own**
+article is allowed and notifies nobody.
+
+**The list is private to the person who made it.** There is no public save
+count anywhere in the product: not on the card, not on the article page, not in
+analytics. A save signals nothing to anyone except the author's single
+notification, and the reader's shelf is theirs alone.
+
+Two entrances lead to the same list:
+- **Saved** in the sidebar
+- the **Saved** tab on your own profile
+
+**A save is a pointer, not access.** Saving a marketplace or premium article
+does not unlock it — the card carries its usual badge, and the access rules in
+§7.4 still decide what the body shows on read. This is deliberate and is the one
+rule most likely to be "simplified" away by mistake: filtering the saved list
+the way the public feed is filtered would silently empty a magazine's shelf of
+exactly the articles it was shortlisting.
+
+**Blocking applies in both directions** (§5.7): a save is refused between two
+accounts where either has blocked the other, and an article saved before a block
+drops out of the list while the block stands.
+
+**Articles that go away, go away quietly.** A deleted article or one whose author
+is banned leaves the list, and the count leaves with it, so the number above the
+list and the rows in it can never disagree.
+
+---
+
+### 5.9 Reposted (not built)
+
+Reposting works (§5.6) but there is no surface that lists what an account has
+reposted. The **Reposted** tab therefore renders on every profile in a disabled
+state rather than being hidden: the feature is real, the list is what is
+missing. It is its own ticket.
+
+---
+
 ## 6. 🔔 Notifications System
 
 Notifications include:
@@ -554,6 +618,11 @@ Notifications include:
 - New like on article
 - New like on one's own comment or reply
 - New comment on article
+- **Someone saved one's article** (§5.8) — names the saver, and is never sent for
+  saving one's own work
+
+No notification is ever sent for a block (§5.7): the blocked account is told
+nothing.
 
 ---
 
