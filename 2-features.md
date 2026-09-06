@@ -715,6 +715,40 @@ The counts a card reads are also **seeded** into the per-article status caches
 the controls render from, so a page of twenty cards costs no extra requests
 rather than sixty.
 
+### Loading a long list
+
+Every list of articles continues loading as the reader scrolls. A sentinel below
+the last row starts the next page roughly a viewport early, a skeleton stands in
+while it is in flight, and the new rows append beneath the ones already read.
+
+A **"Load more" button remains** below the sentinel throughout, and is not
+decoration. Scrolling is not an interaction every reader can perform: a keyboard
+or screen-reader user generates no intersection events near a one-pixel div, and
+the observer may never fire at all in a browser that lacks it. The button is also
+what makes the *end* of a list legible — when it disappears, the list is finished.
+Auto-loading alone gives the reader no equivalent signal.
+
+Two failure rules go with it:
+
+- **A failed page never discards the pages already read.** The rows and the
+  reader's scroll position stay exactly where they are; the failure is reported at
+  the bottom of the list with a retry. Only a failure with *nothing* loaded
+  replaces the surface with an error state.
+- **A failed page stops the auto-loader.** Recovery is deliberately manual,
+  because a sentinel that is still on screen would otherwise retry immediately and
+  without pause, turning one failed request into a continuous stream of them.
+
+This applies to the home feed, the following feed, a writer's profile articles,
+the writer's own dashboard list, saved articles, the reposted list, the
+marketplace, a magazine's library, discover and search.
+
+> Lists page by **offset**, not by cursor — see the NFR-14 note in
+> `10-requirements.md`. A reader scrolling while new articles are published may
+> therefore see one article twice, since every later row shifts down as rows are
+> inserted above them. Ordering is `(published_at DESC, id DESC)`, which makes the
+> boundary deterministic against *ties* but cannot make it stable against
+> *insertion*.
+
 ---
 
 ## 6. 🔔 Notifications System

@@ -66,6 +66,7 @@ report's sprint numbering (§5), not the calendar sprint.
 | ID | Requirement | Priority | Sprint |
 |----|-------------|----------|--------|
 | FR-01 | Browse the public feed, paginated, with title, excerpt, thumbnail and tags | Must | 1 |
+| FR-69 | Continue any article list as the reader scrolls, with a "Load more" control that remains available and a failed page that neither discards loaded rows nor retries itself | Must | 1 |
 | FR-02 | Read the full body of a **free public** article without an account | Must | 1 |
 | FR-03 | Be blocked from premium and marketplace articles, with an explicit prompt to sign up | Must | 1 |
 | FR-04 | Register as a personal account, or as a magazine account | Must | 1 |
@@ -220,7 +221,7 @@ evidence that supports it, so the report can cite code rather than assert.
 | NFR-11 | Semantic retrieval stays sub-linear at corpus scale | HNSW index, `m=16`, `ef_construction=64`, `vector_cosine_ops` matching the query operator |
 | NFR-12 | Full-text search is index-backed with weighted ranking | Generated `tsvector` column, weights A/B/C, GIN index |
 | NFR-13 | Prompt context is bounded | top-K ≤ 5 chunks, memory block < 200 tokens, ≈2000 tokens total |
-| NFR-14 | Feed pagination is cursor-based, stable under insertion | `(created_at DESC, id)` — see §6 on notifications |
+| NFR-14 | Feed pagination is cursor-based, stable under insertion | **Unmet — see the amendment of 2026-09-06.** Paging is offset-based (`.limit().offset()`); the `(published_at DESC, id DESC)` ordering is real but orders rows, it does not make a cursor |
 | NFR-15 | Dashboard panels reporting totals and rates read pre-aggregated rows; time-series panels may query `analytics_events` directly, bounded and labelled | 4 rollup tables refreshed by the worker; `GET /me/analytics/timeseries` returns `source: 'events'` |
 | NFR-16 | Analytics aggregation is incremental and idempotent | reads only events since `last_aggregated_at` |
 | NFR-17 | Expensive AI output is cached and invalidated by the job that changes its basis | `portfolio_insights`, 24 h TTL, dropped by `embed-article` |
@@ -329,6 +330,7 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-59 | React to an article from the feed so that I can engage without losing my place | A2 | Must | 5 | 8 |
 | US-60 | See what an account has reposted so that I can judge what they rate | A2 | Should | 3 | 8 |
 | US-61 | Reply in the moment from the feed so that a fresh conversation is easy to join | A2 | Could | 3 | 8 |
+| US-62 | Keep reading as I scroll so that a list does not end at an arbitrary point I have to click past | A1 | Must | 5 | 8 |
 | US-57 | Save an article to come back to it later, without anyone else seeing what I keep | A2 | Must | 5 | 7 |
 | US-58 | Pass an article on to people outside the platform so that they can read it without signing up | A1 | Should | 3 | 7 |
 | US-28 | Be told the moment someone reacts to my work, without reloading | A4 | Must | 5 | 3 |
@@ -520,6 +522,33 @@ it.
   The four feed-shaped payloads now compute those counts live. Recorded here
   because it is a change of source, not a bug fix, and `7-analytics-model.md` §5.3
   says which surfaces still read the rollup and why.
+- **Amended 2026-09-06 — NFR-14's remaining half is false: feed pagination is
+  offset-based, not cursor-based.**
+  The amendment of 2026-08-23 corrected this requirement for notifications while
+  restating "Feed pagination is cursor-based as stated". That restatement was wrong,
+  and it was wrong when it was written. `ArticlesService.findFeed` computes
+  `const offset = (page - 1) * limit` and ends `.limit(limit).offset(offset)`; so does
+  `findFollowingFeed`, and so does every other paginated read behind the
+  `{ items, page, limit, total, hasMore }` envelope. There is no cursor anywhere in the
+  feed path.
+
+  The `(created_at DESC, id)` evidence column describes the **ordering**, which is real
+  — the feed sorts `(published_at DESC, id DESC)` precisely so a tie cannot place a row
+  on two consecutive pages. That is what made the claim plausible. But a deterministic
+  order is not a cursor: offset paging re-counts from the top on every request, so rows
+  inserted above the reader's position shift everything down and the next page repeats
+  the row that ended the last one. Stable under *ties*, not under *insertion*.
+
+  Recorded rather than fixed. Converting to cursor pagination means changing the frozen
+  response envelope and every paginated hook that reads it, which is its own ticket, not
+  a rider on the one that found this. FR-69 (scroll-continued lists) ships on offset
+  paging and inherits the duplicate-row window, which it widens in practice: readers who
+  auto-load ten pages meet the boundary far more often than readers who clicked "Load
+  more" twice. `2-features.md` §5 "Loading a long list" carries the reader-facing note.
+
+  The general lesson is the one the 2026-08-23 entry already half-learned: this file is
+  not evidence about the system it describes. The claim was settled by reading the query
+  builder, not by re-reading the requirement.
 - **NFR-37** (Lighthouse, `axe-core`) is the only unsatisfied requirement.
 - **Open:** the AI token top-up (US absent by design — the decision and the column
   shape to build are recorded on the item in `0-phase-plan.md` Phase 5).
