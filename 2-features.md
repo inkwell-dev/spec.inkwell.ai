@@ -610,6 +610,36 @@ missing. It is its own ticket.
 
 ---
 
+### 5.10 Sharing
+
+Articles and writer profiles carry a **Share** control that opens a small
+anchored popover with four actions: **X**, **Facebook**, **LinkedIn**, and
+**Copy link**. The three social targets are ordinary links to each network's
+share intent, opened in a new tab; only X accepts a pre-filled subject, so the
+article title is passed there and nowhere else. Facebook and LinkedIn both
+dropped pre-filled captions years ago and read the page's Open Graph tags
+instead, which the article and profile routes already emit.
+
+Sharing needs **no account**. It is one of the few interactions available to a
+signed-out visitor (§A1), because nothing about it writes a row: there is no
+share count, no notification, and **no share tracking of any kind**. A shared
+link is an ordinary public URL, and the product learns nothing when one is
+created. That is a deliberate scope boundary rather than an oversight — adding
+attribution later would mean a real endpoint and a real table.
+
+Links are built from the site's canonical origin and the item's own path, never
+from the reader's current address bar, so a share never carries someone's query
+string or scroll fragment along with it.
+
+**Copy link** works on a non-secure origin as well as an https one. This matters
+more than it sounds: the Clipboard API and the native share sheet are both
+gated on a secure context, so on a plain-http origin neither exists, and an
+implementation that assumes either one silently does nothing at all. The copy
+action falls back to a selection-based copy so the control behaves the same way
+everywhere it is served.
+
+---
+
 ## 6. 🔔 Notifications System
 
 Notifications include:

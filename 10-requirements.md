@@ -97,6 +97,7 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-62 | Block an account, and review and lift one's blocks from settings | Must | 7 |
 | FR-63 | Save an article from the feed card or from the article page, and unsave it | Must | 7 |
 | FR-64 | Review one's own saved articles, from the sidebar or from the Saved tab on one's own profile | Must | 7 |
+| FR-65 | Share an article or a writer profile to X, Facebook or LinkedIn, or copy its link, without needing an account | Should | 7 |
 | FR-13 | Receive notifications for follows, likes, comment likes, saves, comments and replies, delivered live | Must | 3 |
 | FR-14 | List past notifications and mark them read | Must | 3 |
 | FR-15 | Upgrade to premium, and downgrade (simulated payment) | Must | 5 |
@@ -323,6 +324,7 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-26 | Follow a writer so that I keep up with them | A2 | Should | 3 | 3 |
 | US-27 | Repost an article so that my followers see it | A2 | Could | 2 | 3 |
 | US-57 | Save an article to come back to it later, without anyone else seeing what I keep | A2 | Must | 5 | 7 |
+| US-58 | Pass an article on to people outside the platform so that they can read it without signing up | A1 | Should | 3 | 7 |
 | US-28 | Be told the moment someone reacts to my work, without reloading | A4 | Must | 5 | 3 |
 | US-29 | Review notifications I missed so that nothing is lost between sessions | A2 | Must | 3 | 3 |
 
