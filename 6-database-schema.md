@@ -372,7 +372,19 @@ user_id     UUID NOT NULL FK → users.id
 article_id  UUID NOT NULL FK → articles.id ON DELETE CASCADE
 created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 UNIQUE (user_id, article_id)
+INDEX reposts_article_id_idx (article_id)
 ```
+
+The unique constraint does the same two jobs its counterpart on `saves` does
+(§3.9): it makes a repeated repost idempotent, and — because `user_id` leads —
+it is the index the per-account **Reposted** list rides.
+
+**`reposts_article_id_idx` was added when the count went public.** The unique
+constraint leads on `user_id`, so it cannot serve a lookup by `article_id`
+alone, and that is now on the hot path twice per feed request: every card
+computes a live `repostCount`, and the following feed sorts on the latest repost
+by a followed account. Before this, both were sequential scans of the whole
+table. `likes` carries `likes_article_id_idx` for exactly the same reason.
 
 ---
 
@@ -400,13 +412,14 @@ service the save already existed, which is what stops a second notification
 being emitted. It is also **the index the list query rides**: the main read is
 `WHERE user_id = $1 ORDER BY created_at DESC`, and `user_id` is the leading
 column, so one reader's shelf is an index scan rather than a sequential one.
-That second job is the structural difference from `reposts`, which only ever
-does point lookups.
+`reposts` now does the same two jobs with the same constraint (§3.8) — it used
+to do only point lookups, which is why that contrast used to be drawn here.
 
-**There is deliberately no index on `article_id` alone,** although `likes` and
-`comment_likes` both have one. Both of those serve a grouped per-article count;
-saves expose no public count (§5.8), so nothing ever queries this table by
-article. The other usual justification — indexing the column a cascade
+**There is deliberately no index on `article_id` alone,** although `likes`,
+`comment_likes` and now `reposts` all have one. Every one of those serves a
+grouped per-article count; saves expose no public count (§5.8), so nothing ever
+queries this table by article. If a public save count is ever added, this is the
+index it needs. The other usual justification — indexing the column a cascade
 references — does not apply either, because articles are **soft**-deleted, so
 the `ON DELETE CASCADE` above essentially never fires.
 

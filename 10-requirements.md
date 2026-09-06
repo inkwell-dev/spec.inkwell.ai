@@ -91,7 +91,10 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-09 | Comment on an article, and reply to a comment (threaded) | Must | 3 |
 | FR-10 | Delete one's own comment | Must | 3 |
 | FR-60 | Like a comment or a reply, and un-like it | Must | 7 |
+| FR-66 | Like, repost and comment on an article from a feed card, and see whether one has already liked or reposted it | Must | 8 |
+| FR-68 | See a feed card's most recent comments from the last hour, up to three, without opening the article | Could | 8 |
 | FR-11 | Repost an article | Could | 3 |
+| FR-67 | Read any account's reposts from the Reposted tab on its profile, without an account | Should | 8 |
 | FR-12 | Follow and unfollow a writer | Should | 3 |
 | FR-61 | View any profile's followers and following lists, and follow or unfollow from them | Must | 7 |
 | FR-62 | Block an account, and review and lift one's blocks from settings | Must | 7 |
@@ -323,6 +326,9 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-25 | Comment and reply in a thread so that discussion has structure | A2 | Must | 5 | 3 |
 | US-26 | Follow a writer so that I keep up with them | A2 | Should | 3 | 3 |
 | US-27 | Repost an article so that my followers see it | A2 | Could | 2 | 3 |
+| US-59 | React to an article from the feed so that I can engage without losing my place | A2 | Must | 5 | 8 |
+| US-60 | See what an account has reposted so that I can judge what they rate | A2 | Should | 3 | 8 |
+| US-61 | Reply in the moment from the feed so that a fresh conversation is easy to join | A2 | Could | 3 | 8 |
 | US-57 | Save an article to come back to it later, without anyone else seeing what I keep | A2 | Must | 5 | 7 |
 | US-58 | Pass an article on to people outside the platform so that they can read it without signing up | A1 | Should | 3 | 7 |
 | US-28 | Be told the moment someone reacts to my work, without reloading | A4 | Must | 5 | 3 |
@@ -494,6 +500,26 @@ it.
   never through the UI. Recorded rather than narrowing FR-59 to match the build,
   because both the data model and the moderation queue are already built for it and
   the gap is one dialog wide.
+- **Delivered 2026-09-06 — US-27's second half was never built until now.**
+  *"Repost an article **so that my followers see it**."* Reposting has existed
+  since Phase 3 — the API could repost, un-repost and report status — but nothing
+  ever surfaced a repost to anybody. No follower saw one, and no list enumerated
+  them, so the requirement's whole purpose clause was unmet while the row read as
+  done. Two changes close it: the following feed now carries articles reposted by
+  accounts you follow, attributed and ordered by the repost, and every profile's
+  **Reposted** tab lists an account's reposts publicly.
+
+  That also makes **FR-11** whole rather than nominal, and retires §5.9 of
+  `2-features.md`, which had been titled "Reposted (not built)" and described the
+  disabled tab as its own ticket.
+
+  One thing was **corrected rather than added**: the feed card's like and comment
+  counts were reading `article_metrics`, a scheduled rollup that nothing updates
+  when a reader clicks. Harmless while the card's controls were disabled and the
+  number was decoration; a visibly reverting counter the moment they went live.
+  The four feed-shaped payloads now compute those counts live. Recorded here
+  because it is a change of source, not a bug fix, and `7-analytics-model.md` §5.3
+  says which surfaces still read the rollup and why.
 - **NFR-37** (Lighthouse, `axe-core`) is the only unsatisfied requirement.
 - **Open:** the AI token top-up (US absent by design — the decision and the column
   shape to build are recorded on the item in `0-phase-plan.md` Phase 5).

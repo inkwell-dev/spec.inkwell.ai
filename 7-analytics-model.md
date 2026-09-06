@@ -124,6 +124,20 @@ Three writer-level rollup tables, refreshed by background jobs every 15 minutes:
 - Paragraph-level drop-off (JSON array)
 - Updated by the same aggregation job
 
+**Who reads these counts, and who deliberately does not.**
+`total_likes`, `total_comments` and `total_reposts` are **no longer read by the
+feed payloads**. A feed card computes those three live from the underlying
+tables instead — see §5.11 of the features document for the full reasoning: this
+is a scheduled rollup, nothing writes to it when a reader presses a button, and a
+rollup number underneath an interactive control visibly reverts on the next
+refetch.
+
+They remain the source for the surfaces that report on a **period** rather than
+on a button: the writer dashboard (`GET /articles/me`, which also *sorts* by
+`total_views` and `engagement_rate`) and the per-article report above. Those are
+a different question from "what does this card say right now", and unifying the
+two reads back together re-introduces the reverting counter.
+
 ---
 
 ## 6. Writer-Facing Analytics (Self-Improvement Surface)
