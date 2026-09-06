@@ -436,8 +436,13 @@ About`; a magazine profile the same set with `Published articles` first and
 - **Saved** (§5.8) renders **only on your own profile**. A visitor does not see
   it disabled — they do not see it at all, and cannot learn it exists. The list
   behind it is private.
-- **Reposted** renders on **every** profile, disabled, for the reason in §5.9:
-  reposting is built, the list surface is not.
+- **Reposted** renders on **every** profile and is **public** — it lists what
+  that account has reposted, newest repost first, to anyone at all including a
+  signed-out visitor. The contrast with **Saved** is the point: a saved shelf is
+  private, so its tab is conditionally rendered; a repost is public
+  amplification, so there is nothing to withhold and nothing to hide the tab
+  from. The two are treated differently because the two lists *are* different,
+  not by oversight.
 
 ---
 
@@ -467,7 +472,8 @@ discrepancy would be noticed.
 
 ### 5.4 Likes / Reactions
 
-- Users can like articles
+- Users can like articles — from the article page **and** directly from a feed
+  card, which shows whether the signed-in reader has already liked it
 - Users can like comments and replies (see §5.5)
 - Like count is visible publicly
 - Only article likes count toward marketplace eligibility — see §9.3 of the
@@ -487,15 +493,56 @@ discrepancy would be noticed.
 - Like a comment or a reply, and un-like it — the count is public, and the
   comment's author is notified of a like that is not their own
 
+#### On a feed card
+
+A feed card carries a **small comment section** of its own, so a reader can join
+a conversation without leaving the feed:
+
+- The last hour's comments on that article, **newest first, at most three**,
+  shown **without any click**. A card with nothing recent shows nothing at all.
+- A **composer** that opens from the card's Comment control. **Enter** submits;
+  **Shift+Enter** inserts a newline.
+- **Top-level comments only**, both in what it shows and what it posts. A reply
+  rendered with no parent above it reads as an answer to a question that is not
+  on screen, and threading needs the room the article page has. Replies and
+  comment likes stay there.
+- Consequently a card's comment **count** and its comment **strip** can disagree
+  — "12 comments" above one line is correct. The count is how much discussion
+  the article has; the strip is what was said here in the last hour.
+
 ---
 
 ### 5.6 Repost System
 
-- Users can repost articles to their profile or feed
-- Reposts increase article visibility
-- **There is no list of an account's reposts.** The API can repost, un-repost and
-  answer whether a given article is reposted, and nothing enumerates them — which
-  is why the Reposted profile tab is disabled rather than absent (§5.9)
+Reposting is a **plain toggle** — repost, un-repost. There is no quote-repost
+and no comment attached to a repost.
+
+**The public list.** Every account's reposts are enumerable from the **Reposted**
+tab on its profile (§5.9), newest repost first, readable by anyone including
+signed-out visitors.
+
+The list **excludes** an article that is unpublished, soft-deleted, or whose
+author has been banned — and, for a signed-in viewer, anything by an account
+either party has blocked. A block between the viewer and the profile owner 404s
+the profile, and the tab with it, rather than showing an empty list.
+
+It deliberately **does not exclude** marketplace or premium articles. A repost is
+amplification of an article that exists; whether the *body* is readable is the
+article route's own access gate (§7.4) and a separate question. Filtering them
+here would silently delete rows with the count agreeing, which presents as data
+loss rather than as a filter bug.
+
+**Followers see it.** An article reposted by an account you follow appears in
+your **following feed**, attributed as *"X reposted"*, positioned by the
+**repost's** time rather than the article's publication date — otherwise an old
+article amplified a minute ago would land pages deep and the amplification would
+achieve nothing. It appears **exactly once** however many accounts you follow
+were involved, and the name shown is the most recent of them. A repost by an
+account that is later banned surfaces nothing.
+
+Marketplace articles are the one thing a repost does not pull into the following
+feed: that feed is publicly readable articles by definition, and the marketplace
+has its own surfaces.
 
 ---
 
@@ -601,12 +648,19 @@ list and the rows in it can never disagree.
 
 ---
 
-### 5.9 Reposted (not built)
+### 5.9 Reposted
 
-Reposting works (§5.6) but there is no surface that lists what an account has
-reposted. The **Reposted** tab therefore renders on every profile in a disabled
-state rather than being hidden: the feature is real, the list is what is
-missing. It is its own ticket.
+The **Reposted** tab on a profile lists what that account has reposted, newest
+first, as ordinary feed cards. It renders on **every** profile, enabled, for
+**every** viewer including signed-out ones — reposting is public amplification,
+so unlike **Saved** (§5.8) there is nothing to withhold and no reason to
+conditionally render it.
+
+Paginated in the standard envelope, stepped a page at a time. The membership
+rules are in §5.6.
+
+A repost whose article is later deleted leaves the list quietly, and the count
+leaves alongside it — the same behaviour §5.8 describes for saves.
 
 ---
 
@@ -637,6 +691,29 @@ gated on a secure context, so on a plain-http origin neither exists, and an
 implementation that assumes either one silently does nothing at all. The copy
 action falls back to a selection-based copy so the control behaves the same way
 everywhere it is served.
+
+---
+
+### 5.11 Engagement counts
+
+The like, comment and repost counts on a **feed card** are computed **live**,
+from the underlying tables, not read from the `article_metrics` rollup.
+
+That is not a preference. The rollup runs on a schedule and nothing writes to it
+when a reader presses a button, so a card showing a rollup number under an
+interactive control visibly *snaps back*: the optimistic toggle ticks 17 to 18,
+the next refetch hands back 17, and nothing on screen explains it. No amount of
+caching fixes reading a stale number.
+
+`article_metrics` remains the source for the **writer dashboard** and the
+**analytics reports**, which report on a period rather than on a button, and
+which also sort by it. The distinction worth keeping: *a dashboard that reports
+on a period reads the rollup; a card the reader is about to press reads the
+table.* Merging the two back together re-introduces the snap-back.
+
+The counts a card reads are also **seeded** into the per-article status caches
+the controls render from, so a page of twenty cards costs no extra requests
+rather than sixty.
 
 ---
 
