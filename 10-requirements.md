@@ -158,6 +158,8 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-49 | Purchase the remainder (90%) and gain republish rights | Must | 5 |
 | FR-50 | See the curated library of fully purchased articles | Must | 5 |
 | FR-72 | Be refused when previewing, buying, switching to public, or deleting an article another magazine has already purchased exclusively | Must | 5 |
+| FR-73 | Publish an article it has purchased, under its own masthead — making it public and free, clearing the price, and recording the publisher | Must | 5 |
+| FR-74 | See the library split into what has been published and what is still waiting, and act only on the second | Must | 5 |
 
 > **Deviations recorded.** Portfolio Insights generation is an explicit click,
 > never a page-load side effect, because each generation costs a model call.
@@ -359,6 +361,7 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-38 | Pay 10% to read an article in full so that I can judge before buying | A7 | Must | 8 | 5 |
 | US-39 | Pay the remainder to acquire republish rights so that I can publish it | A7 | Must | 8 | 5 |
 | US-40 | Keep purchased articles in a library so that my acquisitions are in one place | A7 | Must | 3 | 5 |
+| US-63 | Publish an article I have bought when I am ready, rather than the purchase publishing it for me, so that my masthead stays mine to decide | A7 | Must | 5 | 5 |
 | US-41 | List an article for sale at my own price so that I am paid for exclusivity | A5 | Must | 5 | 5 |
 | US-42 | See my earnings itemised by preview and purchase so that I trust the accounting | A4 | Must | 5 | 5 |
 | US-43 | See how far I am from eligibility so that the gate feels reachable | A4 | Should | 3 | 5 |

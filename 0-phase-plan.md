@@ -157,7 +157,7 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
 - [x] Install Auth.js (NextAuth.js) — email + Google OAuth (implemented as custom JWT auth with axios interceptors)
 - [x] Layout: navbar, footer, responsive shell (+ sidebar, bottom-tab-bar)
 - [x] Feed page (`/`) — article cards, pagination, tag filter (+ filter chips, right sidebar widgets) — *"pagination" was checked off early: the feed rendered a fixed first page of twenty with no control of any kind, and its own code comment deferred the next-page control to "Phase 3". Genuinely paginated from 2026-09-06 — see FR-69.*
-- [x] Article reader page (`/articles/[slug]`) — full article, premium gate, "Licensed by" badge
+- [x] Article reader page (`/articles/[slug]`) — full article, premium gate *(the "Licensed by" badge was never built: the reader page carries only a MARKETPLACE badge and a "Licensed on the Inkwell Marketplace" notice, and until 2026-09-07 there was no publisher to name. `articles.publisher_id` now exists and magazines can publish, so the attribution finally has something to say — it ships with the dual byline in the next ticket. Corrected rather than quietly satisfied, because the box has read as done since Phase 3.)*
 - [x] Sign-up flow with **account type selection**: Personal | Magazine (separate forms linked together per Figma)
 - [x] Magazine sign-up form (additional fields + logo upload zone)
 - [x] Login page (Figma-aligned with heading, reordered form)
