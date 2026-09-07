@@ -140,7 +140,15 @@ See §5.4, §5.5, §5.6 and §5.8.
 
 #### Placement Rules
 - Placement is chosen at publish time and defaults to **public**.
-- **Marketplace → Public** switch is allowed at any time (writer abandons the sale and makes the article public).
+- **Marketplace → Public** switch is allowed at any time **until the article is
+  sold** (writer abandons the sale and makes the article public). Once a magazine
+  holds a full purchase the switch is refused: the buyer paid for exclusivity, and
+  a writer who could make the article free afterwards would be selling something
+  they can take back. Deleting a sold article is refused for the same reason —
+  see §2.5.
+  *(Corrected 2026-09-07. This rule previously said "at any time" with no
+  exception, which was true of the code and incompatible with the exclusivity
+  US-41 and §4.5 both promise.)*
 - **Public → Marketplace** switch is **blocked** (an article that has already been read by the public audience has no marketplace exclusivity value).
 
 ---
@@ -158,6 +166,19 @@ State per magazine–article pair:
 - **Previewed** — magazine paid the preview fee (10%) and can read the full article; credits are held toward the purchase
 - **Purchased** — magazine paid the remaining 90%; article is in their library with republish rights
 
+**Since 2026-09-07 this state is no longer purely per-pair.** Exclusivity makes
+*being purchased* a property of the **article**, not of a magazine–article pair:
+once any magazine reaches **Purchased**, every other magazine is frozen wherever
+it stands and can go no further. A magazine that had reached **Previewed** keeps
+what it paid for — permanent reading access — and is simply refused at the
+purchase step; it is **not** refunded, because the preview fee bought the read
+and it still has the read. A magazine at **Not previewed** can no longer preview
+at all, since paying 10% to evaluate an article nobody can buy would be selling
+something with no value.
+
+A sold article also leaves the marketplace browse (§4.5.3) rather than sitting
+there advertising a purchase that would be refused.
+
 ---
 
 ### 2.5 Soft Deletes
@@ -166,6 +187,15 @@ Articles, comments, and users use **soft deletes** (`deleted_at` timestamp). Del
 - Moderation audit trails
 - Recovery on user request
 - Linking integrity (e.g., licensed articles cannot be hard-deleted while licenses exist)
+
+**A sold article cannot be soft-deleted either, as of 2026-09-07.** The line above
+has always covered *hard* deletes, but soft delete is what `DELETE /articles/:id`
+actually performs — so until now the rule protected nothing a writer could
+actually do. A writer who deletes an article a magazine has paid for is taking
+back what was sold, so the delete is refused while any full purchase exists.
+Administrative removal through the moderation queue (§8.2) is deliberately
+**not** blocked: moderation authority overrides the commercial guarantee, because
+the alternative is content that cannot be taken down because somebody bought it.
 
 ---
 
@@ -379,7 +409,7 @@ Magazines have a dedicated discovery interface (requires active subscription):
 - Search writers by name, topic expertise, or keyword
 - Sort by engagement, posting frequency, or topic relevance
 - Click into any writer's profile → see full evaluation dashboard (section 4.2) and Portfolio Insights (section 3.6)
-- View a writer's marketplace-listed articles with titles, excerpts, and prices
+- View a writer's marketplace-listed articles with titles, excerpts, and prices — **excluding any already purchased by another magazine**, which leave the browse entirely rather than sitting there advertising a purchase that would be refused (§2.4 Placement Rules, FR-72)
 - See per-writer stats (per-article stats deferred to post-MVP)
 
 > **As built (2026-08-10).** The page is `/discover`, not `/marketplace` — the
