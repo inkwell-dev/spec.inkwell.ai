@@ -100,11 +100,16 @@ claim: it says an account amplified something, and it stays true. Filtering the
 reposted list to match this rule would delete rows with the count agreeing, which
 §5.6 explains at length.
 
-> **Not yet built.** Once a magazine *publishes* an article it has licensed, the
-> article returns to the writer's profile carrying an *in [Magazine]*
-> attribution. That needs `articles.publisher_id`, which does not exist yet — see
-> `docs/superpowers/specs/2026-09-06-magazine-licensing-design.md`, decision D4.
-> Until then a sold listing is simply absent like any other.
+**Once a magazine publishes an article it has licensed, all of this stops
+applying** — the article becomes `placement = 'public'` and is an ordinary
+public article from then on, so it returns to the feed and to the writer's
+profile by the same rule that governs every other public article. Nothing
+special is done to put it back; it simply stops being a marketplace listing.
+
+> **Not yet built.** The *in [Magazine]* attribution on that returned article —
+> the byline naming both the writer and the publication — is the next ticket.
+> Until it lands, a published licensed article is indistinguishable from any
+> other article by that writer.
 
 #### Engagement on a listing
 
@@ -165,6 +170,15 @@ State per magazine–article pair:
 - **Not previewed** — magazine has not unlocked this article yet
 - **Previewed** — magazine paid the preview fee (10%) and can read the full article; credits are held toward the purchase
 - **Purchased** — magazine paid the remaining 90%; article is in their library with republish rights
+
+The fourth state belongs to the **article**, not to a pair:
+
+- **Published** — the owning magazine has published it. `placement` becomes
+  `public`, `visibility` becomes `free`, the price is cleared and the magazine
+  is recorded as the publisher. From that moment it is an ordinary public
+  article: it appears in the feed and in search, it returns to the writer's
+  profile (§2.4), and likes, comments and reposts all work on it again. The
+  transition is one-way.
 
 **Since 2026-09-07 this state is no longer purely per-pair.** Exclusivity makes
 *being purchased* a property of the **article**, not of a magazine–article pair:
@@ -473,10 +487,42 @@ Magazines interact with marketplace articles through three stages:
 > hold, and the code honoured neither. §2.4 is the one that stands: a purchase
 > puts the article in the library **unpublished**, and nothing about the writer's
 > profile changes. The attribution arrives only when the magazine *publishes* the
-> article, which is not built yet — see
-> `docs/superpowers/specs/2026-09-06-magazine-licensing-design.md`, decision D4.
+> article — see `docs/superpowers/specs/2026-09-06-magazine-licensing-design.md`,
+> decision D4.
 
 If a magazine skips preview and goes straight to purchase, they pay 100% in one step (no credit for a prior preview).
+
+#### Stage 4 — Publication
+
+The purchase is not the end of the flow. An article arrives in the library
+**unpublished**, and stays there until the magazine deliberately publishes it.
+
+- The magazine publishes from its library. Nothing else can trigger it: not the
+  purchase, not the writer, not time passing.
+- Publishing makes the article **public and free** — readable by everyone,
+  signed-out visitors included — and records the magazine as its publisher. It
+  is exactly the transition a writer's own "switch to public" performs, plus the
+  publisher.
+- **The price is cleared.** What was paid is preserved on the purchase record,
+  which is the better history anyway: it is what the magazine actually paid,
+  rather than what was asked.
+- **The writer's publication date is not touched.** It is the writer's
+  chronology, and the feed orders by it — so a licensed article published today
+  surfaces at its original date rather than jumping to the top. The magazine's
+  own surface for freshness is its profile.
+- The **writer is notified**, and the notification names the magazine.
+- **There is no un-publish.** Publication is one-way. A magazine that wants an
+  article taken down has to go through moderation like anyone else.
+
+Only the magazine recorded as the article's owner may publish it. Where a
+pre-exclusivity article has more than one owner (§2.4.1), the earliest purchaser
+is the one who may act; the others keep the article in their library, marked as
+published by somebody else.
+
+> **Not yet built.** The magazine's *public* profile does not yet list what it
+> has published, and a published licensed article still carries only the
+> writer's byline with no visible magazine attribution anywhere. Both are the
+> next ticket.
 
 ---
 
@@ -486,6 +532,14 @@ If a magazine skips preview and goes straight to purchase, they pay 100% in one 
 - Library is the magazine's content portfolio — analogous to a writer's profile for readers
 - Articles in library link back to the original writer (attribution preserved)
 - Previewed-only articles are not in the library
+- **The library has two halves: unpublished and published.** The publish action
+  lives on the first; the second links to the live article. The split is
+  server-side, so each half's count describes that half rather than the whole
+  library.
+- A row the magazine owns but did **not** publish — possible only for the
+  pre-exclusivity articles with several owners — sits in the published half,
+  labelled as published by another magazine and carrying no action. It is
+  neither hidden nor actionable, because both would be lies.
 
 ---
 

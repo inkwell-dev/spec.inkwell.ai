@@ -131,7 +131,8 @@ thumbnail_url   VARCHAR(500)
 status           ENUM('draft', 'published') NOT NULL DEFAULT 'draft'
 placement        ENUM('public', 'marketplace') NOT NULL DEFAULT 'public'
 visibility       ENUM('free', 'premium') NULL             -- only applies when placement = 'public'; NULL for marketplace articles
-marketplace_price INTEGER NULL                            -- platform credits; required when placement = 'marketplace'
+marketplace_price INTEGER NULL                            -- platform credits; required when placement = 'marketplace'; cleared when a magazine publishes
+publisher_id    UUID NULL FK → users.id                    -- the magazine that published this licensed article; NULL until one does
 read_time       INTEGER                                    -- estimated minutes
 word_count      INTEGER
 created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -154,6 +155,7 @@ Indexes:
 - `placement`
 - `visibility`
 - `published_at DESC` (for feed pagination)
+- `publisher_id` (`articles_publisher_id_idx`)
 - `search_vector` (GIN index for full-text search — `articles_search_vector_idx`)
 - `deleted_at` (partial index `WHERE deleted_at IS NULL`)
 
@@ -455,6 +457,16 @@ Constraints:
 - Article must have `placement = 'marketplace'` and `status = 'published'` at time of purchase
 - `full_purchase.credits_paid = article.marketplace_price − (preview_unlock.credits_paid if parent_purchase_id IS NOT NULL else 0)`
 - `parent_purchase_id` must reference a row with `stage = 'preview_unlock'` for the same `(article_id, magazine_id)`
+- **`articles.publisher_id`** — the magazine that published this article, NULL
+  until one does. Nullable by design: with `placement` it encodes all three
+  lifecycle states without a fourth column. `marketplace` + NULL is a listing
+  or an unpublished library entry (the `article_purchases` rows tell those two
+  apart); `public` + set is published. `ON DELETE NO ACTION`, matching
+  `author_id` — a magazine cannot be hard-deleted out from under an article it
+  has published.
+- **`notification_type` gained `'article_published'`** (2026-09-07), appended at
+  the end of the enum. Applied as a plain `ALTER TYPE ... ADD VALUE`, additive,
+  rewriting nothing.
 - **Exclusivity — one full purchase per article, app-layer guard, enforced 2026-09-07.**
   Once any magazine holds a `full_purchase` row, no other magazine may preview or
   purchase the article, and the writer may neither switch it to public nor delete
@@ -781,7 +793,8 @@ type        ENUM('follow', 'like', 'repost', 'comment', 'reply',
                  'earnings_credited',    -- writer earnings_balance increased
                  'subscription_renewed', -- magazine's own subscription renewed
                  'comment_like',         -- someone liked the recipient's comment
-                 'save')                 -- someone saved the recipient's article
+                 'save',                 -- someone saved the recipient's article
+                 'article_published')    -- a magazine published the writer's licensed article
 data        JSONB                                     -- type-specific payload (actor, target, etc.)
 is_read     BOOLEAN NOT NULL DEFAULT FALSE
 created_at  TIMESTAMPTZ NOT NULL DEFAULT now()

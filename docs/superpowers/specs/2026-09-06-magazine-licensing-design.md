@@ -1,7 +1,7 @@
 # Magazine licensing: what a purchase actually buys
 
 **Date:** 2026-09-06
-**Status:** approved — decomposed into four tickets, none yet built
+**Status:** approved — decomposed into four tickets; **1, 2 and 3 built** (2026-09-07), ticket 4 outstanding
 **Scope:** the magazine side of the marketplace, from listing to publication
 
 ---
@@ -374,6 +374,42 @@ the spec that exclusivity is now enforced rather than merely promised.
 enum value; the seed producing all three states.
 
 Demoable alone: buy, publish, and it is live.
+
+**Built 2026-09-07.** Three things were decided during implementation that this
+document did not settle, recorded here rather than only in the ticket's plan:
+
+- **Only the article's OWNER may publish it**, established by the same
+  `fullPurchaseOwner` definition exclusivity uses — not merely "a magazine
+  holding a full-purchase row". The distinction matters only for the sixteen
+  pre-exclusivity articles with several owners, where "has a row" would have let
+  the second owner overwrite the first's publisher. The losing co-owner keeps
+  the article in its library, labelled as published by somebody else.
+- **Publication does not touch `published_at`.** It is the writer's chronology
+  and the feed orders by it, so a licensed article published today surfaces at
+  its original date rather than jumping the queue. Accepted deliberately; the
+  magazine's own surface for freshness is its profile, which is ticket 4.
+- **No magazine-publication date is recorded.** §4.2's claim that the three
+  states need no column beyond `publisher_id` is true of the *states* and false
+  if the UI wants "published on <date>". Nothing renders one, so nothing was
+  added. If it is ever wanted it is a column of its own, not a smuggled one.
+
+The seed rework also landed here, and the resulting corpus was verified against
+the rules the previous two tickets introduced: no article has more than one
+owner, and no like, repost or comment hangs on a marketplace listing — replacing
+16 multi-owner articles and 966 stray comments respectively.
+
+**One thing the corpus does NOT contain, recorded because it is a gap and not a
+choice anybody would infer.** Exclusivity is seeded by dealing each magazine a
+disjoint slice of the catalogue, which makes **D3 — the stranded previewer —
+structurally impossible to produce**: a magazine only ever sees articles nobody
+else can buy, so it can never preview one that somebody else then purchases.
+
+D3 has code behind it and specs covering it (`resolveArticleAccess` keeps that
+magazine's read; `buyStage` refuses its purchase). What it lacks is a
+representative row in any demo corpus, so nothing in the fixture would notice if
+the path regressed. Producing one means letting a magazine preview outside its
+slice, dated strictly before the owner's purchase — the only shape that is legal
+now. Worth doing; not done here.
 
 ### Ticket 4 — Licensed work becomes visible
 *backend + frontend + spec. Depends on ticket 3's column.*
