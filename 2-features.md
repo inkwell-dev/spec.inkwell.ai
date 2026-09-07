@@ -73,6 +73,71 @@ For **public** articles, a visibility level further restricts access:
 
 > Articles are always publicly listed in the feed by title/excerpt, but full access requires authentication. Magazine accounts can access any article they have fully purchased regardless of its original visibility.
 
+#### Who can still see a listing
+
+"Not listed ... on the writer's public profile" is honoured from 2026-09-07, and
+it was not honoured before: the profile listed every marketplace article, and
+`GET /articles/:slug` then answered 404 to the reader who clicked it. A card that
+leads nowhere is worse than no card.
+
+Two viewers are exempt, and only two:
+
+- **The author**, always, on their own profile. A writer's profile is also how
+  they check what they currently have out for sale.
+- **An administrator**, for the same reason the read gate lets them see
+  everything: moderation cannot moderate what it cannot list.
+
+A subscribed **magazine** gets no exemption. Marketplace browsing has its own
+surface with its own filters (§4.5.3), and a profile that quietly showed
+different articles to different buyers would be a second, undocumented
+marketplace.
+
+One profile surface is **not** covered by this rule, deliberately: the
+**Reposted** tab (§5.6) still lists a marketplace article that somebody reposted
+before reposting one was refused, and that tab is public. The rule above is about
+the writer's *own shelf* — what they published — and a repost is a different
+claim: it says an account amplified something, and it stays true. Filtering the
+reposted list to match this rule would delete rows with the count agreeing, which
+§5.6 explains at length.
+
+> **Not yet built.** Once a magazine *publishes* an article it has licensed, the
+> article returns to the writer's profile carrying an *in [Magazine]*
+> attribution. That needs `articles.publisher_id`, which does not exist yet — see
+> `docs/superpowers/specs/2026-09-06-magazine-licensing-design.md`, decision D4.
+> Until then a sold listing is simply absent like any other.
+
+#### Engagement on a listing
+
+A marketplace listing is a private commercial offer, not a published article with
+a smaller audience. **Liking, commenting on and reposting one are refused** — a
+public like count, a public comment thread and amplification into someone's
+followers' feed are all forms of publication, and none of them belong on
+something that is being sold. The refusal is uniform: the author and
+administrators are refused too, so a listing cannot acquire a thread with one
+possible participant.
+
+**Saving is not refused**, and the contrast is deliberate — see §5.8. A save is
+private to the saver, and shortlisting candidates is exactly what a magazine does
+while evaluating.
+
+All three switch on the moment the article becomes public.
+
+Engagement recorded *before* this rule existed is **preserved, not purged**. What
+stops is **rendering**: no surface in the product draws a listing's like count,
+comment thread, comment strip or engagement controls any more.
+
+The underlying reads are deliberately left alone, so be precise about what that
+means. `GET /articles/:id/like` and `GET /articles/:id/repost` still answer with
+the historical counts to anyone holding the article's id, and the thread endpoint
+still serves the historical conversation to the viewers who can read the article
+— its author, an administrator, and a subscribed magazine (§5.5). Nothing was
+hidden retroactively; the surfaces that displayed it were removed.
+
+It also remains **removable by whoever created it**: un-liking, un-reposting and
+deleting one's own comment all still work. Closing those would strand engagement
+made under the old rule, which is a worse outcome than its being unreachable.
+See §5.4, §5.5, §5.6 and §5.8.
+
 #### Placement Rules
 - Placement is chosen at publish time and defaults to **public**.
 - **Marketplace → Public** switch is allowed at any time (writer abandons the sale and makes the article public).
@@ -369,7 +434,17 @@ Magazines interact with marketplace articles through three stages:
 - Credits debited for the remaining amount (total paid = 100% of price across both stages)
 - Article added to magazine's **curated library** with republish rights
 - Writer receives payout: `purchase_credits − platform_fee`
-- Article gets a "In [Magazine]'s library" attribution badge on the writer's profile
+- **No badge appears on the writer's profile while the article sits in the
+  library.** The listing is simply absent from that profile, per §2.4.
+
+> **Resolved contradiction (2026-09-07).** This stage used to promise an
+> *"In [Magazine]'s library" attribution badge on the writer's profile*, while
+> §2.4 said a marketplace article is not on that profile at all. Both could not
+> hold, and the code honoured neither. §2.4 is the one that stands: a purchase
+> puts the article in the library **unpublished**, and nothing about the writer's
+> profile changes. The attribution arrives only when the magazine *publishes* the
+> article, which is not built yet — see
+> `docs/superpowers/specs/2026-09-06-magazine-licensing-design.md`, decision D4.
 
 If a magazine skips preview and goes straight to purchase, they pay 100% in one step (no credit for a prior preview).
 
@@ -478,6 +553,11 @@ discrepancy would be noticed.
 - Like count is visible publicly
 - Only article likes count toward marketplace eligibility — see §9.3 of the
   analytics model for why comment likes are excluded
+- **A marketplace listing cannot be liked** (§2.4). Likes recorded before that
+  rule existed are kept, are no longer drawn on any card or article page, and
+  remain **un-likeable** — that is, removable — by whoever made them. The count
+  itself is still returned by `GET /articles/:id/like` to anyone holding the
+  article's id; what went away is every surface that displayed it
 
 ---
 
@@ -492,6 +572,21 @@ discrepancy would be noticed.
 - Delete own comment
 - Like a comment or a reply, and un-like it — the count is public, and the
   comment's author is notified of a like that is not their own
+
+#### Not on a marketplace listing
+
+A listing has no comment section at all (§2.4) — not on the article page and not
+on a feed card, where both the recent-comments strip and the composer are absent.
+
+The **thread endpoint follows the article's own access verdict** and adds nothing
+to it. Before 2026-09-07 it had no access check whatever, so a signed-out visitor
+could read the conversation about an article the reader gate answered 404 for —
+the body was withheld and the discussion of it was not. Drafts leaked the same
+way, from the moment a slug exists.
+
+*Locked* is not *hidden*: a public premium article a reader cannot yet read still
+returns its thread, because the article itself is publicly acknowledged and its
+title, excerpt and comment count already are.
 
 #### On a feed card
 
@@ -543,6 +638,14 @@ account that is later banned surfaces nothing.
 Marketplace articles are the one thing a repost does not pull into the following
 feed: that feed is publicly readable articles by definition, and the marketplace
 has its own surfaces.
+
+**A new repost of a marketplace listing is refused** (§2.4), while reposts made
+before that rule remain in the list above. The two facts read as contradictory
+until you separate the write from the read: the list is a record of what an
+account amplified, and rewriting history to match a newer rule would delete rows
+with the count agreeing — the exact failure the paragraph above exists to
+prevent. The card for such a row renders without its Like, Comment and Repost
+controls.
 
 ---
 
@@ -630,6 +733,12 @@ notification, and the reader's shelf is theirs alone.
 Two entrances lead to the same list:
 - **Saved** in the sidebar
 - the **Saved** tab on your own profile
+
+**Saving is the one social action a marketplace listing keeps.** Liking,
+commenting and reposting are all refused there (§2.4); saving is not, because a
+save is private to the saver and shortlisting candidates is precisely what a
+magazine does while deciding whether to license something. The three public
+signals are publication; a save is a bookmark.
 
 **A save is a pointer, not access.** Saving a marketplace or premium article
 does not unlock it — the card carries its usual badge, and the access rules in
@@ -805,6 +914,13 @@ Plan is orthogonal to role. A free-plan user can be a writer (just without AI). 
 | Premium reader | Full access | Full access | Not visible |
 | Magazine (no sub) | No marketplace access at all | No marketplace access at all | Not visible |
 | Magazine (active sub) | Full access | Full access | Browse free; preview unlock with credits; full content after purchase |
+
+**An article's comment thread follows the article's own verdict in this table.**
+*Not visible* means the thread is not visible either — the endpoint answers 404,
+byte-identical to the article route's refusal, rather than handing over the
+conversation about something it will not acknowledge. *Blocked* does not: a
+public premium article is acknowledged, so its thread stays readable and only the
+body is withheld.
 
 ---
 

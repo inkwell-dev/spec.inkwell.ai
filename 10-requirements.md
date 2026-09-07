@@ -69,6 +69,7 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-69 | Continue any article list as the reader scrolls, with a "Load more" control that remains available and a failed page that neither discards loaded rows nor retries itself | Must | 1 |
 | FR-02 | Read the full body of a **free public** article without an account | Must | 1 |
 | FR-03 | Be blocked from premium and marketplace articles, with an explicit prompt to sign up | Must | 1 |
+| FR-71 | Not see a marketplace listing on the writer's public profile at all — the exceptions being the article's own author and an administrator | Must | 1 |
 | FR-04 | Register as a personal account, or as a magazine account | Must | 1 |
 | FR-05 | Authenticate by email/password or Google OAuth | Must | 1 |
 | FR-06 | Search articles and writers, and browse by tag | Should | 4 |
@@ -95,6 +96,7 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-66 | Like, repost and comment on an article from a feed card, and see whether one has already liked or reposted it | Must | 8 |
 | FR-68 | See a feed card's most recent comments from the last hour, up to three, without opening the article | Could | 8 |
 | FR-11 | Repost an article | Could | 3 |
+| FR-70 | Be refused when liking, commenting on or reposting a marketplace listing, while saving one stays available | Must | 3 |
 | FR-67 | Read any account's reposts from the Reposted tab on its profile, without an account | Should | 8 |
 | FR-12 | Follow and unfollow a writer | Should | 3 |
 | FR-61 | View any profile's followers and following lists, and follow or unfollow from them | Must | 7 |
