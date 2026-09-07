@@ -157,6 +157,7 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-48 | Unlock a preview for 10% of the price, and read the full article | Must | 5 |
 | FR-49 | Purchase the remainder (90%) and gain republish rights | Must | 5 |
 | FR-50 | See the curated library of fully purchased articles | Must | 5 |
+| FR-72 | Be refused when previewing, buying, switching to public, or deleting an article another magazine has already purchased exclusively | Must | 5 |
 
 > **Deviations recorded.** Portfolio Insights generation is an explicit click,
 > never a page-load side effect, because each generation costs a model call.

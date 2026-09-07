@@ -455,6 +455,56 @@ Constraints:
 - Article must have `placement = 'marketplace'` and `status = 'published'` at time of purchase
 - `full_purchase.credits_paid = article.marketplace_price − (preview_unlock.credits_paid if parent_purchase_id IS NOT NULL else 0)`
 - `parent_purchase_id` must reference a row with `stage = 'preview_unlock'` for the same `(article_id, magazine_id)`
+- **Exclusivity — one full purchase per article, app-layer guard, enforced 2026-09-07.**
+  Once any magazine holds a `full_purchase` row, no other magazine may preview or
+  purchase the article, and the writer may neither switch it to public nor delete
+  it. See §2.4 Placement Rules and FR-72.
+
+> **Read the unique key carefully — it does not enforce exclusivity.**
+> `UNIQUE (article_id, magazine_id, stage)` is scoped *per magazine*: it stops one
+> magazine paying twice for the same stage, and permits any number of *different*
+> magazines each holding their own `full_purchase` row for the same article. That
+> is what the database allowed for the whole of phases 1–5, and it is why the
+> specification promised exclusivity (US-41, §4.5) while the product did not have
+> it.
+>
+> Exclusivity now lives entirely in the service layer, and **every** path that
+> enforces it takes a `SELECT … FOR UPDATE` row lock on the article first.
+> `PurchasesService` locks it for the duration of a purchase, so two magazines
+> racing to buy the same article serialise rather than both winning.
+> `ArticlesService` locks it and *then* carries the guard inside the `UPDATE`'s
+> own predicate, refusing on an empty result.
+>
+> **The lock is not redundant, and this is the note that says so.** A lock-free
+> conditional statement —
+> `UPDATE articles … WHERE id = $1 AND NOT EXISTS (… full_purchase …)` — looks
+> atomic and is not. Under READ COMMITTED, when that `UPDATE` blocks on a row a
+> buyer has locked, Postgres re-checks the *row* against the new version but
+> re-evaluates the **sub-select against the statement's original snapshot**, so a
+> `full_purchase` committed while it waited is invisible. Raced with two
+> connections, the lock-free form reports one row updated and leaves a
+> **paid-for exclusive article public and free**. With the lock it reports zero
+> rows and refuses.
+>
+> Deleting the lock therefore reintroduces exactly the defect this rule exists to
+> prevent, and **no test will catch it**: the suite runs each spec inside a single
+> transaction, so there is only ever one connection and the lock can never
+> contend. Verified by removing it — the suite stays green.
+>
+> **No database constraint backs any of this.** Any future path that writes
+> `article_purchases` directly — a migration, an admin script, the seed — bypasses
+> it silently. Tightening it at the schema level is one statement:
+>
+> ```sql
+> CREATE UNIQUE INDEX article_purchases_one_owner
+>   ON article_purchases (article_id) WHERE stage = 'full_purchase';
+> ```
+>
+> That is deliberately **not** applied yet, because the seeded corpus contains 16
+> articles with two to four owners each, recorded before the rule existed, whose
+> `writer_payout` transactions are real and already summed into
+> `earnings_balance`. The index cannot be created until those are reconciled, and
+> deleting them would break the ledger invariants. Recorded rather than done.
 
 Indexes:
 - `article_id`
