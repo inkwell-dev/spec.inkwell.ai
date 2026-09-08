@@ -1,7 +1,7 @@
 # Magazine licensing: what a purchase actually buys
 
 **Date:** 2026-09-06
-**Status:** approved — decomposed into four tickets; **1, 2 and 3 built** (2026-09-07), ticket 4 outstanding
+**Status:** approved — decomposed into four tickets, **all four built** (2026-09-07). One follow-up remains: see §8.
 **Scope:** the magazine side of the marketplace, from listing to publication
 
 ---
@@ -411,12 +411,55 @@ the path regressed. Producing one means letting a magazine preview outside its
 slice, dated strictly before the owner's purchase — the only shape that is legal
 now. Worth doing; not done here.
 
+### Ticket 5 (follow-up) — the demo corpus contains a stranded previewer
+
+**Outstanding.** Design **D3** describes a magazine that paid the 10% preview fee
+and was then outbid: it keeps the read forever, is refused the purchase, and gets
+no refund. The rule holds in code and is covered by
+`test/purchases/exclusivity.spec.ts`.
+
+What it has no representative row for is the demo corpus. Ticket 3 seeds
+exclusivity by dealing each magazine a **disjoint slice** of the catalogue, which
+makes the state impossible to produce: a magazine only ever sees articles nobody
+else can buy. Producing one means letting a magazine preview outside its slice,
+dated strictly before the owner's purchase — the only shape that is legal now —
+plus an assertion in `seed-ledger.spec.ts` that no preview post-dates the sale it
+lost to.
+
+Kept as its own ticket rather than folded into ticket 4: it is a seed change with
+no overlap with anything ticket 4 touches, and bundling it would have reopened
+ticket 3's most delicate rework and made a reseed a prerequisite for an otherwise
+read-only change.
+
 ### Ticket 4 — Licensed work becomes visible
 *backend + frontend + spec. Depends on ticket 3's column.*
 
 `GET /m/:slug/articles`; the magazine profile tab wired to it with the six fakes
-deleted; `publisher` on every article payload via an aliased join; the dual
-byline on `ArticleCard`; the attribution back on the writer's profile.
+deleted; `publisher` on every article payload; the dual byline on `ArticleCard`;
+the attribution back on the writer's profile.
+
+**Built 2026-09-07.** Three things decided during implementation that this
+document did not settle — the first of which corrects this section's own
+original wording, "via an aliased join":
+
+- **`publisher` is attached by a per-page loader, and must never be a join.**
+  The object spans `users` and `magazine_profiles`, and a nested object drawn
+  from two tables is never null-collapsed by the ORM: it would have arrived as
+  an all-null object reading as *present* on all 791 public articles, invisible
+  to the type checker, firing every `article.publisher && …` render guard in the
+  product. This is the aliased-join hazard in its real form, and it is worse
+  than the publisher merely equalling the author.
+- **The publication's name and logo come from `magazine_profiles`**
+  (`display_name`, `logo_url`), not the `users` row behind it — those are the
+  fields the magazine's own settings form writes. They are identical for every
+  seeded magazine, so neither the corpus nor a default fixture could reveal a
+  wrong choice; it had to be argued rather than observed. The profile masthead
+  and the page title were both reading `users.name` and were corrected with it.
+- **The magazine profile cannot express freshness.** Ticket 3 said its profile
+  would be that surface; it cannot be, because U1 refused a publication-date
+  column and the only orderable columns are the writer's `published_at` and
+  `id`. Ordering by `updated_at` was rejected as a proxy that decays with every
+  later edit by the writer. A limitation, recorded rather than solved.
 
 ---
 
