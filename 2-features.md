@@ -106,10 +106,13 @@ public article from then on, so it returns to the feed and to the writer's
 profile by the same rule that governs every other public article. Nothing
 special is done to put it back; it simply stops being a marketplace listing.
 
-> **Not yet built.** The *in [Magazine]* attribution on that returned article —
-> the byline naming both the writer and the publication — is the next ticket.
-> Until it lands, a published licensed article is indistinguishable from any
-> other article by that writer.
+**And it is named as the magazine's.** A published licensed article carries the
+attribution wherever it appears: *writer* **in** *publication*, with each half
+linking to its own profile. On a feed card and on the magazine's own grid that is
+a dual byline; on the list card — the writer's profile and search results — it
+sits in the meta row beside the date; on the article page it follows the author's
+name inline. The wording is *in [Magazine]* rather than a separator, because a
+middot between two names reads as two co-authors.
 
 #### Engagement on a listing
 
@@ -486,9 +489,15 @@ Magazines interact with marketplace articles through three stages:
 > §2.4 said a marketplace article is not on that profile at all. Both could not
 > hold, and the code honoured neither. §2.4 is the one that stands: a purchase
 > puts the article in the library **unpublished**, and nothing about the writer's
-> profile changes. The attribution arrives only when the magazine *publishes* the
-> article — see `docs/superpowers/specs/2026-09-06-magazine-licensing-design.md`,
-> decision D4.
+> profile changes.
+>
+> **Closed 2026-09-07.** The attribution the original sentence reached for now
+> exists, and it arrives where that sentence was wrong about: not at purchase,
+> and not as a badge. When the magazine *publishes*, the article returns to the
+> writer's profile as an ordinary public article and carries *in [Magazine]*
+> beside the writer's name — on that profile, on feed cards, in search results
+> and on the article page itself. See §2.4 and, for the reasoning,
+> `docs/superpowers/specs/2026-09-06-magazine-licensing-design.md` decision D4.
 
 If a magazine skips preview and goes straight to purchase, they pay 100% in one step (no credit for a prior preview).
 
@@ -519,10 +528,20 @@ pre-exclusivity article has more than one owner (§2.4.1), the earliest purchase
 is the one who may act; the others keep the article in their library, marked as
 published by somebody else.
 
-> **Not yet built.** The magazine's *public* profile does not yet list what it
-> has published, and a published licensed article still carries only the
-> writer's byline with no visible magazine attribution anywhere. Both are the
-> next ticket.
+**The magazine's public profile lists what it has published.** Its *Published
+articles* tab is served by `GET /m/:slug/articles` — public, readable without an
+account, paginated by stepping pages — and shows only articles this magazine
+published. A magazine that has published nothing shows an empty state, and that
+state reads the same whether it owns nothing at all or is sitting on a library it
+has bought and not yet published: which of the two is true is private to that
+magazine, and a public tab that distinguished them would disclose a competitor's
+licensing activity.
+
+One thing the profile cannot yet express is **freshness**. Nothing records when a
+magazine published something — only when the writer first published it — so a
+magazine that licenses a three-year-old essay today sees it sort by its original
+date. Deliberate: the alternative on offer was a proxy that decays silently,
+since a writer's later edits move the only other candidate column.
 
 ---
 
@@ -584,9 +603,21 @@ Each **personal** user profile contains:
 - Earnings section (for writers — visible only to themselves)
 
 Each **magazine** profile contains:
-- Magazine name, logo, website, description
+- Magazine name, logo, website, description — the name and logo shown are the
+  magazine's own (`display_name`, `logo_url`), which are the fields its settings
+  form writes; the personal-account name behind the row is never displayed
 - Curated library of licensed articles
 - Wallet balance (visible only to the magazine itself)
+
+**The `Published articles` tab is real as of 2026-09-07.** It was six hardcoded
+placeholder articles with invented authors and links that went nowhere, carrying
+a padlock overlay that implied a subscription gate — none of which described
+anything. It now lists what this magazine has actually published, publicly and
+without an account.
+
+The `Writers` tab is **still placeholder** and is not in scope here; there is no
+contributor endpoint behind it. The profile's article count is real; its writer
+count is deliberately shown as unavailable rather than invented.
 
 **Profile tabs.** A personal profile carries `Articles | Saved | Reposted |
 About`; a magazine profile the same set with `Published articles` first and

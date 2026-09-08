@@ -458,7 +458,13 @@ Constraints:
 - `full_purchase.credits_paid = article.marketplace_price − (preview_unlock.credits_paid if parent_purchase_id IS NOT NULL else 0)`
 - `parent_purchase_id` must reference a row with `stage = 'preview_unlock'` for the same `(article_id, magazine_id)`
 - **`articles.publisher_id`** — the magazine that published this article, NULL
-  until one does. Nullable by design: with `placement` it encodes all three
+  until one does. Read by `GET /m/:slug/articles` (that magazine's public
+  profile list) and surfaced as a `publisher` object on every article payload
+  behind a card or the reader page. That object is attached by a **per-page
+  loader**, not by a join: it spans `users` and `magazine_profiles`, and a
+  nested object drawn from two tables is never null-collapsed by the ORM — it
+  would arrive as an all-null object that reads as present on every article
+  that has no publisher. Nullable by design: with `placement` it encodes all three
   lifecycle states without a fourth column. `marketplace` + NULL is a listing
   or an unpublished library entry (the `article_purchases` rows tell those two
   apart); `public` + set is published. `ON DELETE NO ACTION`, matching

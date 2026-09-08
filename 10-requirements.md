@@ -70,6 +70,8 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-02 | Read the full body of a **free public** article without an account | Must | 1 |
 | FR-03 | Be blocked from premium and marketplace articles, with an explicit prompt to sign up | Must | 1 |
 | FR-71 | Not see a marketplace listing on the writer's public profile at all — the exceptions being the article's own author and an administrator | Must | 1 |
+| FR-75 | Read a magazine's published articles on its public profile, paginated, without an account | Must | 1 |
+| FR-76 | See both the writer and the publishing magazine named on a licensed article, each linking to its own profile | Must | 1 |
 | FR-04 | Register as a personal account, or as a magazine account | Must | 1 |
 | FR-05 | Authenticate by email/password or Google OAuth | Must | 1 |
 | FR-06 | Search articles and writers, and browse by tag | Should | 4 |
@@ -362,6 +364,7 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-39 | Pay the remainder to acquire republish rights so that I can publish it | A7 | Must | 8 | 5 |
 | US-40 | Keep purchased articles in a library so that my acquisitions are in one place | A7 | Must | 3 | 5 |
 | US-63 | Publish an article I have bought when I am ready, rather than the purchase publishing it for me, so that my masthead stays mine to decide | A7 | Must | 5 | 5 |
+| US-64 | Have the articles I publish appear on my public profile under my masthead so that licensing buys me a shelf and not just a file | A7 | Must | 5 | 5 |
 | US-41 | List an article for sale at my own price so that I am paid for exclusivity | A5 | Must | 5 | 5 |
 | US-42 | See my earnings itemised by preview and purchase so that I trust the accounting | A4 | Must | 5 | 5 |
 | US-43 | See how far I am from eligibility so that the gate feels reachable | A4 | Should | 3 | 5 |
