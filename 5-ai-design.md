@@ -251,9 +251,41 @@ To avoid token overflow from double-injecting memory and RAG chunks:
   on 2026-08-10 — see the provider table in §13.5 for why. The width is
   deliberately unchanged, so the schema and the HNSW index were untouched.*
 - Stored in `article_chunks` with HNSW vector index in pgvector
+- **Chunk bounds, and why they are not the model's.** A block below **120
+  characters** is merged forward into the next rather than embedded — "Yes."
+  produces an embedding dominated by two tokens and matches almost nothing, and
+  discarding it would lose prose that is often the punchline of the paragraph
+  before. A block above **1200 characters** is split. That ceiling is *not* a
+  model limit (the embedding endpoint accepts 8191 tokens); it is a retrieval
+  ceiling, because one vector has to represent the whole chunk and a long chunk
+  averages several ideas into a point that matches none of them sharply.
+- **Each chunk is prefixed with its nearest preceding heading**, and the prefix
+  is stored in `content` rather than merely used for the vector. A paragraph
+  reading "It rarely works below 8°C" is nearly meaningless alone; prefixed with
+  its heading it embeds near the subject it is about — and the model benefits
+  from the same context the vector did.
 - Retrieved via cosine similarity for:
   - Writer-facing chat (top-K chunks from the writer's own articles, K ≤ 5)
   - Magazine-facing Portfolio Insights (representative chunks across writer's corpus)
+- **A similarity floor of `0.60`, measured rather than chosen** *(added
+  2026-09-10; the value has been in the code since 2026-08-10 and was never
+  written down here).* Vector search always returns its K nearest neighbours —
+  there is no "no results" — so without a floor, asking a fermentation writer
+  about tides returns five fermentation chunks and the model treats them as
+  relevant background. That is worse than no retrieval, because it misleads.
+
+  > The floor started at `0.35` and filtered nothing, because
+  > `gemini-embedding-001` does not use the full [0,1] range: two texts on
+  > entirely unrelated subjects still score around 0.5. Measured against this
+  > corpus on 2026-08-10 — **on-topic 0.63–0.73, off-topic 0.48–0.58** — so 0.60
+  > sits in the gap. Verified by asking a fermentation writer a surfcasting
+  > question: at 0.35 it injected five irrelevant chunks scoring 0.52–0.55; at
+  > 0.60 it correctly injects nothing.
+  >
+  > **The number belongs to the model, not to similarity in general.** A
+  > threshold tuned for one embedding model is meaningless for another, so a
+  > model change requires re-measuring. `retrieval.service.ts` says the same at
+  > the constant.
 - **Chunk lifecycle**: on article publish or update, existing chunks for that article are **deleted and re-created** (the `(article_id, chunk_index)` unique constraint requires delete-before-insert on updates)
 - **Cache invalidation**: publishing or updating an article also invalidates the writer's `portfolio_insights` cache (if one exists)  
 
@@ -263,21 +295,52 @@ To avoid token overflow from double-injecting memory and RAG chunks:
 
 ### 10.1 Token System
 
-- Each AI request consumes tokens  
-- Users have a daily token limit  
+- Each AI request consumes tokens
+- Users have a daily token limit, granted per plan
+
+*Pinned to the implementation 2026-09-10 — this section described the mechanism
+without ever naming a number, which made it unfalsifiable:*
+
+| Plan | Daily AI tokens |
+|------|-----------------|
+| Free | **0 — no AI access at all** |
+| Premium | **1000** |
+
+The free-plan zero is a product decision rather than a missing constant: AI
+access *is* the premium tier. There is deliberately no constant for it, because
+the absence of an allowance is the rule and not a tunable number.
 
 ---
 
 ### 10.2 Limits
 
-- Prevent excessive usage  
-- Control operational cost  
+- Prevent excessive usage
+- Control operational cost
+
+**The allowance is rewritten, not incremented.** A nightly worker job sets
+`users.ai_tokens_remaining` to the plan's figure; it does not add to whatever was
+left. Unspent tokens therefore do not accumulate, which is what keeps the daily
+cap a cap.
+
+The quota is checked by a guard that runs **before** the model call, so an
+exhausted account costs nothing.
 
 ---
 
 ### 10.3 Additional Tokens
 
-- Users can acquire more tokens (simulated in MVP)  
+> **Corrected 2026-09-10. This section said "Users can acquire more tokens
+> (simulated in MVP)". No such thing exists, and it was deliberately not built.**
+>
+> The daily reset rewrites `ai_tokens_remaining` to a fixed per-plan allowance
+> rather than adding to it, so tokens bought at noon would be erased at midnight.
+> Shipping a purchase that silently expires within hours is worse than not
+> offering one. Making it work needs a second column the reset does not touch —
+> a design decision, not an implementation gap, and one nothing has asked for.
+>
+> **Magazine *credit* top-up is a different thing and does work** (§4.5.1). Credits
+> are a ledger balance and never rewritten, which is precisely why top-up is
+> coherent there and not here.
 
 ---
 
@@ -324,9 +387,13 @@ To avoid token overflow from double-injecting memory and RAG chunks:
 
 ## 12. Performance Considerations
 
-- Limit context size to reduce latency  
-- Use asynchronous processing when needed  
-- Cache repeated AI responses (optional)  
+- Limit context size to reduce latency
+- Use asynchronous processing when needed — embedding runs on a queue, so
+  publishing never waits for an embedding API
+- Cache repeated AI responses *(partially: **Portfolio Insights** are cached in
+  their own table with an expiry, and invalidated when the writer publishes or
+  edits. Chat and inline edits are **not** cached — they are conversational and a
+  cache hit would be a wrong answer to a different question.)*
 
 ---
 
@@ -354,11 +421,15 @@ Provider abstraction is implemented via **Vercel AI SDK** in the NestJS backend,
 
 ## 14. Future Enhancements
 
-- Real-time voice interaction  
-- Advanced style learning  
-- Multi-language generation  
-- AI-driven article scoring  
-- Context-aware semantic search  
+- Real-time voice interaction
+- Advanced style learning
+- Multi-language generation
+- AI-driven article scoring
+- ~~Context-aware semantic search~~ — **shipped.** Search runs a lexical
+  ranking and the vector retrieval above concurrently and fuses them by
+  reciprocal rank fusion on *position*, because `ts_rank` and cosine similarity
+  are incomparable scales. Moved out of this list 2026-09-10; it had been sitting
+  here as an aspiration while the feature was live.
 
 ---
 
