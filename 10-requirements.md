@@ -72,6 +72,7 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-71 | Not see a marketplace listing on the writer's public profile at all — the exceptions being the article's own author and an administrator | Must | 1 |
 | FR-75 | Read a magazine's published articles on its public profile, paginated, without an account | Must | 1 |
 | FR-76 | See both the writer and the publishing magazine named on a licensed article, each linking to its own profile | Must | 1 |
+| FR-77 | Preview a writer or magazine from any byline by hovering it — name, bio, counts and a follow control for a writer; logo, description and founding date for a magazine — without leaving the page | Should | 8 |
 | FR-04 | Register as a personal account, or as a magazine account | Must | 1 |
 | FR-05 | Authenticate by email/password or Google OAuth | Must | 1 |
 | FR-06 | Search articles and writers, and browse by tag | Should | 4 |
@@ -338,6 +339,7 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-60 | See what an account has reposted so that I can judge what they rate | A2 | Should | 3 | 8 |
 | US-61 | Reply in the moment from the feed so that a fresh conversation is easy to join | A2 | Could | 3 | 8 |
 | US-62 | Keep reading as I scroll so that a list does not end at an arbitrary point I have to click past | A1 | Must | 5 | 8 |
+| US-65 | See who a writer or magazine is from where their name appears so that I can decide to follow without leaving the feed | A1 | Should | 3 | 8 |
 | US-57 | Save an article to come back to it later, without anyone else seeing what I keep | A2 | Must | 5 | 7 |
 | US-58 | Pass an article on to people outside the platform so that they can read it without signing up | A1 | Should | 3 | 7 |
 | US-28 | Be told the moment someone reacts to my work, without reloading | A4 | Must | 5 | 3 |
