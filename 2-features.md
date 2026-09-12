@@ -110,9 +110,15 @@ special is done to put it back; it simply stops being a marketplace listing.
 attribution wherever it appears: *writer* **in** *publication*, with each half
 linking to its own profile. On a feed card and on the magazine's own grid that is
 a dual byline; on the list card — the writer's profile and search results — it
-sits in the meta row beside the date; on the article page it follows the author's
-name inline. The wording is *in [Magazine]* rather than a separator, because a
-middot between two names reads as two co-authors.
+has a line of its own above the date, read time and placement badge; on the
+article page it follows the author's name inline. The wording is *in [Magazine]*
+rather than a separator, because a middot between two names reads as two
+co-authors.
+
+*Until 2026-09-12 the list card put the dual byline in the meta row beside the
+date. That row had no wrapping rule, so a licensed article broke mid-name —
+"Chauncey / Wiza in The Longform / Review · August 18, / 2026" — which is why
+the byline now takes its own line and each half of it refuses to break.*
 
 #### Engagement on a listing
 
@@ -634,6 +640,23 @@ About`; a magazine profile the same set with `Published articles` first and
   from. The two are treated differently because the two lists *are* different,
   not by oversight.
 
+**Profile preview on hover (2026-09-12).** Wherever a writer's name appears as a
+byline — a feed, list or grid card, the article page's header and its
+end-of-article author card, the *Writers to follow* panel, a marketplace
+listing — resting the pointer on it for a moment opens a small preview: avatar,
+name, handle, bio, follower and following counts, a Follow control and a link
+to the profile. The *in [Magazine]* half of a licensed byline previews the
+magazine instead: logo, name, description, founding date and a link — with **no
+follow control**, because a magazine's own profile offers *Subscribe*, not
+*Follow*, and the preview does not promise what the profile does not.
+
+Two rules govern it. The preview is fetched **on open, never on render**: a
+feed page of twenty cards issues no profile requests until one is hovered, and
+a second hover within the cache window issues none at all. And the trigger is
+the existing link, unchanged — on a touch screen, where there is no hover, the
+name simply navigates as it always has. Comment authors in a card's comment
+strip are not triggers; the preview belongs to bylines.
+
 ---
 
 ### 5.3 Follow System
@@ -710,6 +733,11 @@ a conversation without leaving the feed:
 
 - The last hour's comments on that article, **newest first, at most three**,
   shown **without any click**. A card with nothing recent shows nothing at all.
+  Each comment is its own block on a tinted background — the author and the
+  time on one line, the text beneath — so the strip reads as other people
+  talking about the article, visibly apart from the article's own controls
+  above it. It used to print each comment as one run-on line beside a thin
+  quote rail, which is what made a card with comments look jumbled.
 - A **composer** that opens from the card's Comment control. **Enter** submits;
   **Shift+Enter** inserts a newline.
 - **Top-level comments only**, both in what it shows and what it posts. A reply
