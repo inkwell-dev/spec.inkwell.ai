@@ -931,16 +931,15 @@ which was the original blocker)*
 - [x] `docs/ARCHITECTURE.md` — full system architecture diagram + explanation *(2026-09-09, in `docker.inkwell.ai/docs/`. Records the decisions that are not visible in the compose file: migrations in their own one-shot container, the worker as the same codebase with a different entrypoint, the access token stored twice because the proxy cannot read `localStorage`, and the pagination rule as structural rather than conventional.)*
 - [x] `docs/RAG.md` — how the RAG pipeline works (chunking → embedding → retrieval → prompt injection) *(2026-09-09. The measured similarity floor is the substance of it.)*
 - [x] ~~`docs/AI-DESIGN.md`~~ — **not written, deliberately.** *(2026-09-10.)* The task was "update the original spec with actual implementation decisions", and the original spec is `5-ai-design.md` — so it was **audited and corrected in place** rather than shadowed by a fourth document overlapping it and `docs/RAG.md`. Two specs describing one subsystem drift apart; that is how §10.3 came to promise a token top-up that was deliberately never built. What the audit found is in that file's own dated notes.
-- [ ] `docs/DEMO-SCRIPT.md` — *(2026-09-09, added to this list because it was not on it.)* Ten minutes following one article from draft to masthead, with a pre-flight that checks the demo magazine can still afford to buy on camera, a fallback for every beat, and a list of surfaces not to click. **Not yet rehearsed** — see below.
-- [ ] `spec.inkwell.ai` — update all specs to reflect what was actually built
-- [ ] Demo script — 10-minute walkthrough covering all key features
-- [ ] Slide deck (15–20 slides):
-  - [ ] Problem + solution
-  - [ ] Architecture diagram
-  - [ ] RAG pipeline deep-dive
-  - [ ] Live demo screenshots/video
-  - [ ] Tech stack choices + rationale
-  - [ ] Metrics / results
+- [x] `docs/DEMO-SCRIPT.md` — ten-minute walkthrough covering all key features *(2026-09-09, merged into docker.inkwell.ai#38 on 2026-09-10.)* Follows one article from draft to masthead, with a pre-flight that checks the demo magazine can still afford to buy on camera, a fallback for every beat, and a list of surfaces not to click. Written is not rehearsed — see the rehearsal line below.
+- [x] `spec.inkwell.ai` — update all specs to reflect what was actually built *(2026-09-10. Each ticket reconciles its own spec sections before it ships, so the bulk of this happened continuously; the last piece was the `5-ai-design.md` audit in spec#22 — similarity floor recorded, token numbers pinned, the unbuilt top-up promise removed, semantic search moved out of future work.)*
+- [x] Slide deck (15–20 slides) — 18, built 2026-09-10 *(one sub-item still open, below)*:
+  - [x] Problem + solution
+  - [x] Architecture diagram
+  - [x] RAG pipeline deep-dive
+  - [ ] Live demo screenshots/video — waits on the backup recording below; stills come from that
+  - [x] Tech stack choices + rationale
+  - [x] Metrics / results
 - [ ] Record backup demo video (in case live demo fails)
 - [ ] Defense rehearsal × 2
 
