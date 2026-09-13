@@ -304,7 +304,17 @@ without ever naming a number, which made it unfalsifiable:*
 | Plan | Daily AI tokens |
 |------|-----------------|
 | Free | **0 — no AI access at all** |
-| Premium | **1000** |
+| Premium | **20,000** |
+
+> **Raised 2026-09-12, from 1,000.** A token here is a *total* token — input and
+> output combined (see `9-implementation-guide.md` §2.4) — and a chat turn's
+> input carries the system prompt, up to ~1,500 tokens of the current article,
+> the retrieved passages, the style profile and the whole conversation replay.
+> One article-length reply therefore cost the entire 1,000, and the first
+> premium writer to try the assistant found it "very low" after a single
+> answer. 20,000 is about twenty long replies or sixty inline edits — a
+> working day. Billing stays on total tokens deliberately, so the cost of prompt
+> context remains visible rather than hidden by counting output alone.
 
 The free-plan zero is a product decision rather than a missing constant: AI
 access *is* the premium tier. There is deliberately no constant for it, because
@@ -324,6 +334,17 @@ cap a cap.
 
 The quota is checked by a guard that runs **before** the model call, so an
 exhausted account costs nothing.
+
+**A low balance can be overdrawn, by design.** The guard only asks whether the
+balance is above zero; the reply then runs to completion and the decrement
+clamps at zero (`GREATEST(0, remaining − used)`). So a writer with 50 tokens
+left gets a whole answer, not 50 tokens of one, and ends the day at 0. The
+alternatives — capping the reply at the remaining balance, or refusing to send
+below a reserve — both trade a complete answer for bookkeeping neatness, and a
+reply that stops mid-sentence is worse than a balance that reads 0 a little
+early. What the writer *is* owed is to be told: the chat panel shows a notice
+inside the conversation, under the reply that spent the balance, saying so and
+naming the reset time. *(Recorded 2026-09-12; the behaviour predates the note.)*
 
 ---
 

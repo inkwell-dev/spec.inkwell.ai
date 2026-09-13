@@ -225,8 +225,9 @@ TTL:    7 days (604800 seconds)
 
 > **Corrected 2026-08-24.** The allowances here were wrong by a factor of fifty,
 > and the magazine row describes an entitlement that does not exist. Premium
-> accounts receive **1,000** tokens a day (`PREMIUM_DAILY_AI_TOKENS` in
-> `common/constants.ts:14`), not 50,000, and **magazine accounts are excluded from
+> accounts receive **1,000** tokens a day — *raised to 20,000 on 2026-09-12, see
+> `5-ai-design.md` §10.1* — (`PREMIUM_DAILY_AI_TOKENS` in
+> `common/constants.ts`), not 50,000, and **magazine accounts are excluded from
 > the AI quota entirely** — the grant is filtered on `account_type = 'personal'`
 > (`ai/ai-token-allowance.ts`). The exclusion is a product rule, not an oversight:
 > the AI assistant is a *writing* tool and a magazine account does not write.
@@ -234,7 +235,7 @@ TTL:    7 days (604800 seconds)
 | Plan | Daily AI tokens | Reset time |
 |------|----------------|------------|
 | Free (personal) | 0 — no AI access | — |
-| Premium (personal) | 1,000 | Daily at 00:00 UTC |
+| Premium (personal) | 20,000 *(1,000 until 2026-09-12)* | Daily at 00:00 UTC |
 | Magazine | none — excluded | — |
 
 One "AI token" = one LLM token consumed (input + output combined). The
@@ -246,7 +247,7 @@ consumers: the nightly `reset-ai-tokens` cron and a lazy top-up on the read path
 
 ```sql
 -- dailyAllowanceSql
-CASE WHEN plan = 'premium' THEN 1000 ELSE 0 END
+CASE WHEN plan = 'premium' THEN 20000 ELSE 0 END
 ```
 
 ```sql
@@ -1121,7 +1122,7 @@ deployment asserting that the server half is configured.
 | Removed | Why |
 |---|---|
 | `PLATFORM_FEE_PERCENT` | The fee is the compile-time constant `PLATFORM_FEE_BPS = 2000`. See §5.1. |
-| `DAILY_AI_TOKENS_PREMIUM`, `DAILY_AI_TOKENS_MAGAZINE` | The allowance is `PREMIUM_DAILY_AI_TOKENS = 1000`, and magazines have no allowance at all. See §2.4. |
+| `DAILY_AI_TOKENS_PREMIUM`, `DAILY_AI_TOKENS_MAGAZINE` | The allowance is `PREMIUM_DAILY_AI_TOKENS = 20_000` (raised from 1000 on 2026-09-12), and magazines have no allowance at all. See §2.4. |
 | `ELIGIBILITY_READER_THRESHOLD`, `ELIGIBILITY_REACTION_THRESHOLD` | Constants: `ELIGIBILITY_MIN_READERS = 5_000`, `ELIGIBILITY_MIN_REACTIONS = 1_000`. The values are right; their configurability was not. |
 | `COHERE_API_KEY`, `EMBEDDING_PROVIDER`, `EMBEDDING_MODEL` | Embeddings are not pluggable. `EmbeddingsService` names `gemini-embedding-001` directly and validates the returned vector against the column's 1536 dimensions — a provider swap is a migration, not an environment change. See §18. |
 | `LLM_PRIMARY_PROVIDER`, `LLM_PRIMARY_MODEL`, `LLM_FALLBACK_PROVIDER`, `LLM_FALLBACK_MODEL` | Still not environment variables: the chain is the constants `GROQ_MODELS` and `GEMINI_MODEL` in `llm-chain.ts`. *Updated 2026-09-03: the Groq → Gemini chain IS now built* — `openai/gpt-oss-120b` → `openai/gpt-oss-20b` → `gemini-3.5-flash` — so failover is cross-provider, not just within Groq; see NFR-24. Which provider answers is chosen by the chain, not configured, and `GEMINI_API_KEY` alone decides whether the third link exists. |
