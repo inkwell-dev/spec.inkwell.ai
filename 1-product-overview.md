@@ -147,7 +147,7 @@ Plans are orthogonal to role — a user can be a `writer` with `free` plan or `p
 
 ### 6.2 AI Usage Model
 - AI usage is limited by a **daily token quota**, reset at 00:00 UTC
-- **Premium personal accounts** receive 1,000 tokens a day
+- **Premium personal accounts** receive 20,000 tokens a day *(raised from 1,000 on 2026-09-12 — see `5-ai-design.md` §10.1)*
 - **Free accounts receive none.** No AI assistance at all is the design, not a
   degraded tier — it is the single clearest reason to upgrade
 - **Magazine accounts are excluded from the quota entirely.** The assistant is a
