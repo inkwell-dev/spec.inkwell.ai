@@ -96,18 +96,25 @@ IF publish:
 
 ## 5. 🤖 AI Chat Assistant Flow
 
-User opens AI chat panel  
-→ User inputs prompt  
+User opens the floating assistant (bottom-right dock; minimizes to a button)  
+→ User inputs prompt (the current selection, if any, travels with it)  
 → System sends:
 - Article context  
 - User preferences  
 
-→ AI processes request  
-→ Response returned  
+→ AI decides: answer in the panel, or write into the document  
+→ Panel shows each step as it runs (draft · profile · thinking · [passages · writing])  
 
-→ User chooses:
-- Insert into article  
-- Ignore  
+If it answers → the answer appears in the panel  
+If it writes → text streams into the document at the cursor (or over the selection), tinted  
+→ User may Stop  
+→ Keep / Discard bar under the written text:
+- Keep — accepted as one undo step  
+- Discard — removed exactly; a replaced selection comes back  
+
+→ Panel shows a one-line recap of what was written  
+
+*(Rewritten 2026-09-14; the previous flow ended with an "Insert into article" choice in the panel.)*
 
 ---
 

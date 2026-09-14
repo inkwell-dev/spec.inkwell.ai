@@ -130,6 +130,10 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-28 | Apply an inline AI action to a text selection — reformulate, shorten, expand, simplify, improve | Must | 2 |
 | FR-29 | See which passages the assistant retrieved, grouped by source article | Should | 4 |
 | FR-30 | Insert an AI response into the document at the cursor | Must | 2 |
+| FR-78 | The assistant decides, per message, whether to answer in the panel or write into the document — *superseding the manual insert of FR-30 (2026-09-14)* | Must | 8 |
+| FR-79 | Written text streams into the document at the cursor or over the selection, marked and protected until the writer keeps or discards it; Keep is one undo step; Discard restores what it replaced | Must | 8 |
+| FR-80 | Show the pipeline's real steps as they run, with counts, and a one-line recap after a write | Must | 8 |
+| FR-81 | The assistant is a floating dock that minimizes to a button carrying the live step | Should | 8 |
 | FR-31 | See the remaining AI token balance, updated after each action | Must | 2 |
 | FR-32 | View per-article analytics — views, unique readers, average read time, completion, engagement, retention curve | Must | 3 |
 | FR-33 | Rank own articles by views or engagement, server-side across the whole body of work | Should | 3 |
@@ -340,6 +344,8 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-61 | Reply in the moment from the feed so that a fresh conversation is easy to join | A2 | Could | 3 | 8 |
 | US-62 | Keep reading as I scroll so that a list does not end at an arbitrary point I have to click past | A1 | Must | 5 | 8 |
 | US-65 | See who a writer or magazine is from where their name appears so that I can decide to follow without leaving the feed | A1 | Should | 3 | 8 |
+| US-66 | Tell the assistant what to write and watch it appear in my draft, then keep or discard it, so that generation happens where I write rather than in a chat I copy from | A4 | Must | 8 | 8 |
+| US-67 | See what the assistant is doing while it works — and minimize it without losing sight of that — so that a slow step is not a frozen screen | A4 | Should | 3 | 8 |
 | US-57 | Save an article to come back to it later, without anyone else seeing what I keep | A2 | Must | 5 | 7 |
 | US-58 | Pass an article on to people outside the platform so that they can read it without signing up | A1 | Should | 3 | 7 |
 | US-28 | Be told the moment someone reacts to my work, without reloading | A4 | Must | 5 | 3 |
