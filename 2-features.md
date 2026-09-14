@@ -259,6 +259,41 @@ A contextual AI assistant integrated into the editor.
 - Adaptive tone based on user style
 - Can ask clarifying questions depending on confidence level
 
+#### The floating dock (2026-09-14)
+
+The assistant is a card anchored bottom-right of the editor — no backdrop, no
+focus trap, the document stays editable behind it. It **minimizes to a round
+button**; while a request is in flight the button is a pill showing the current
+step ("Searching your published work…", "Writing… 412 words"), and a run that
+finishes while minimized marks the button until it is opened. Escape minimizes;
+the close button hides it and the toolbar's *AI Assistant* button brings it
+back. The minimized state is remembered per browser; the conversation lives for
+the editor session only.
+
+**The model decides where a reply goes.** A question is answered in the panel.
+A request to produce or change article text is **written into the document**:
+the text streams in after the block the cursor is in — or replaces the whole
+block(s) a selection touches when the request was about it — block by block, so a heading becomes a heading the moment it is
+complete. The written range is tinted, a caret blinks at its end, and the
+writer's own edits inside it are refused with "Finish or discard the AI text
+first" until they decide. A **Stop** control ends the stream where it is. When
+the write ends, a **Keep / Discard** bar appears under it in the document:
+Discard removes exactly what was written and restores any replaced selection;
+Keep accepts it as one undo step, so a single Ctrl+Z afterwards takes the whole
+write back. The panel refuses a new message while a write awaits that decision,
+and autosave is suspended for the same span so a half-written article is never
+persisted. Closing the tab mid-write asks first.
+
+**The panel shows what is happening, not a spinner.** Each turn is a card
+listing the pipeline's real steps as they run — reading the draft, loading the
+style profile, thinking, searching the writer's published work (expandable to
+the passages used), writing with a live word count — and, once a write is done,
+the model's one-line **recap** of what it added. There is no "researching the
+web" step because there is no web research.
+
+The "Insert into article" button of the previous panel is gone: the assistant
+writes directly, and the decision moved to Keep / Discard where the text is.
+
 ---
 
 ### 3.2 Voice-to-Article Generation

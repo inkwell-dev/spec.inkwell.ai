@@ -133,7 +133,68 @@ Each AI request follows this pipeline:
    - RAG retrieval (top-K relevant chunks from writer's published articles, capped at 5)
 4. Backend builds prompt (ROLE + CONTEXT + TASK + INPUT)
 5. Vercel AI SDK calls external provider (Groq primary, Gemini fallback)
-6. Response streamed back to frontend via SSE (`streamText`)  
+6. Response streamed back to frontend via SSE (`streamText`)
+
+   *Corrected 2026-09-14.* For the editor assistant (`POST /ai/chat`) the
+   response is no longer a plain text stream. It is an AI SDK **UI-message
+   stream** carrying typed parts — status for each stage, the text of an
+   answer or recap, and the article being written — and step 3's RAG
+   retrieval runs only when the model has decided to write. See §5.1. The
+   inline actions (`POST /ai/inline`) still stream plain text.
+
+### 5.1 The assistant turn (2026-09-14)
+
+One request, one typed stream. The model **decides** whether a reply belongs in
+the document or in the panel, through a single tool:
+
+```
+write_to_article({ placement: 'cursor' | 'replace_selection', brief: string })
+```
+
+The outer call carries a lean prompt (guidelines, the current article, the
+style profile) and the tool. A question is answered as text — one call, no
+retrieval. A request to produce or change article text makes the model call the
+tool; the tool's `execute` runs the full generation path (article, style
+profile, **retrieved passages** for the brief) as an inner call and forwards
+every chunk to the client; it returns word and heading counts, and the outer
+model continues with a one-line **recap** grounded in them.
+
+**Parts on the stream** (`data-*` parts are transient — delivered to the client,
+never persisted into the message history):
+
+| Part | Payload |
+|---|---|
+| `data-status` | `{ step, state, detail?, chunks? }` — `step ∈ draft \| profile \| thinking \| retrieval \| writing \| done`, `state ∈ active \| done \| failed`; retrieval's `done` carries the passages |
+| `text` | the answer, or the recap after a write |
+| `tool-write_to_article` | the decision (`placement`, `brief`) |
+| `data-article-start` | `{ id, placement, brief }` — the client opens its insertion range |
+| `data-article-delta` | `{ id, text }` — plain-text chunk of the article |
+| `data-article-done` | `{ id, words, headings }` — written even when the inner stream fails, so the client can always close the range |
+
+**Step order is the order the work happens**: draft → profile → thinking →
+*(retrieval → writing, only for a write)* → done. Retrieval sits after thinking
+because the embedding search is the slowest stage and only a write needs it. No
+"web research" step exists because no web research exists.
+
+**Thinking** is the span from sending the outer request to the first visible
+token or tool call. gpt-oss's reasoning parts are not forwarded to the client.
+
+**Failure** is an `error` part on the open stream carrying "AI is temporarily
+unavailable" when no model in the chain answers, and a `failed` status on the
+stage that broke otherwise. The old 503-before-first-byte cannot survive here:
+the pre-model stages are streamed live, so the response is open before a model
+is chosen.
+
+**Billing** sums both calls' total tokens into one `ai_interactions` row whose
+`output_text` is the article when a write happened, else the answer. A Stop
+mid-write bills an estimate — inner prompt plus text produced so far, at ~4
+characters per token — because `onFinish` does not fire on abort and a Stop one
+sentence before the end must not make the article free.
+
+**Request body** gains `selection?: { text }` (≤ 6,000 characters) — the text of
+the whole top-level block(s) the selection touches, since a rewrite always
+replaces whole blocks; the inner prompt bounds the output to that passage.
+Document positions never leave the client.
 
 ---
 
@@ -397,6 +458,10 @@ naming the reset time. *(Recorded 2026-09-12; the behaviour predates the note.)*
   > `gemini-2.0-flash` of §13.5, which now 404s. And provider-level resilience
   > stops at *one* provider being down: Groq and Gemini failing together still
   > yields 503, and no free-tier arrangement changes that.
+  >
+  > *2026-09-14:* for `POST /ai/chat` the total outage is now an `error` part on
+  > an already-open stream, with the same copy — see §5.1. `POST /ai/inline`
+  > still returns the 503.
   >
   > Worth keeping as a lesson: this claim was load-bearing for four documents and
   > went stale in five weeks. Provider free-tier limits are not measured once.
