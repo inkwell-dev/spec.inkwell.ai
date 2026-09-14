@@ -272,8 +272,8 @@ the editor session only.
 
 **The model decides where a reply goes.** A question is answered in the panel.
 A request to produce or change article text is **written into the document**:
-the text streams in at the cursor — or replaces the selection when the request
-was about it — block by block, so a heading becomes a heading the moment it is
+the text streams in after the block the cursor is in — or replaces the whole
+block(s) a selection touches when the request was about it — block by block, so a heading becomes a heading the moment it is
 complete. The written range is tinted, a caret blinks at its end, and the
 writer's own edits inside it are refused with "Finish or discard the AI text
 first" until they decide. A **Stop** control ends the stream where it is. When

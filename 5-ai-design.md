@@ -191,8 +191,10 @@ mid-write bills an estimate — inner prompt plus text produced so far, at ~4
 characters per token — because `onFinish` does not fire on abort and a Stop one
 sentence before the end must not make the article free.
 
-**Request body** gains `selection?: { text }` (≤ 6,000 characters). Document
-positions never leave the client.
+**Request body** gains `selection?: { text }` (≤ 6,000 characters) — the text of
+the whole top-level block(s) the selection touches, since a rewrite always
+replaces whole blocks; the inner prompt bounds the output to that passage.
+Document positions never leave the client.
 
 ---
 
