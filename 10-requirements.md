@@ -134,6 +134,8 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-79 | Written text streams into the document at the cursor or over the selection, marked and protected until the writer keeps or discards it; Keep is one undo step; Discard restores what it replaced | Must | 8 |
 | FR-80 | Show the pipeline's real steps as they run, with counts, and a one-line recap after a write | Must | 8 |
 | FR-81 | The assistant is a floating dock that minimizes to a button carrying the live step | Should | 8 |
+| FR-82 | Record a prompt with the microphone (≤ 5 min) and have it transcribed into the assistant's input, editable, billed at 200 tokens a minute against the daily allowance | Should | 8 |
+| FR-83 | Hear each assistant reply read aloud, with a persisted mute; the control exists only when the key can speak | Could | 8 |
 | FR-31 | See the remaining AI token balance, updated after each action | Must | 2 |
 | FR-32 | View per-article analytics — views, unique readers, average read time, completion, engagement, retention curve | Must | 3 |
 | FR-33 | Rank own articles by views or engagement, server-side across the whole body of work | Should | 3 |
@@ -144,9 +146,10 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-38 | Be notified when a magazine previews or purchases an article, and when earnings are credited | Must | 5 |
 
 > **Descoped, and the report says so:** voice-to-article (FR would have been "dictate
-> an article"). Removed from the MVP in the 2026-07-26 re-baseline. The enum value
-> `voice_transcribe` survives in `ai_action_type` with no implementation — mention
-> it as future work rather than leaving an examiner to find it.
+> an article"). Removed from the MVP in the 2026-07-26 re-baseline. *2026-09-15:*
+> `voice_transcribe` is now written — by the **voice prompt** (FR-82), which
+> dictates a request to the assistant, not an article. Voice-to-article itself
+> stays descoped.
 
 ### 2.4 A6 / A7 — Magazine
 
@@ -346,6 +349,8 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-65 | See who a writer or magazine is from where their name appears so that I can decide to follow without leaving the feed | A1 | Should | 3 | 8 |
 | US-66 | Tell the assistant what to write and watch it appear in my draft, then keep or discard it, so that generation happens where I write rather than in a chat I copy from | A4 | Must | 8 | 8 |
 | US-67 | See what the assistant is doing while it works — and minimize it without losing sight of that — so that a slow step is not a frozen screen | A4 | Should | 3 | 8 |
+| US-68 | Say my request instead of typing it so that I can brief the assistant while my hands are busy or my thoughts are faster than my typing | A4 | Should | 5 | 8 |
+| US-69 | Hear the assistant's recap read out so that I can keep my eyes on the draft — and mute it when I would rather not | A4 | Could | 3 | 8 |
 | US-57 | Save an article to come back to it later, without anyone else seeing what I keep | A2 | Must | 5 | 7 |
 | US-58 | Pass an article on to people outside the platform so that they can read it without signing up | A1 | Should | 3 | 7 |
 | US-28 | Be told the moment someone reacts to my work, without reloading | A4 | Must | 5 | 3 |
