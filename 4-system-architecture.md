@@ -133,7 +133,7 @@ The system is composed of the following main components:
 - **AI Module** — provider abstraction (Vercel AI SDK), prompt builder, token quota
   - ChatService — contextual chat with RAG retrieval
   - InlineEditService — reformulate/shorten/expand/simplify/improve
-  - VoiceService — Groq Whisper transcription → structured article generation
+  - VoiceService — Groq Whisper transcription of a recorded prompt; Gemini TTS for spoken replies *(2026-09-15; structured article generation stays descoped)*
   - RagService — chunk retrieval via pgvector cosine similarity
   - EmbeddingService — Gemini `gemini-embedding-001` (1536 dimensions)
   - MemoryService — structured writer memory extraction and injection
@@ -175,10 +175,10 @@ A separate AI service should only be introduced if: local models are hosted, fin
 ### Key Pipelines
 
 Text Processing:
-- User action → Backend enriches with article context + structured memory + RAG chunks → Prompt built → Vercel AI SDK `streamText` → SSE response to frontend
+- User action → Backend enriches with article context + structured memory → routing call (Vercel AI SDK `streamText` with the `write_to_article` tool) → for a write only: RAG chunks retrieved and a second call streams the article → UI-message stream to the frontend *(corrected 2026-09-15; see `5-ai-design.md` §5.1)*
 
 Voice Processing:
-- Audio blob → Groq Whisper transcription → LLM structures transcript → TipTap JSON article draft
+- Audio blob → Groq Whisper transcription → transcript into the assistant's input (the writer sends it) · reply text → Gemini TTS → WAV played in the dock *(2026-09-15; the transcript → structured draft step stays descoped)*
 
 RAG Retrieval:
 - Query embedded via Gemini → pgvector cosine similarity search (`<=>`) → top-K chunks returned → injected into prompt context

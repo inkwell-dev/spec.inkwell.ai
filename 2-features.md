@@ -296,21 +296,29 @@ writes directly, and the decision moved to Keep / Discard where the text is.
 
 ---
 
-### 3.2 Voice-to-Article Generation
+### 3.2 Voice Prompt and Spoken Replies *(2026-09-15)*
 
-> **Descoped to post-MVP** in the 2026-07-26 re-baseline (see [`0-phase-plan.md`](./0-phase-plan.md) — Post-MVP Descope). Design kept below as future-work reference.
+The assistant can be spoken to, and speaks back.
 
-#### Flow:
-1. User records voice input
-2. Audio is transcribed to text
-3. AI processes the text
-4. A structured article draft is generated
+- A **microphone** beside the assistant's input records a prompt (up to five
+  minutes). Confirming with the check mark transcribes it (Groq Whisper) into
+  the input, **editable** — the writer still presses Enter. Cancel discards
+  the audio; a failed transcription offers a retry without re-recording.
+- A minute of audio costs **200 tokens** of the daily allowance, rounded up,
+  so a free-plan writer cannot record and a premium one sees the cost on the
+  same indicator as everything else.
+- Every settled reply — an answer or a recap — is **read aloud** (Gemini TTS)
+  unless muted. The mute button sits left of the minimize control and is
+  remembered per browser; speech is free to the writer. When the key cannot
+  speak, the button does not exist: there is no robotic fallback.
 
-#### Notes:
-- Non-real-time processing (MVP)
-- Output includes:
-  - Title suggestions
-  - Sectioned content
+#### Voice-to-Article Generation
+
+> **Descoped to post-MVP** in the 2026-07-26 re-baseline (see
+> [`0-phase-plan.md`](./0-phase-plan.md)). The voice prompt above is not this:
+> it dictates a request, not an article. Design kept for reference:
+> record → transcribe → an LLM structures the transcript into a sectioned
+> draft with title suggestions, non-real-time.
 
 ---
 

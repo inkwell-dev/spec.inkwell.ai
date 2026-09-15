@@ -118,20 +118,21 @@ If it writes → text streams into the document at the cursor (or over the selec
 
 ---
 
-## 6. 🎙️ Voice-to-Article Flow
+## 6. 🎙️ Voice Prompt Flow *(shipped 2026-09-15)*
 
-> **Descoped to post-MVP** (2026-07-26 re-baseline — see [`0-phase-plan.md`](./0-phase-plan.md)).
+User clicks the microphone beside the assistant's input  
+→ Records (timer runs; cancel with ×; five-minute cap)  
+→ Confirms with the check mark  
+→ Audio sent to backend; Whisper transcribes; a minute costs 200 tokens  
+→ Transcript appears in the input, editable  
+→ User presses Enter — the assistant turn (§5) runs as usual  
+→ The reply is read aloud, unless muted  
 
-User clicks "Voice Input"  
-→ Records speech  
-→ Stops recording  
-→ Audio sent to backend  
+### Voice-to-Article Flow
 
-→ Speech-to-text processing  
-→ AI generates structured content  
+> **Descoped to post-MVP** (2026-07-26 re-baseline — see [`0-phase-plan.md`](./0-phase-plan.md)); the voice prompt above dictates a request, not an article.
 
-→ Draft inserted into editor  
-→ User edits or refines content  
+User clicks "Voice Input" → records → audio sent → speech-to-text → AI generates structured content → draft inserted → user refines.
 
 ---
 

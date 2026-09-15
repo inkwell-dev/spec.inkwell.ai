@@ -89,6 +89,11 @@ Actions include:
 ### 4.3 Voice-to-Article
 
 > **Descoped to post-MVP** (2026-07-26 re-baseline — see [`0-phase-plan.md`](./0-phase-plan.md)). Pipeline design retained for future work.
+>
+> *2026-09-15:* what shipped instead is the **voice prompt** — the writer
+> dictates a request to the assistant, not an article (§5.2). The transcription
+> engine is the one named below; the "LLM structures the transcript into
+> sections" step is still not built.
 
 Flow:
 - User records speech
@@ -198,6 +203,51 @@ Document positions never leave the client.
 
 ---
 
+### 5.2 Voice in, voice out (2026-09-15)
+
+Two small routes beside the assistant turn; the chat stream is untouched.
+
+**`POST /ai/transcribe`** — the recorded prompt. Multipart `audio` (what
+`MediaRecorder` produces: WebM/Opus, Ogg, MP4/AAC, WAV) plus a required
+`seconds` field. Guards: JWT and the AI quota guard. Limits: **5 minutes** and
+**10 MB**, either → `413` "Recording too long (max 5 minutes)" (multer's own
+size rejection is rewritten to the same sentence by a route-scoped filter).
+Whisper (`whisper-large-v3-turbo`, Groq) returns the text; the response is
+`{ text, seconds, tokensUsed }`. Provider failure → `503` "Couldn't transcribe
+— try again". A transcript of silence is `""` — and still billed, since the
+call happened.
+
+*Billing.* A minute of audio costs **200 tokens**, rounded up, never below one
+minute. Groq reports no duration, so the figure billed is
+`max(clientSeconds, bytes / 32 000)` — the client's claim, floored by what the
+file size proves at 256 kbps, above anything a browser recorder emits (Chrome's
+Opus default is 128 kbps plus container overhead, which is why 128 was not
+enough of a ceiling). Logged as
+`voice_transcribe` with `input_text = "[voice] <seconds>s"` and the transcript
+as `output_text`.
+
+**`POST /ai/speak`** — `{ text }` (≤ 1,000 characters, Markdown already
+stripped by the client) → `audio/wav`, `Cache-Control: no-store`. Gemini TTS
+(`gemini-2.5-flash-preview-tts`, voice *Kore*). JWT only, **free to the
+writer**, limited **per user** to 20 a minute and 300 a day (in-process,
+sliding windows — the route's IP throttle alone would let one office NAT
+exhaust it for everyone), so a loop cannot spend the key's daily allowance.
+Not logged. Any failure → `503`, and the client is silent
+about it.
+
+**`GET /ai/speech-availability`** → `{ available }`: true when the Gemini key
+is configured **and** a one-time probe (speaking the word "ready") succeeded.
+Both outcomes are memoised for the life of the process. This flag alone
+decides whether the mute button exists; there is no browser-voice fallback.
+
+**In the dock.** A microphone beside the input records; a check mark sends the
+audio and the transcript lands in the input, editable — nothing is sent until
+Enter. The mic is refused below one minute's worth of tokens and while the
+input is disabled for any other reason. Every settled assistant reply is read
+aloud unless the writer has muted it (a button left of the minimize control,
+remembered per browser, default unmuted); a stopped or failed reply is never
+spoken.
+
 ## 6. Context Management
 
 AI responses depend heavily on context.
@@ -257,14 +307,16 @@ Each prompt follows a structured format:
 
 ## 8. Voice Processing Pipeline
 
-The voice system follows this pipeline:
+*Corrected 2026-09-15.* The pipeline that ships is the voice **prompt** (§5.2):
 
-- Audio Input  
-- Speech-to-text processing  
-- Cleaned transcription  
-- Prompt construction  
-- AI generation  
-- Structured article output  
+- Audio input (`MediaRecorder`, ≤ 5 minutes)
+- Speech-to-text (Groq Whisper)
+- Transcript into the assistant's input box, editable
+- The writer sends it — the assistant turn (§5.1) does the rest
+- The reply is read aloud (Gemini TTS) unless muted
+
+The structured-article generation the pipeline used to end with (transcript →
+sections → draft) remains descoped.
 
 ---
 
@@ -376,6 +428,10 @@ without ever naming a number, which made it unfalsifiable:*
 > answer. 20,000 is about twenty long replies or sixty inline edits — a
 > working day. Billing stays on total tokens deliberately, so the cost of prompt
 > context remains visible rather than hidden by counting output alone.
+>
+> *2026-09-15:* a **recorded prompt** draws on the same allowance at **200
+> tokens per minute of audio**, rounded up and never below one minute (§5.2).
+> Spoken replies are free to the writer.
 
 The free-plan zero is a product decision rather than a missing constant: AI
 access *is* the premium tier. There is deliberately no constant for it, because
@@ -496,7 +552,8 @@ naming the reset time. *(Recorded 2026-09-12; the behaviour predates the note.)*
 | Capability | Primary Provider | Fallback | Notes |
 |------------|------------------|----------|-------|
 | LLM (chat, inline edit, Portfolio Insights) | **Groq** (`openai/gpt-oss-120b`, then `openai/gpt-oss-20b`) | **`gemini-3.5-flash`** | Both free tiers. *Updated 2026-09-03: Llama 3.3 70B and Gemini 2.0 Flash are both retired — the ids here are the ones verified by invocation. Portfolio Insights does **not** use this chain; it pins `openai/gpt-oss-120b` for `json_schema` support.* |
-| Speech-to-text | — | — | **Never built.** *Recorded 2026-09-04:* no `whisper`, `speech` or transcription call exists anywhere in the backend. The `voice_transcribe` value survives in the `ai_action_type` enum (`database/schema/enums.ts`) and nothing ever writes it. The row previously read "**Groq Whisper-large-v3-turbo** / OpenAI Whisper API". |
+| Speech-to-text | **Groq `whisper-large-v3-turbo`** | — | *Built 2026-09-15* (§5.2), for the voice prompt. `voice_transcribe` is now written by `POST /ai/transcribe`. The 2026-09-04 note recorded that nothing existed then. |
+| Text-to-speech | **Gemini `gemini-2.5-flash-preview-tts`** (voice *Kore*) | — | *Built 2026-09-15* (§5.2). Free tier; availability probed once per process and the feature hidden when the key cannot speak. No browser-voice fallback by decision. |
 | Embeddings (RAG) | **Gemini `gemini-embedding-001`** | — | Free tier, no payment method required. Emits **1536 dimensions** via `outputDimensionality`, matching the original OpenAI width so the schema is unaffected. |
 | Content moderation | **Groq `groq/compound-mini`** | — | Free. *Updated 2026-09-04:* OpenAI has been **removed**, not merely left unconfigured — its `/v1/moderations` endpoint is free but gated behind a non-empty credit balance, so the key cannot work on a free-tier project and the code path could never run. The classifier was also `llama-3.1-8b-instant` until Groq retired it, which silently disabled moderation entirely (the chain fails open, so a dead provider and a clean verdict are indistinguishable). `npm run models:check` and a daily worker job now call every model id so a third retirement is visible. |
 | Premium AI (optional) | — | — | **Never built.** *Recorded 2026-09-04:* no Anthropic dependency, key or call exists in the codebase, and there is no paid budget. Premium accounts differ by AI token allowance, not by model. The row previously read "**Anthropic Claude** — small paid budget for higher-quality premium actions". |
