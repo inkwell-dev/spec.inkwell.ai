@@ -219,16 +219,20 @@ call happened.
 
 *Billing.* A minute of audio costs **200 tokens**, rounded up, never below one
 minute. Groq reports no duration, so the figure billed is
-`max(clientSeconds, bytes / 16 000)` — the client's claim, floored by what the
-file size proves at 128 kbps, which no real recording exceeds. Logged as
+`max(clientSeconds, bytes / 32 000)` — the client's claim, floored by what the
+file size proves at 256 kbps, above anything a browser recorder emits (Chrome's
+Opus default is 128 kbps plus container overhead, which is why 128 was not
+enough of a ceiling). Logged as
 `voice_transcribe` with `input_text = "[voice] <seconds>s"` and the transcript
 as `output_text`.
 
 **`POST /ai/speak`** — `{ text }` (≤ 1,000 characters, Markdown already
 stripped by the client) → `audio/wav`, `Cache-Control: no-store`. Gemini TTS
 (`gemini-2.5-flash-preview-tts`, voice *Kore*). JWT only, **free to the
-writer**, throttled at 20 a minute per user so a loop cannot spend the key's
-daily allowance. Not logged. Any failure → `503`, and the client is silent
+writer**, limited **per user** to 20 a minute and 300 a day (in-process,
+sliding windows — the route's IP throttle alone would let one office NAT
+exhaust it for everyone), so a loop cannot spend the key's daily allowance.
+Not logged. Any failure → `503`, and the client is silent
 about it.
 
 **`GET /ai/speech-availability`** → `{ available }`: true when the Gemini key
