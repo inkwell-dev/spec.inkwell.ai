@@ -136,6 +136,10 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-81 | The assistant is a floating dock that minimizes to a button carrying the live step | Should | 8 |
 | FR-82 | Record a prompt with the microphone (≤ 5 min) and have it transcribed into the assistant's input, editable, billed at 200 tokens a minute against the daily allowance | Should | 8 |
 | FR-83 | Hear each assistant reply read aloud, with a persisted mute; the control exists only when the key can speak | Could | 8 |
+| FR-84 | Upload PDF, DOCX, TXT or MD reference documents (≤ 10 MB, ≤ 200 pages, 20 per writer) into a private library, with text extracted and embedded by the worker and a readable failure reason when it cannot be | Must | 9 |
+| FR-85 | Attach library documents to an article from the assistant and detach them; attachments are saved immediately | Must | 9 |
+| FR-86 | The assistant draws on attached documents for both answers and writes, cites passages inline as [Title, p. N], and shows the passages used with a link opening the file at the page | Must | 9 |
+| FR-87 | A document is the writer's alone: it never feeds writer memory, Portfolio Insights or search, and another account cannot read, attach or discover it | Must | 9 |
 | FR-31 | See the remaining AI token balance, updated after each action | Must | 2 |
 | FR-32 | View per-article analytics — views, unique readers, average read time, completion, engagement, retention curve | Must | 3 |
 | FR-33 | Rank own articles by views or engagement, server-side across the whole body of work | Should | 3 |
@@ -351,6 +355,9 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-67 | See what the assistant is doing while it works — and minimize it without losing sight of that — so that a slow step is not a frozen screen | A4 | Should | 3 | 8 |
 | US-68 | Say my request instead of typing it so that I can brief the assistant while my hands are busy or my thoughts are faster than my typing | A4 | Should | 5 | 8 |
 | US-69 | Hear the assistant's recap read out so that I can keep my eyes on the draft — and mute it when I would rather not | A4 | Could | 3 | 8 |
+| US-70 | Upload the documents I am working from so that the assistant can use their facts without my retyping them | A4 | Must | 8 | 9 |
+| US-71 | Choose which documents apply to an article so that a piece on tides is not fed my notes on fermentation | A4 | Must | 3 | 9 |
+| US-72 | See which document and page a claim came from so that I can check it before it goes out under my name | A4 | Should | 5 | 9 |
 | US-57 | Save an article to come back to it later, without anyone else seeing what I keep | A2 | Must | 5 | 7 |
 | US-58 | Pass an article on to people outside the platform so that they can read it without signing up | A1 | Should | 3 | 7 |
 | US-28 | Be told the moment someone reacts to my work, without reloading | A4 | Must | 5 | 3 |

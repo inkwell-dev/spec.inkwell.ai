@@ -378,6 +378,49 @@ Powered by RAG over the writer's published corpus (same pgvector chunks already 
 
 ---
 
+### 3.7 Document Sources *(2026-09-17)*
+
+A writer's own reference library — PDFs, DOCX, TXT or MD files the assistant
+draws on for facts and structure, kept separate from the writer's published
+voice.
+
+- **Library page**, `/dashboard/documents`: every document with its type
+  badge, page count, size and uploaded date, a status chip (**Extracting…** ·
+  **Ready** · **Failed** with the reason and a **Retry**), and delete with
+  confirm. A row still `pending` after 60 seconds reads **"Waiting…"** — the
+  worker is down, nothing is lost. The header reads **"N of 20"**, and at the
+  cap, **"20 of 20 — delete one to upload another."**
+- **Upload**: a file picker (PDF/DOCX/TXT/MD, checked client-side against
+  10 MB) presigns, PUTs with a progress bar, then registers the document —
+  the row appears **Extracting** immediately and polls every 3 seconds until
+  it settles.
+- **Caps**: 20 documents per writer, 10 MB and 200 pages each. A scanned or
+  image-only PDF fails with a no-text-layer reason rather than being
+  silently accepted with nothing to retrieve.
+- **Sources strip**, above the conversation in the assistant dock: a chip per
+  attached document (title, page count, × to detach) and an **Attach** button
+  opening a checklist of the library's ready documents, with an "Upload
+  new…" link out to the library page. Attaching or detaching saves at once.
+  Empty state: *"No sources attached — the assistant writes from your own
+  published work."*
+- **Use in the assistant.** Attached documents are read for both questions
+  and article writes — never for voice, which stays the writer's own
+  published corpus. A used passage is cited inline as `[Title, p. N]` (or
+  `[Title]` for DOCX/text, which have no page), and the run card's "Reading
+  your documents" row expands to the passages, each opening the file at its
+  page.
+- **A document is the writer's alone.** It is never used to build writer
+  memory, never contributes to Portfolio Insights, and never enters search —
+  it is material the writer chose to hand the assistant, not the writer's
+  published work.
+- **Out of scope**: OCR of scanned pages, importing a document by URL,
+  sharing a document between writers, a per-document style-vs-facts toggle,
+  images embedded inside a PDF, versioning when the same title is
+  re-uploaded, and editable titles (a title is always the filename, without
+  its extension).
+
+---
+
 ## 4. 📊 Analytics System
 
 Analytics serves two distinct audiences with two distinct surfaces.

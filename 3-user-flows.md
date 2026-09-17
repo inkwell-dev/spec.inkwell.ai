@@ -136,6 +136,39 @@ User clicks "Voice Input" → records → audio sent → speech-to-text → AI g
 
 ---
 
+## 6.5 📎 Document Sources Flow *(2026-09-17)*
+
+**Upload, in the library (`/dashboard/documents`)**
+
+User picks a PDF/DOCX/TXT/MD file (checked client-side: 10 MB)  
+→ Client presigns, then PUTs the file to the private `documents` bucket with a progress bar  
+→ Client registers the upload; the row appears **Extracting**  
+→ Row polls every 3 s → **Ready** with page count, or **Failed** with a reason and a **Retry**  
+→ (a row stuck `pending` past 60 s reads "Waiting…" — the worker is down, nothing lost)
+
+**Attach, in the dock**
+
+User opens the assistant on an article → **Sources** strip fetches
+`GET /articles/:id/documents`  
+→ User clicks **Attach** → picks from the library's **Ready** documents (checkboxes)  
+→ `PUT /articles/:id/documents { documentIds }` saves immediately — no separate confirm step  
+→ Chip appears in the strip (title, page count, × to detach)
+
+**Ask or write, with documents attached**
+
+User sends a question or a write request  
+→ Retrieval over `document_chunks` runs before the routing call, for either kind of turn  
+→ Panel shows **"Reading your documents — N passages from M documents"**, expandable  
+→ The answer or the written text carries inline citations — `[Title, p. N]` for a PDF, `[Title]` for DOCX/text  
+→ User clicks a passage → `GET /documents/:id/file` resolves a presigned URL → opens in a new tab at `#page=N`
+
+**Detach or delete**
+
+User clicks × on a chip → `PUT /articles/:id/documents` without that id → chip gone, document skipped on the next turn  
+→ User deletes a document from the library → soft-deleted at once (retrieval stops immediately) → purge job removes the object and the row → the chip disappears from every article's strip on its next fetch
+
+---
+
 ## 7. ✨ Inline Editing Flow (Core Feature)
 
 User selects text in editor  
