@@ -169,17 +169,23 @@ never persisted into the message history):
 
 | Part | Payload |
 |---|---|
-| `data-status` | `{ step, state, detail?, chunks? }` — `step ∈ draft \| profile \| thinking \| retrieval \| writing \| done`, `state ∈ active \| done \| failed`; retrieval's `done` carries the passages |
+| `data-status` | `{ step, state, detail?, chunks? }` — `step ∈ draft \| profile \| documents \| thinking \| retrieval \| writing \| done`, `state ∈ active \| done \| failed`; retrieval's `done` carries the passages. *`documents` added 2026-09-17 (§9.5) — emitted only when the article has attached, `ready` documents.* |
 | `text` | the answer, or the recap after a write |
 | `tool-write_to_article` | the decision (`placement`, `brief`) |
 | `data-article-start` | `{ id, placement, brief }` — the client opens its insertion range |
 | `data-article-delta` | `{ id, text }` — plain-text chunk of the article |
 | `data-article-done` | `{ id, words, headings }` — written even when the inner stream fails, so the client can always close the range |
 
-**Step order is the order the work happens**: draft → profile → thinking →
-*(retrieval → writing, only for a write)* → done. Retrieval sits after thinking
-because the embedding search is the slowest stage and only a write needs it. No
-"web research" step exists because no web research exists.
+**Step order is the order the work happens**: draft → profile →
+*(documents)* → thinking → *(retrieval → writing, only for a write)* → done.
+Retrieval sits after thinking because the embedding search is the slowest
+stage and only a write needs it. `documents` sits earlier, between `profile`
+and `thinking`, and runs for both a question and a write *(2026-09-17, §9.5)*
+— it is emitted only when the article has attached, `ready` documents, and it
+has to come before routing because a question about the material needs it
+just as much as a write does, unlike the voice-corpus `retrieval` step below,
+which only a write reaches. No "web research" step exists because no web
+research exists.
 
 **Thinking** is the span from sending the outer request to the first visible
 token or tool call. gpt-oss's reasoning parts are not forwarded to the client.

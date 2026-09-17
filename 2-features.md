@@ -286,7 +286,8 @@ persisted. Closing the tab mid-write asks first.
 
 **The panel shows what is happening, not a spinner.** Each turn is a card
 listing the pipeline's real steps as they run — reading the draft, loading the
-style profile, thinking, searching the writer's published work (expandable to
+style profile, reading your attached documents when the article has any
+(§3.7), thinking, searching the writer's published work (expandable to
 the passages used), writing with a live word count — and, once a write is done,
 the model's one-line **recap** of what it added. There is no "researching the
 web" step because there is no web research.

@@ -240,8 +240,9 @@ No additional search engine (Elasticsearch) or vector database (Pinecone, Weavia
 > | Rate limiting in Redis | `ThrottlerModule.forRoot({ throttlers: [...] })` in `app.module.ts` is declared with **no storage option**, so `@nestjs/throttler` uses its default in-memory store. Redis is not consulted. |
 > | Refresh tokens in Redis | JWTs verified against `JWT_REFRESH_SECRET` — see §2.3 of `9-implementation-guide.md`, corrected in the same pass. |
 >
-> What Redis actually does, in full: it is the transport for the four BullMQ
-> queues below. That is the whole of it.
+> What Redis actually does, in full: it is the transport for the six BullMQ
+> queues below *(count corrected 2026-09-17 — it was already five before
+> `documents` was added)*. That is the whole of it.
 >
 > The in-memory throttler has a consequence worth stating rather than hiding: the
 > rate limit is **per process**. It is correct on this single-container deploy and

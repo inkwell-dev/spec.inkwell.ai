@@ -709,7 +709,7 @@ id            UUID PK
 owner_id      UUID NOT NULL FK → users.id          -- every read, attach, retrieve, delete filters on it
 title         TEXT NOT NULL                         -- filename without extension; not editable
 filename      TEXT NOT NULL                         -- as uploaded
-content_type  TEXT NOT NULL                         -- application/pdf · .docx · text/plain · text/markdown
+content_type  TEXT NOT NULL                         -- application/pdf · application/vnd.…wordprocessingml.document · text/plain · text/markdown
 size_bytes    INTEGER NOT NULL                       -- <= 10 MB
 storage_key   TEXT NOT NULL                          -- object key in the private `documents` MinIO bucket
 status        ENUM('pending', 'extracting', 'ready', 'failed') NOT NULL DEFAULT 'pending'
