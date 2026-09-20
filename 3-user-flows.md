@@ -150,13 +150,17 @@ User picks a PDF/DOCX/TXT/MD file (checked client-side: 10 MB)
 → Row polls every 3 s → **Ready** with page count, or **Failed** with a reason and a **Retry**  
 → (a row stuck `pending` past 60 s reads "Waiting…" — the worker is down, nothing lost)
 
-**Attach, in the Sources tab** *(2026-09-20: was the dock's Sources strip)*
+**Attach, in the Sources tab** *(2026-09-20: was the dock's Sources strip,
+whose Attach button opened a separate checklist)*
 
-User opens the assistant on an article → **Sources** tab fetches
-`GET /articles/:id/documents`  
-→ User clicks **Attach** → picks from the library's **Ready** documents (checkboxes)  
+User opens the assistant on an article → the **Sources** tab fetches
+`GET /articles/:id/documents` and shows two always-visible groups:
+*Attached to this article* and *Your library*  
+→ User checks a **Ready** document in *Your library* — no separate Attach
+button or checklist step  
 → `PUT /articles/:id/documents { documentIds }` saves immediately — no separate confirm step  
-→ Chip appears in the Sources tab's attached list (title, page count, × to detach; and the `📎 N` count in the composer)
+→ It appears in *Attached to this article* (title, page count, × to detach), and the `📎 N` count in the composer updates  
+→ Uploading from the tab runs the same presign → PUT → register flow as the library page, with its own progress bar, so the writer never leaves the editor; *Manage in library →* still links out to `/dashboard/documents` for retry and delete
 
 **Ask or write, with documents attached**
 

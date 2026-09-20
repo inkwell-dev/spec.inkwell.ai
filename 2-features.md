@@ -268,7 +268,11 @@ Prompts go through a **composer card**: a textarea that grows from one line
 to four and then scrolls, Enter sends and Shift+Enter inserts a newline,
 with a fixed action bar below it — the microphone on the left, the `📎 N`
 attached-document count in the middle (tapping it switches to the Sources
-tab), Send or Stop on the right. The panel **collapses to a 48 px rail** —
+tab), Send or Stop on the right. The "Drawing on N published articles"
+notice is no longer a permanent band: it is the Chat tab's empty-state
+sentence, and once a conversation exists, a one-line footer above the
+composer ("Drawing on 12 articles · 2 sources") — see §3.7. The panel
+**collapses to a 48 px rail** —
 Chat and Sources icons only — whose Chat icon carries the live step as a
 badge while a request is in flight (a live word count while writing); a run
 that finishes while collapsed marks the icon until the rail is expanded.
@@ -415,13 +419,19 @@ voice.
 - **Caps**: 20 documents per writer, 10 MB and 200 pages each. A scanned or
   image-only PDF fails with a no-text-layer reason rather than being
   silently accepted with nothing to retrieve.
-- **Sources tab**, in the assistant panel: a chip per attached document
-  (title, page count, × to detach) and an **Attach** button opening a
-  checklist of the library's ready documents, with an "Upload new…" link out
-  to the library page. Attaching or detaching saves at once. Empty state:
-  *"No sources attached — the assistant writes from your own published
-  work."* *(2026-09-20: moved from a strip above the conversation to its own
-  tab, alongside Chat — §3.1.)*
+- **Sources tab**, in the assistant panel: two always-visible groups.
+  *Attached to this article* lists title, page count, a status chip when not
+  ready, and × to detach. *Your library* lists every document — a ready one
+  carries a checkbox that attaches or detaches it at once; a pending or
+  failed one shows its status chip and isn't toggleable. An **Upload**
+  button runs the same presign → PUT → register flow as the library page,
+  with its progress bar, so the writer never leaves the editor. *Manage in
+  library →* links to `/dashboard/documents` for retry and delete. Empty
+  state: *"No sources attached — the assistant writes from your own
+  published work."* *(2026-09-20: replaces the dock's Sources strip, whose
+  Attach button opened a separate checklist with an "Upload new…" link out
+  to the library page; the tab now shows both groups and Upload inline,
+  alongside Chat — §3.1.)*
 - **Use in the assistant.** Attached documents are read for both questions
   and article writes — never for voice, which stays the writer's own
   published corpus. A used passage is cited inline as `[Title, p. N]` (or
