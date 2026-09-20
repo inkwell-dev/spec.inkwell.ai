@@ -96,14 +96,17 @@ IF publish:
 
 ## 5. 🤖 AI Chat Assistant Flow
 
-User opens the floating assistant (bottom-right dock; minimizes to a button)  
+User opens the assistant from the editor toolbar's *AI Assistant* button —
+it docks beside the editor as a 400 px panel, Chat tab active (the Sources
+tab holds attach/upload, §6.5); the same button collapses it to a 48 px
+rail and re-expands it  
 → User inputs prompt (the current selection, if any, travels with it)  
 → System sends:
 - Article context  
 - User preferences  
 
 → AI decides: answer in the panel, or write into the document  
-→ Panel shows each step as it runs (draft · profile · thinking · [passages · writing])  
+→ Panel shows each step as it runs (draft · profile · thinking · [passages · writing]) — collapsed to the rail, the Chat icon carries the same step as a badge instead (a live word count while writing)  
 
 If it answers → the answer appears in the panel  
 If it writes → text streams into the document at the cursor (or over the selection), tinted  
@@ -114,7 +117,8 @@ If it writes → text streams into the document at the cursor (or over the selec
 
 → Panel shows a one-line recap of what was written  
 
-*(Rewritten 2026-09-14; the previous flow ended with an "Insert into article" choice in the panel.)*
+*(Rewritten 2026-09-14; the previous flow ended with an "Insert into article" choice in the panel.)*  
+*(2026-09-20: the assistant moved from a floating dock to a docked, tabbed panel with a rail — see [`2-features.md`](./2-features.md) §3.1.)*
 
 ---
 
@@ -146,9 +150,9 @@ User picks a PDF/DOCX/TXT/MD file (checked client-side: 10 MB)
 → Row polls every 3 s → **Ready** with page count, or **Failed** with a reason and a **Retry**  
 → (a row stuck `pending` past 60 s reads "Waiting…" — the worker is down, nothing lost)
 
-**Attach, in the dock**
+**Attach, in the Sources tab** *(2026-09-20: was the dock's Sources strip)*
 
-User opens the assistant on an article → **Sources** strip fetches
+User opens the assistant on an article → **Sources** tab fetches
 `GET /articles/:id/documents`  
 → User clicks **Attach** → picks from the library's **Ready** documents (checkboxes)  
 → `PUT /articles/:id/documents { documentIds }` saves immediately — no separate confirm step  
