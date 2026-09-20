@@ -156,7 +156,7 @@ User opens the assistant on an article → **Sources** tab fetches
 `GET /articles/:id/documents`  
 → User clicks **Attach** → picks from the library's **Ready** documents (checkboxes)  
 → `PUT /articles/:id/documents { documentIds }` saves immediately — no separate confirm step  
-→ Chip appears in the strip (title, page count, × to detach)
+→ Chip appears in the Sources tab's attached list (title, page count, × to detach; and the `📎 N` count in the composer)
 
 **Ask or write, with documents attached**
 
@@ -169,7 +169,7 @@ User sends a question or a write request
 **Detach or delete**
 
 User clicks × on a chip → `PUT /articles/:id/documents` without that id → chip gone, document skipped on the next turn  
-→ User deletes a document from the library → soft-deleted at once (retrieval stops immediately) → purge job removes the object and the row → the chip disappears from every article's strip on its next fetch
+→ User deletes a document from the library → soft-deleted at once (retrieval stops immediately) → purge job removes the object and the row → the chip disappears from every article's Sources tab on its next fetch
 
 ---
 

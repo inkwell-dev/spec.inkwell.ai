@@ -325,9 +325,10 @@ The assistant can be spoken to, and speaks back.
   so a free-plan writer cannot record and a premium one sees the cost on the
   same indicator as everything else.
 - Every settled reply — an answer or a recap — is **read aloud** (Gemini TTS)
-  unless muted. The mute button sits left of the minimize control and is
-  remembered per browser; speech is free to the writer. When the key cannot
-  speak, the button does not exist: there is no robotic fallback.
+  unless muted. The mute button sits in the panel header beside the collapse
+  control, and on the rail at the bottom; the muted state is remembered per
+  browser; speech is free to the writer. When the key cannot speak, the
+  button does not exist: there is no robotic fallback.
 
 #### Voice-to-Article Generation
 
