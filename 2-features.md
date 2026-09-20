@@ -263,7 +263,10 @@ A contextual AI assistant integrated into the editor.
 
 On desktop (`lg`, 1024 px — the app sidebar stays) the assistant is a fixed
 **400 px panel docked beside the editor**, with **Chat** and **Sources**
-tabs; no backdrop, no focus trap, the document stays editable beside it.
+tabs — switching between them keeps the Chat tab mounted, so its scroll
+position and any recording in progress survive the switch, and the Sources
+tab is disabled while recording; no backdrop, no focus trap, the document
+stays editable beside it.
 Prompts go through a **composer card**: a textarea that grows from one line
 to four and then scrolls, Enter sends and Shift+Enter inserts a newline,
 with a fixed action bar below it — the microphone on the left, the `📎 N`
@@ -426,10 +429,14 @@ voice.
   failed one shows its status chip and isn't toggleable. An **Upload**
   button runs the same presign → PUT → register flow as the library page,
   with its progress bar, so the writer never leaves the editor. *Manage in
-  library →* links to `/dashboard/documents` for retry and delete. Empty
-  state: *"No sources attached — the assistant writes from your own
-  published work."* *(2026-09-20: replaces the dock's Sources strip, whose
-  Attach button opened a separate checklist with an "Upload new…" link out
+  library →* links to `/dashboard/documents` for retry and delete, opening in
+  a new tab so the conversation is never lost. A failure to load either group
+  renders in the tab rather than emptying it silently: *"Couldn't load
+  sources"* with a **Retry** for the attached list, *"Couldn't load your
+  documents"* for the library list. Empty state: *"No sources attached — the
+  assistant writes from your own published work."* *(2026-09-20: replaces the
+  dock's Sources strip, whose Attach button opened a separate checklist with
+  an "Upload new…" link out
   to the library page; the tab now shows both groups and Upload inline,
   alongside Chat — §3.1.)*
 - **Use in the assistant.** Attached documents are read for both questions
