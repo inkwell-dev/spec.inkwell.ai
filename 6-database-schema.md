@@ -700,6 +700,82 @@ Indexes:
 
 ---
 
+### 5.5 Documents
+
+A writer's own reference library — reference material for the assistant, kept apart from the article-chunks RAG above. *(2026-09-17)*
+
+```
+id            UUID PK
+owner_id      UUID NOT NULL FK → users.id          -- every read, attach, retrieve, delete filters on it
+title         TEXT NOT NULL                         -- filename without extension; not editable
+filename      TEXT NOT NULL                         -- as uploaded
+content_type  TEXT NOT NULL                         -- application/pdf · application/vnd.…wordprocessingml.document · text/plain · text/markdown
+size_bytes    INTEGER NOT NULL                       -- <= 10 MB
+storage_key   TEXT NOT NULL                          -- object key in the private `documents` MinIO bucket
+status        ENUM('pending', 'extracting', 'ready', 'failed') NOT NULL DEFAULT 'pending'
+page_count    INTEGER NULL                           -- set on ready; 1 for TXT/MD and DOCX
+chunk_count   INTEGER NULL                           -- set on ready
+error         TEXT NULL                              -- writer-readable reason when failed
+created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+deleted_at    TIMESTAMPTZ NULL                        -- soft delete, like articles
+```
+
+Indexes:
+- `owner_id`
+- `owner_id, status` (the "fewer than 20 live documents" count on upload, and the library list)
+
+Lifecycle:
+- `pending` → `extracting` → `ready` | `failed`, driven by the `ingest-document` worker job
+- **Soft delete, then purge.** `DELETE /documents/:id` sets `deleted_at` — retrieval stops at once — and enqueues `purge-document`, which removes the MinIO object and hard-deletes the row; the hard delete is what actually cascades `document_chunks` and `article_documents`, exactly as a soft-deleted article's chunks are *not* removed by the FK cascade (§5.1) — the row must be gone, not merely marked.
+- **The 20-document cap** is enforced with a per-owner transaction-scoped advisory lock (`pg_advisory_xact_lock`) around the count-and-insert on `POST /documents`, so two uploads racing the same writer cannot both slip in as document 20 and 21.
+
+---
+
+### 5.6 Document Chunks
+
+Same shape as `article_chunks` (§5.1) so the pgvector query pattern is reused verbatim; chunks exist only for a `ready` document.
+
+```
+id            UUID PK
+document_id   UUID NOT NULL FK → documents.id ON DELETE CASCADE
+chunk_index   INTEGER NOT NULL                       -- order within document
+page          INTEGER NOT NULL                        -- the page the chunk starts on; 1 for TXT/MD and DOCX
+content       TEXT NOT NULL                           -- raw chunk text
+embedding     VECTOR(1536) NOT NULL                   -- Gemini gemini-embedding-001 @ 1536, RETRIEVAL_DOCUMENT
+created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+UNIQUE (document_id, chunk_index)
+```
+
+Indexes:
+- `document_id`
+- HNSW vector index on `embedding` (for fast cosine similarity)
+
+Lifecycle:
+- Written once, in one transaction, when the ingestion job reaches `ready`; a failure rolls the transaction back rather than leaving partial chunks
+- Removed by the `ON DELETE CASCADE` when the purge job hard-deletes the parent `documents` row
+
+---
+
+### 5.7 Article Documents
+
+The attach join — "attached to this article." No status of its own: a chip disappears from the dock the moment the underlying document is gone.
+
+```
+article_id    UUID NOT NULL FK → articles.id ON DELETE CASCADE
+document_id   UUID NOT NULL FK → documents.id ON DELETE CASCADE
+created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+PRIMARY KEY (article_id, document_id)
+```
+
+Indexes:
+- `document_id` (documents attached to more than one article; also what the purge cascade removes)
+
+Lifecycle:
+- Written and deleted wholesale by `PUT /articles/:id/documents { documentIds }`, which requires the caller to own both the article and every document (a mismatch is `404`, never `403`)
+- Cascades away when either side is hard-deleted: the article, or the document via the purge job
+
+---
+
 ## 6. Analytics Entities
 
 ### 6.1 Analytics Events (Raw)
@@ -886,7 +962,8 @@ Indexes:
 - Writer eligibility (`is_marketplace_eligible`) is set by the analytics aggregator when lifetime thresholds are crossed, or by an admin action recorded in `writer_eligibility_audit_log`
 - Writers have one row each in the three metrics rollup tables (audience / content / quality)
 - A user of either account type can save many articles (§3.9). A save is private to the saver, and it is a **pointer, not access** — saving a marketplace or premium article does not unlock it, and §7.4 still governs the body on read
-- All deletes on `articles`, `comments`, `users` are soft (set `deleted_at`); hard cascades only on owned children (chunks, metrics)
+- A writer owns many `documents` (§5.5), each chunked one-to-many into `document_chunks` (§5.6) once `ready`; an article attaches many documents and a document attaches to many articles, through `article_documents` (§5.7) — a second, independent RAG corpus that never mixes with `article_chunks` and never feeds writer memory, Portfolio Insights or search
+- All deletes on `articles`, `comments`, `users` are soft (set `deleted_at`); hard cascades only on owned children (chunks, metrics). `documents` is soft-deleted the same way, but its children (`document_chunks`, `article_documents`) cascade only on the hard delete the `purge-document` job performs — not on the soft delete, matching the article-chunks caution in §5.1
 
 ---
 

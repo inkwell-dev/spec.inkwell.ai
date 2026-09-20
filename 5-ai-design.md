@@ -169,17 +169,23 @@ never persisted into the message history):
 
 | Part | Payload |
 |---|---|
-| `data-status` | `{ step, state, detail?, chunks? }` — `step ∈ draft \| profile \| thinking \| retrieval \| writing \| done`, `state ∈ active \| done \| failed`; retrieval's `done` carries the passages |
+| `data-status` | `{ step, state, detail?, chunks? }` — `step ∈ draft \| profile \| documents \| thinking \| retrieval \| writing \| done`, `state ∈ active \| done \| failed`; retrieval's `done` carries the passages. *`documents` added 2026-09-17 (§9.5) — emitted only when the article has attached, `ready` documents.* |
 | `text` | the answer, or the recap after a write |
 | `tool-write_to_article` | the decision (`placement`, `brief`) |
 | `data-article-start` | `{ id, placement, brief }` — the client opens its insertion range |
 | `data-article-delta` | `{ id, text }` — plain-text chunk of the article |
 | `data-article-done` | `{ id, words, headings }` — written even when the inner stream fails, so the client can always close the range |
 
-**Step order is the order the work happens**: draft → profile → thinking →
-*(retrieval → writing, only for a write)* → done. Retrieval sits after thinking
-because the embedding search is the slowest stage and only a write needs it. No
-"web research" step exists because no web research exists.
+**Step order is the order the work happens**: draft → profile →
+*(documents)* → thinking → *(retrieval → writing, only for a write)* → done.
+Retrieval sits after thinking because the embedding search is the slowest
+stage and only a write needs it. `documents` sits earlier, between `profile`
+and `thinking`, and runs for both a question and a write *(2026-09-17, §9.5)*
+— it is emitted only when the article has attached, `ready` documents, and it
+has to come before routing because a question about the material needs it
+just as much as a write does, unlike the voice-corpus `retrieval` step below,
+which only a write reaches. No "web research" step exists because no web
+research exists.
 
 **Thinking** is the span from sending the outer request to the first visible
 token or tool call. gpt-oss's reasoning parts are not forwarded to the client.
@@ -404,6 +410,101 @@ To avoid token overflow from double-injecting memory and RAG chunks:
 
 ---
 
+### 9.5 Document sources (2026-09-17)
+
+A **second, independent corpus**, sitting beside the article-chunks RAG above
+and never mixing with it. §9.4 answers "does this sound like the writer" from
+the writer's own published work; this corpus answers "what does the material
+the writer attached actually say" from documents they chose to upload. It is
+**reference material**, not voice — the opposite instruction from the block
+above — but it reuses the chunker, the embedder and the query pattern
+verbatim.
+
+**Tables** (full column definitions in `6-database-schema.md` §5.5–5.7):
+`documents` — one row per upload, `status` enum `document_status` stepping
+`pending` → `extracting` → `ready` | `failed`; `document_chunks` — the same
+shape as `article_chunks` (`chunk_index`, `page`, `content`, `embedding
+vector(1536)`), so `findSimilarDocumentChunks` reuses the pgvector query
+pattern of the writer-corpus lookup; `article_documents` — the attach join,
+one row per article–document pair, "attached to this article."
+
+**Storage.** A private MinIO bucket, `documents`, created at boot like the
+images bucket but **without** the anonymous-read policy. Upload is a
+presigned PUT; download is `GET /documents/:id/file`, which returns a
+presigned GET valid **600 seconds**, owner-only. No public URL for a document
+ever exists.
+
+**Ingestion** runs as `ingest-document` on its own BullMQ queue, `documents`
+— separate from article embedding so a slow PDF never delays it. The worker
+steps `pending` → `extracting` → extract by type (**PDF** via `pdf-parse`,
+per page; **DOCX** via `mammoth`, one page throughout — DOCX has no fixed
+pages to derive one from; **TXT/MD** as UTF-8) → chunk with the same rules as
+§9.4 (120–1,200 characters, thin blocks merged forward) through a new
+`chunkText`, which keeps the page a chunk starts on → embed
+(`gemini-embedding-001`, `RETRIEVAL_DOCUMENT` — unchanged from §9.4, see
+§13.5) → `ready`, with `page_count` and `chunk_count` set. Caps: **20
+documents per writer**, **10 MB**, **200 pages**. Writer-readable failure
+sentences:
+
+- Under a **50-character** text floor after extraction: "This PDF has no
+  text layer — export it with selectable text."
+- Over **200 pages**: "Documents are limited to 200 pages".
+- Any other extraction or embedding failure: "Couldn't process this document
+  — try again."
+- A 21st document: `409` "You already have 20 documents".
+
+A delete soft-deletes the row — retrieval stops at once — then enqueues
+`purge-document`, which removes the MinIO object and hard-deletes the row,
+cascading chunks and attachments.
+
+**Retrieval.** `RetrievalService.findSimilarDocumentChunks(query, { ownerId,
+documentIds, topK = 5, minSimilarity = 0.60 })` embeds the writer's message as
+`RETRIEVAL_QUERY`, exactly like the voice lookup, and scopes the `<=>` query
+to `owner_id = caller`, `id IN attached`, `status = 'ready'`,
+`deleted_at IS NULL`. It runs **before the routing call**, for **both**
+questions and writes — a question about the material needs it as much as a
+write does, unlike the voice passages above, which stay write-only. The
+`0.60` floor is carried over from §9.4 rather than re-derived, and the plan's
+spike measured it on this corpus rather than assumed it transfers: **on-topic
+0.606–0.738, off-topic 0.436–0.488**, measured 2026-09-17 on uploaded
+reference text — the same gap shape as the article corpus, so the floor holds
+unchanged. An attached document still `extracting` at send time is skipped
+for that turn.
+
+**Prompt block**, distinct from the voice block and carrying the opposite
+instruction:
+
+> Reference material the writer attached. Use it for facts and structure; do
+> not imitate its style. When you use a passage, cite it inline as [Title,
+> p. N].
+
+Each passage is prefixed `[Title, p. N]` (or `[Title]` for DOCX/text).
+
+**Status step.** `documents` is a new step in `CHAT_STEPS`, on both the
+backend and the frontend copies, inserted **between `profile` and
+`thinking`** — earlier than the write-only `retrieval` step in §5.1, because
+a question never reaches that step and needs the material just as much as a
+write does. Emitted only when the article has attached, `ready` documents.
+The run card gains a row **"Reading your documents — N passages from M
+documents"**, expandable to the passages used; each passage is a link that
+calls `GET /documents/:id/file` on click and opens the returned presigned URL
+with `#page=N` appended in a new tab (a plain `href` cannot carry a URL that
+expires in 600 seconds).
+
+**Citations.** The model's inline citation stays in the text: `[Title, p. N]`
+for PDFs, `[Title]` for DOCX and TXT/MD, which have no page to cite.
+
+**Cost.** ≤ 5 passages ≈ 1,500 prompt tokens, billed in the turn like the
+voice passages above — free to upload, not free to use.
+
+**Scope.** Every route filters on `owner_id`; a mismatch is `404`, never
+`403`, so a document's existence is not observable from outside its owner.
+Documents never feed **writer memory** (§9.1–9.3), **Portfolio Insights**
+(§4.4), or **search** — they are the writer's material, not the writer's
+work, and none of the three treats an uploaded document as if it were.
+
+---
+
 ## 10. AI Usage Control
 
 ### 10.1 Token System
@@ -554,7 +655,7 @@ naming the reset time. *(Recorded 2026-09-12; the behaviour predates the note.)*
 | LLM (chat, inline edit, Portfolio Insights) | **Groq** (`openai/gpt-oss-120b`, then `openai/gpt-oss-20b`) | **`gemini-3.5-flash`** | Both free tiers. *Updated 2026-09-03: Llama 3.3 70B and Gemini 2.0 Flash are both retired — the ids here are the ones verified by invocation. Portfolio Insights does **not** use this chain; it pins `openai/gpt-oss-120b` for `json_schema` support.* |
 | Speech-to-text | **Groq `whisper-large-v3-turbo`** | — | *Built 2026-09-15* (§5.2), for the voice prompt. `voice_transcribe` is now written by `POST /ai/transcribe`. The 2026-09-04 note recorded that nothing existed then. |
 | Text-to-speech | **Gemini `gemini-2.5-flash-preview-tts`** (voice *Kore*) | — | *Built 2026-09-15* (§5.2). Free tier; availability probed once per process and the feature hidden when the key cannot speak. No browser-voice fallback by decision. |
-| Embeddings (RAG) | **Gemini `gemini-embedding-001`** | — | Free tier, no payment method required. Emits **1536 dimensions** via `outputDimensionality`, matching the original OpenAI width so the schema is unaffected. |
+| Embeddings (RAG) | **Gemini `gemini-embedding-001`** | — | Free tier, no payment method required. Emits **1536 dimensions** via `outputDimensionality`, matching the original OpenAI width so the schema is unaffected. *Unchanged for document sources (§9.5, 2026-09-17)* — the same model and width also embed `document_chunks`; no separate provider or dimension for the second corpus. |
 | Content moderation | **Groq `groq/compound-mini`** | — | Free. *Updated 2026-09-04:* OpenAI has been **removed**, not merely left unconfigured — its `/v1/moderations` endpoint is free but gated behind a non-empty credit balance, so the key cannot work on a free-tier project and the code path could never run. The classifier was also `llama-3.1-8b-instant` until Groq retired it, which silently disabled moderation entirely (the chain fails open, so a dead provider and a clean verdict are indistinguishable). `npm run models:check` and a daily worker job now call every model id so a third retirement is visible. |
 | Premium AI (optional) | — | — | **Never built.** *Recorded 2026-09-04:* no Anthropic dependency, key or call exists in the codebase, and there is no paid budget. Premium accounts differ by AI token allowance, not by model. The row previously read "**Anthropic Claude** — small paid budget for higher-quality premium actions". |
 

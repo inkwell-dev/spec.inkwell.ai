@@ -180,8 +180,11 @@ Text Processing:
 Voice Processing:
 - Audio blob → Groq Whisper transcription → transcript into the assistant's input (the writer sends it) · reply text → Gemini TTS → WAV played in the dock *(2026-09-15; the transcript → structured draft step stays descoped)*
 
+Document Ingestion *(2026-09-17)*:
+- Browser presigns → PUT to the private `documents` MinIO bucket → `POST /documents` enqueues `ingest-document` on the `documents` BullMQ queue → worker extracts (`pdf-parse` per page for PDF, `mammoth` for DOCX, UTF-8 for TXT/MD) → `chunkText` (shares the splitter with `chunkArticle`, keeps the source page per chunk) → Gemini `RETRIEVAL_DOCUMENT` embeddings → `document_chunks`, status `ready`. See `5-ai-design.md` §9.5.
+
 RAG Retrieval:
-- Query embedded via Gemini → pgvector cosine similarity search (`<=>`) → top-K chunks returned → injected into prompt context
+- Query embedded via Gemini → pgvector cosine similarity search (`<=>`) → top-K chunks returned → injected into prompt context. **Two independent corpora** as of 2026-09-17: the writer's own published articles (`article_chunks`, voice — write-only) and, where an article has attached documents, that writer's uploaded reference material (`document_chunks`, facts — both questions and writes). Same query pattern, same 0.60 floor, never mixed in one prompt block.
 
 Portfolio Insights:
 - Magazine requests evaluation → representative chunks retrieved from writer's corpus → structured prompt → LLM generates Zod-validated report → cached in `portfolio_insights` for 24h
@@ -237,8 +240,9 @@ No additional search engine (Elasticsearch) or vector database (Pinecone, Weavia
 > | Rate limiting in Redis | `ThrottlerModule.forRoot({ throttlers: [...] })` in `app.module.ts` is declared with **no storage option**, so `@nestjs/throttler` uses its default in-memory store. Redis is not consulted. |
 > | Refresh tokens in Redis | JWTs verified against `JWT_REFRESH_SECRET` — see §2.3 of `9-implementation-guide.md`, corrected in the same pass. |
 >
-> What Redis actually does, in full: it is the transport for the four BullMQ
-> queues below. That is the whole of it.
+> What Redis actually does, in full: it is the transport for the six BullMQ
+> queues below *(count corrected 2026-09-17 — it was already five before
+> `documents` was added)*. That is the whole of it.
 >
 > The in-memory throttler has a consequence worth stating rather than hiding: the
 > rate limit is **per process**. It is correct on this single-container deploy and
@@ -258,6 +262,7 @@ No additional search engine (Elasticsearch) or vector database (Pinecone, Weavia
 - Magazine subscription renewal (monthly cron — grant credits + update subscription state)
 - Article embedding on publish (Gemini API calls)
 - Email dispatch (transactional emails via Resend)
+- Document ingestion and purge — its own queue, `documents` *(2026-09-17)*: `ingest-document` extracts, chunks and embeds an uploaded file; `purge-document` removes the MinIO object and hard-deletes a soft-deleted document's row. Kept off the general queue so a slow PDF never delays article embedding.
 
 ---
 
@@ -275,6 +280,8 @@ No additional search engine (Elasticsearch) or vector database (Pinecone, Weavia
 | `embed-article` | On publish/update | Generate/refresh article chunks |
 | `extract-writer-memory` | On publish | LLM extracts structured memory |
 | `send-email` | On trigger | Transactional email via Resend |
+| `ingest-document` | On upload | Extract, chunk and embed a document *(2026-09-17)* |
+| `purge-document` | On delete | Remove the MinIO object and hard-delete the row *(2026-09-17)* |
 
 ---
 
@@ -340,9 +347,18 @@ Client Event → Batched POST `/analytics/events` → `analytics_events` table (
 
 ---
 
+### Document Handling *(2026-09-17)*
+
+- A **second, private** MinIO bucket, `documents` — created at boot like the images bucket, but **without** the anonymous-read policy the images bucket carries
+- Upload: `POST /documents/presign` extends `UploadsService` with a bucket parameter and a document content-type whitelist (PDF, DOCX, TXT, MD); the browser then PUTs directly
+- Download: `GET /documents/:id/file`, owner-checked, returns a **presigned GET valid 600 seconds** — never a public URL, and never routed through the backend
+
+---
+
 ### Access
 
-- Public read URLs for rendering  
+- Public read URLs for rendering **images**
+- The `documents` bucket is **presigned-GET-only**: no object is ever readable without a fresh, short-lived, owner-scoped URL — the opposite access model from images, by design, since a document is private reference material rather than published content
 - Controlled upload endpoints (authenticated)
 
 ---
