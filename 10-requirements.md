@@ -133,7 +133,7 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-78 | The assistant decides, per message, whether to answer in the panel or write into the document — *superseding the manual insert of FR-30 (2026-09-14)* | Must | 8 |
 | FR-79 | Written text streams into the document at the cursor or over the selection, marked and protected until the writer keeps or discards it; Keep is one undo step; Discard restores what it replaced | Must | 8 |
 | FR-80 | Show the pipeline's real steps as they run, with counts, and a one-line recap after a write | Must | 8 |
-| FR-81 | The assistant is a floating dock that minimizes to a button carrying the live step | Should | 8 |
+| FR-81 | The assistant is a panel docked beside the editor with Chat and Sources tabs; it collapses to a rail that carries the live step, and opens as a bottom sheet below desktop width *(amended 2026-09-20; was a floating dock)* | Should | 8 |
 | FR-82 | Record a prompt with the microphone (≤ 5 min) and have it transcribed into the assistant's input, editable, billed at 200 tokens a minute against the daily allowance | Should | 8 |
 | FR-83 | Hear each assistant reply read aloud, with a persisted mute; the control exists only when the key can speak | Could | 8 |
 | FR-84 | Upload PDF, DOCX, TXT or MD reference documents (≤ 10 MB, ≤ 200 pages, 20 per writer) into a private library, with text extracted and embedded by the worker and a readable failure reason when it cannot be | Must | 9 |

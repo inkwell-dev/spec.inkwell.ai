@@ -246,13 +246,17 @@ is configured **and** a one-time probe (speaking the word "ready") succeeded.
 Both outcomes are memoised for the life of the process. This flag alone
 decides whether the mute button exists; there is no browser-voice fallback.
 
-**In the dock.** A microphone beside the input records; a check mark sends the
-audio and the transcript lands in the input, editable — nothing is sent until
-Enter. The mic is refused below one minute's worth of tokens and while the
-input is disabled for any other reason. Every settled assistant reply is read
-aloud unless the writer has muted it (a button left of the minimize control,
-remembered per browser, default unmuted); a stopped or failed reply is never
-spoken.
+**In the panel** *(2026-09-20: the dock became a docked panel — see
+`2-features.md` §3.1)*. The microphone is the left slot of the composer
+card's action bar; a check mark sends the audio and the transcript lands in
+the input, editable — nothing is sent until Enter. Recording changes only
+that left slot — the textarea, the `📎 N` count and Send/Stop are
+untouched. The mic is refused below one minute's worth of tokens and while
+the input is disabled for any other reason. Every settled assistant reply
+is read aloud unless the writer has muted it (the mute button sits in the
+panel header beside the collapse control, and at the bottom of the rail;
+remembered per browser, default unmuted); a stopped or failed reply is
+never spoken.
 
 ## 6. Context Management
 

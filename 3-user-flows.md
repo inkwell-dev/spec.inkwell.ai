@@ -96,14 +96,17 @@ IF publish:
 
 ## 5. 🤖 AI Chat Assistant Flow
 
-User opens the floating assistant (bottom-right dock; minimizes to a button)  
+User opens the assistant from the editor toolbar's *AI Assistant* button —
+it docks beside the editor as a 400 px panel, Chat tab active (the Sources
+tab holds attach/upload, §6.5); the same button collapses it to a 48 px
+rail and re-expands it  
 → User inputs prompt (the current selection, if any, travels with it)  
 → System sends:
 - Article context  
 - User preferences  
 
 → AI decides: answer in the panel, or write into the document  
-→ Panel shows each step as it runs (draft · profile · thinking · [passages · writing])  
+→ Panel shows each step as it runs (draft · profile · thinking · [passages · writing]) — collapsed to the rail, the Chat icon carries the same step as a badge instead (a live word count while writing)  
 
 If it answers → the answer appears in the panel  
 If it writes → text streams into the document at the cursor (or over the selection), tinted  
@@ -114,7 +117,8 @@ If it writes → text streams into the document at the cursor (or over the selec
 
 → Panel shows a one-line recap of what was written  
 
-*(Rewritten 2026-09-14; the previous flow ended with an "Insert into article" choice in the panel.)*
+*(Rewritten 2026-09-14; the previous flow ended with an "Insert into article" choice in the panel.)*  
+*(2026-09-20: the assistant moved from a floating dock to a docked, tabbed panel with a rail — see [`2-features.md`](./2-features.md) §3.1.)*
 
 ---
 
@@ -146,13 +150,17 @@ User picks a PDF/DOCX/TXT/MD file (checked client-side: 10 MB)
 → Row polls every 3 s → **Ready** with page count, or **Failed** with a reason and a **Retry**  
 → (a row stuck `pending` past 60 s reads "Waiting…" — the worker is down, nothing lost)
 
-**Attach, in the dock**
+**Attach, in the Sources tab** *(2026-09-20: was the dock's Sources strip,
+whose Attach button opened a separate checklist)*
 
-User opens the assistant on an article → **Sources** strip fetches
-`GET /articles/:id/documents`  
-→ User clicks **Attach** → picks from the library's **Ready** documents (checkboxes)  
+User opens the assistant on an article → the **Sources** tab fetches
+`GET /articles/:id/documents` and shows two always-visible groups:
+*Attached to this article* and *Your library*  
+→ User checks a **Ready** document in *Your library* — no separate Attach
+button or checklist step  
 → `PUT /articles/:id/documents { documentIds }` saves immediately — no separate confirm step  
-→ Chip appears in the strip (title, page count, × to detach)
+→ It appears in *Attached to this article* (title, page count, × to detach), and the `📎 N` count in the composer updates  
+→ Uploading from the tab runs the same presign → PUT → register flow as the library page, with its own progress bar, so the writer never leaves the editor; *Manage in library →* still links out to `/dashboard/documents` for retry and delete
 
 **Ask or write, with documents attached**
 
@@ -165,7 +173,7 @@ User sends a question or a write request
 **Detach or delete**
 
 User clicks × on a chip → `PUT /articles/:id/documents` without that id → chip gone, document skipped on the next turn  
-→ User deletes a document from the library → soft-deleted at once (retrieval stops immediately) → purge job removes the object and the row → the chip disappears from every article's strip on its next fetch
+→ User deletes a document from the library → soft-deleted at once (retrieval stops immediately) → purge job removes the object and the row → the chip disappears from every article's Sources tab on its next fetch
 
 ---
 

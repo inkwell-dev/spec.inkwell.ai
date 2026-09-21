@@ -259,16 +259,39 @@ A contextual AI assistant integrated into the editor.
 - Adaptive tone based on user style
 - Can ask clarifying questions depending on confidence level
 
-#### The floating dock (2026-09-14)
+#### The assistant panel (2026-09-20)
 
-The assistant is a card anchored bottom-right of the editor — no backdrop, no
-focus trap, the document stays editable behind it. It **minimizes to a round
-button**; while a request is in flight the button is a pill showing the current
-step ("Searching your published work…", "Writing… 412 words"), and a run that
-finishes while minimized marks the button until it is opened. Escape minimizes;
-the close button hides it and the toolbar's *AI Assistant* button brings it
-back. The minimized state is remembered per browser; the conversation lives for
-the editor session only.
+On desktop (`lg`, 1024 px — the app sidebar stays) the assistant is a fixed
+**400 px panel docked beside the editor**, with **Chat** and **Sources**
+tabs — switching between them keeps the Chat tab mounted, so its scroll
+position and any recording in progress survive the switch, and the Sources
+tab is disabled while recording; no backdrop, no focus trap, the document
+stays editable beside it.
+Prompts go through a **composer card**: a textarea that grows from one line
+to four and then scrolls, Enter sends and Shift+Enter inserts a newline,
+with a fixed action bar below it — the microphone on the left, the `📎 N`
+attached-document count in the middle (tapping it switches to the Sources
+tab), Send or Stop on the right. The "Drawing on N published articles"
+notice is no longer a permanent band: it is the Chat tab's empty-state
+sentence, and once a conversation exists, a one-line footer above the
+composer ("Drawing on 12 articles · 2 sources") — see §3.7. The panel
+**collapses to a 48 px rail** —
+Chat and Sources icons only — whose Chat icon carries the live step as a
+badge while a request is in flight (a live word count while writing); a run
+that finishes while collapsed marks the icon until the rail is expanded.
+Escape collapses to the rail; the toolbar's *AI Assistant* button toggles
+expanded ⇄ rail, and the panel is never closed, only collapsed — the
+expanded/rail state (and the active tab) is remembered per browser, and the
+conversation lives for the editor session only. Below `lg` the same panel
+opens instead as an **85 vh bottom sheet**, and while it is closed with a
+run in flight the minimized pill shows the live step, as before.
+
+*(Until 2026-09-20 this was a card anchored bottom-right of the editor that
+minimized to a round pill on every screen size, with a single input row for
+the microphone, the text field and Send. It moved to a docked, tabbed panel
+with a composer card and a rail once voice controls (§3.2) and the document
+library (§3.7) made that one row and its bands too crowded. Nothing the
+assistant does changed — only where its parts live.)*
 
 **The model decides where a reply goes.** A question is answered in the panel.
 A request to produce or change article text is **written into the document**:
@@ -309,9 +332,10 @@ The assistant can be spoken to, and speaks back.
   so a free-plan writer cannot record and a premium one sees the cost on the
   same indicator as everything else.
 - Every settled reply — an answer or a recap — is **read aloud** (Gemini TTS)
-  unless muted. The mute button sits left of the minimize control and is
-  remembered per browser; speech is free to the writer. When the key cannot
-  speak, the button does not exist: there is no robotic fallback.
+  unless muted. The mute button sits in the panel header beside the collapse
+  control, and on the rail at the bottom; the muted state is remembered per
+  browser; speech is free to the writer. When the key cannot speak, the
+  button does not exist: there is no robotic fallback.
 
 #### Voice-to-Article Generation
 
@@ -398,12 +422,23 @@ voice.
 - **Caps**: 20 documents per writer, 10 MB and 200 pages each. A scanned or
   image-only PDF fails with a no-text-layer reason rather than being
   silently accepted with nothing to retrieve.
-- **Sources strip**, above the conversation in the assistant dock: a chip per
-  attached document (title, page count, × to detach) and an **Attach** button
-  opening a checklist of the library's ready documents, with an "Upload
-  new…" link out to the library page. Attaching or detaching saves at once.
-  Empty state: *"No sources attached — the assistant writes from your own
-  published work."*
+- **Sources tab**, in the assistant panel: two always-visible groups.
+  *Attached to this article* lists title, page count, a status chip when not
+  ready, and × to detach. *Your library* lists every document — a ready one
+  carries a checkbox that attaches or detaches it at once; a pending or
+  failed one shows its status chip and isn't toggleable. An **Upload**
+  button runs the same presign → PUT → register flow as the library page,
+  with its progress bar, so the writer never leaves the editor. *Manage in
+  library →* links to `/dashboard/documents` for retry and delete, opening in
+  a new tab so the conversation is never lost. A failure to load either group
+  renders in the tab rather than emptying it silently: *"Couldn't load
+  sources"* with a **Retry** for the attached list, *"Couldn't load your
+  documents"* for the library list. Empty state: *"No sources attached — the
+  assistant writes from your own published work."* *(2026-09-20: replaces the
+  dock's Sources strip, whose Attach button opened a separate checklist with
+  an "Upload new…" link out
+  to the library page; the tab now shows both groups and Upload inline,
+  alongside Chat — §3.1.)*
 - **Use in the assistant.** Attached documents are read for both questions
   and article writes — never for voice, which stays the writer's own
   published corpus. A used passage is cited inline as `[Title, p. N]` (or
