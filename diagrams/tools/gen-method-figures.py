@@ -56,7 +56,7 @@ def write(name, title, cells, w, h):
 
 # ── Figure 1.1 — the Scrum framework, as practised here ──────────────────────
 c = [
-    cell("pb", "Product backlog&lt;br&gt;&lt;br&gt;54 user stories in 8 epics,&lt;br&gt;"
+    cell("pb", "Product backlog&lt;br&gt;&lt;br&gt;72 user stories in 9 epics,&lt;br&gt;"
                "ordered by MoSCoW priority,&lt;br&gt;estimated in story points",
          60, 250, 230, 150, BOX + AMBER),
     cell("plan", "Sprint planning&lt;br&gt;&lt;br&gt;pull the next slice,&lt;br&gt;set the sprint goal",
@@ -118,13 +118,13 @@ write("fig-1-2-waterfall-vs-agile", "Figure 1.2 - Classic and agile compared", c
 
 # ── Figure 6.7 — the test strategy ───────────────────────────────────────────
 c = [
-    cell("e2e", "End-to-end&lt;br&gt;155 Playwright specs, 23 files&lt;br&gt;real browser, seeded corpus",
+    cell("e2e", "End-to-end&lt;br&gt;183 Playwright tests, 25 files&lt;br&gt;real browser, seeded corpus",
          400, 120, 380, 90, HEAD + AMBER),
     cell("int", "Integration through the API&lt;br&gt;auth → publish → purchase → verify the ledger",
          310, 240, 560, 90, HEAD + BLUE),
-    cell("unit", "Unit and service tests&lt;br&gt;the bulk of 479 backend tests, run against a real PostgreSQL",
+    cell("unit", "Unit and service tests&lt;br&gt;the bulk of 792 backend tests in 51 suites, run against a real PostgreSQL",
          220, 360, 740, 90, HEAD + GREEN),
-    cell("ledger", "Ledger invariant harness&lt;br&gt;&lt;br&gt;27 tests, most of them&lt;br&gt;"
+    cell("ledger", "Ledger invariant harness&lt;br&gt;&lt;br&gt;34 tests, most of them&lt;br&gt;"
                    "negative: a fixture builds&lt;br&gt;a coherent purchase, then&lt;br&gt;"
                    "corrupts one column and&lt;br&gt;asserts the right invariant fires",
          60, 500, 300, 170, BOX + PURPLE),

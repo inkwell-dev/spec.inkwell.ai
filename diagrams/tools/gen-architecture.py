@@ -159,7 +159,7 @@ c = [
     cell("s1", "1. Install dependencies (pnpm)", 70, 210, 260, 40, BOX + WHITE),
     cell("s2", "2. Lint — eslint --max-warnings=0", 70, 260, 260, 40, BOX + WHITE),
     cell("s3", "3. Typecheck — tsc --noEmit", 70, 310, 260, 40, BOX + WHITE),
-    cell("s4", "4. Test — 479 backend tests", 360, 210, 270, 40, BOX + WHITE),
+    cell("s4", "4. Test — 792 backend tests", 360, 210, 270, 40, BOX + WHITE),
     cell("s5", "5. Schema-drift check", 360, 260, 270, 40, BOX + AMBER),
     cell("s6", "6. Build the multi-stage image", 360, 310, 270, 40, BOX + WHITE),
     cell("ghcr2", "GHCR&lt;br&gt;tagged latest and git SHA", 740, 220, 260, 80, HEAD + PURPLE),
