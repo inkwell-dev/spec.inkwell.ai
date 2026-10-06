@@ -35,6 +35,17 @@ def edge(i, s, t, label="", style=EDGE):
     return (f'<mxCell id="{i}" value="{label}" style="{style}" edge="1" parent="1" '
             f'source="{s}" target="{t}"><mxGeometry relative="1" as="geometry"/></mxCell>')
 
+def lane(i, s, t, label, sx, tx, y, exit_x, entry_x):
+    """An edge pinned to leave s at exit_x and enter t at entry_x, running
+    horizontally at height y in between — one lane per edge, so no two edges
+    share a run and no label sits on another edge's line."""
+    style = (EDGE + f"exitX={exit_x};exitY=1;exitDx=0;exitDy=0;"
+             f"entryX={entry_x};entryY=0;entryDx=0;entryDy=0;")
+    return (f'<mxCell id="{i}" value="{label}" style="{style}" edge="1" parent="1" '
+            f'source="{s}" target="{t}"><mxGeometry relative="1" as="geometry">'
+            f'<Array as="points"><mxPoint x="{sx}" y="{y}"/><mxPoint x="{tx}" y="{y}"/></Array>'
+            f'</mxGeometry></mxCell>')
+
 def write(name, title, cells, w=1300, h=900):
     xml = ('<mxfile host="Electron" type="device">\n'
            f'  <diagram id="{name}" name="{title}">\n'
@@ -113,32 +124,33 @@ write("fig-3-2-architecture-backend", "Figure 3.2 - Logical backend architecture
 c = [
     cell("user", "User's browser", 80, 30, 240, 50, HEAD + GREY),
     cell("ghcr", "GHCR — images tagged latest and git SHA", 940, 30, 320, 50, HEAD + GREY),
-    cell("vps", "VPS — Docker Compose, 8 services", 40, 110, 1220, 610, GRP + GREY),
+    cell("vps", "VPS — Docker Compose, 8 services", 40, 110, 1220, 620, GRP + GREY),
     cell("nginx", "nginx&lt;br&gt;TLS termination · reverse proxy · SSE unbuffered&lt;br&gt;the only service published publicly: 80, 443",
          420, 160, 460, 80, BOX + ORANGE),
     cell("web", "web&lt;br&gt;Next.js standalone&lt;br&gt;listens 3000", 80, 300, 240, 80, BOX + BLUE),
     cell("api", "api&lt;br&gt;NestJS&lt;br&gt;listens 3000, publishes nothing", 380, 300, 240, 80, BOX + GREEN),
-    cell("worker", "worker&lt;br&gt;same image, second entrypoint&lt;br&gt;4 queues", 680, 300, 240, 80, BOX + GREEN),
+    cell("worker", "worker&lt;br&gt;same image, second entrypoint&lt;br&gt;6 queues", 680, 300, 240, 80, BOX + GREEN),
     cell("migrate", "migrate&lt;br&gt;one-shot, must exit 0&lt;br&gt;before api and worker start", 980, 300, 240, 80, BOX + AMBER),
-    cell("db", "db&lt;br&gt;pgvector/pgvector:pg16&lt;br&gt;127.0.0.1:5433", 80, 440, 260, 80, BOX + PURPLE),
-    cell("redis", "redis&lt;br&gt;7-alpine&lt;br&gt;127.0.0.1:6379", 380, 440, 240, 80, BOX + RED),
-    cell("minio", "minio&lt;br&gt;S3 API proxied by nginx at /storage&lt;br&gt;console on 127.0.0.1:9001 only",
-         660, 440, 300, 80, BOX + PURPLE),
-    cell("ext3", "Groq · Gemini&lt;br&gt;Sentry", 1000, 440, 220, 80, BOX + AMBER),
-    cell("vols", "Volumes — postgres_data · minio_data · redis_data · certbot_webroot", 80, 580, 1140, 50, BOX + WHITE),
+    cell("db", "db&lt;br&gt;pgvector/pgvector:pg16&lt;br&gt;127.0.0.1:5433", 80, 510, 260, 80, BOX + PURPLE),
+    cell("redis", "redis&lt;br&gt;7-alpine&lt;br&gt;127.0.0.1:6379", 380, 510, 240, 80, BOX + RED),
+    cell("minio", "minio&lt;br&gt;public image bucket, proxied at /storage&lt;br&gt;private documents bucket, served via /api&lt;br&gt;console on 127.0.0.1:9001 only",
+         660, 510, 300, 80, BOX + PURPLE),
+    cell("ext3", "Groq · Gemini&lt;br&gt;Sentry", 1000, 510, 220, 80, BOX + AMBER),
+    cell("vols", "Volumes — postgres_data · minio_data · redis_data · certbot_webroot", 80, 640, 1140, 50, BOX + WHITE),
     edge("g1", "user", "nginx", "HTTPS", EV),
     edge("g2", "nginx", "web", "/", EV),
     edge("g3", "nginx", "api", "/api", EV),
-    edge("g4", "api", "db", "", EV),
+    lane("g4", "api", "db", "", 428, 288, 400, 0.2, 0.8),
     edge("g5", "api", "redis", "enqueue", EV),
-    edge("g6", "worker", "redis", "consume", EV),
-    edge("g7", "worker", "ext3", "embeddings", EV),
-    edge("g8", "migrate", "db", "", EV),
+    lane("g6", "worker", "redis", "consume", 716, 584, 445, 0.15, 0.85),
+    lane("g7", "worker", "ext3", "embeddings", 884, 1033, 400, 0.85, 0.15),
+    lane("g8", "migrate", "db", "", 1100, 132, 490, 0.5, 0.2),
     edge("g9", "ghcr", "vps", "docker compose pull", EV),
-    edge("g10", "api", "minio", "presign", EV),
-    edge("g11", "api", "ext3", "completions", EV),
+    lane("g10", "api", "minio", "presign · read documents", 608, 705, 420, 0.95, 0.15),
+    edge("g12", "worker", "minio", "read documents", EDGE + "exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.4667;entryY=0;entryDx=0;entryDy=0;"),
+    lane("g11", "api", "ext3", "completions", 572, 1066, 468, 0.8, 0.3),
 ]
-write("fig-3-3-architecture-physical", "Figure 3.3 - Physical architecture", c, 1320, 790)
+write("fig-3-3-architecture-physical", "Figure 3.3 - Physical architecture", c, 1320, 850)
 
 # ── Figure 3.4 — CI/CD pipeline ──────────────────────────────────────────────
 c = [
