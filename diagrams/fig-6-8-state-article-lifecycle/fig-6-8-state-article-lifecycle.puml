@@ -22,10 +22,22 @@ state "Published — public, premium" as PubPremium {
   PubPremium : body requires a premium plan
 }
 
-state "Published — marketplace" as Market {
+state "Listed — marketplace" as Market {
   Market : absent from the public feed
   Market : priced in credits
   Market : body requires a preview or a purchase
+}
+
+state "Owned by a magazine" as Owned {
+  Owned : one full purchase, exclusive
+  Owned : still on the marketplace, not public
+  Owned : in the magazine's library, waiting
+}
+
+state "Published by a magazine" as PubMag {
+  PubMag : public and free, price cleared
+  PubMag : publisherId names the magazine
+  PubMag : publishedAt left untouched
 }
 
 state Deleted {
@@ -41,12 +53,14 @@ PubFree --> PubFree : update\n/ re-embed, refresh the voice profile
 PubPremium --> PubPremium : update
 Market --> Market : update
 
-Market --> PubFree : abandon the sale\n[one-way]
-Market --> PubPremium : abandon the sale\n[one-way]
+Market --> PubFree : abandon the sale\n[one-way, no full purchase]
+Market --> PubPremium : abandon the sale\n[one-way, no full purchase]
+Market --> Owned : full purchase by a magazine\n[no other magazine owns it]
+Owned --> PubMag : the magazine publishes\n/ public, free, publisher recorded
 
 PubFree --> Deleted : soft delete
 PubPremium --> Deleted : soft delete
-Market --> Deleted : soft delete
+Market --> Deleted : soft delete\n[no full purchase]
 Draft --> Deleted : soft delete
 Deleted --> [*]
 
@@ -54,6 +68,13 @@ note right of Market
   public → marketplace is refused by the API. An article
   the public has already read has no exclusivity left to
   sell, so the switch runs one way only.
+end note
+
+note right of Owned
+  Once a magazine owns the article, the writer can
+  neither switch it to public nor delete it, and no
+  other magazine can preview or buy it: each is
+  refused with 409 (FR-72).
 end note
 
 note bottom of Deleted
