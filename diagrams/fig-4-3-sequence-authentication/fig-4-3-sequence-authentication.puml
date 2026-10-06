@@ -13,20 +13,26 @@ U -> W : Submit email and password
 activate W
 W -> A : POST /auth/login
 activate A
-A -> D : Read the account by email
-activate D
-D --> A : Account row
-deactivate D
-A -> A : Compare the password against the bcrypt hash
 
-alt credentials invalid, or the account is banned
-  A --> W : 401, generic message
-  W --> U : Display "invalid credentials"
-else credentials valid
-  A -> A : Issue an access token (15 min)\nand a refresh token (7 days)
-  A --> W : Tokens and the account profile
-  W -> W : Store the access token and set the auth cookie
-  W --> U : Redirect to the feed
+alt more than 10 sign-in attempts from this address in a minute
+  A --> W : 429, too many requests
+  W --> U : Display the error message
+else within the rate limit
+  A -> D : Read the account by email
+  activate D
+  D --> A : Account row
+  deactivate D
+  A -> A : Compare the password against the bcrypt hash
+
+  alt credentials invalid, or the account is banned
+    A --> W : 401, generic message
+    W --> U : Display "invalid credentials"
+  else credentials valid
+    A -> A : Issue an access token (15 min)\nand a refresh token (7 days)
+    A --> W : Tokens and the account profile
+    W -> W : Store the access token and set the auth cookie
+    W --> U : Redirect to the feed
+  end
 end
 deactivate A
 deactivate W
@@ -47,6 +53,8 @@ group Silent refresh, on any later request
 end
 
 note over U, D
+  The credential routes are rate-limited per address: 10 a minute on
+  sign-in and 5 on registration, against 60 everywhere else (NFR-05).
   The cookie is refreshed as well as the client store. Before
   Phase Q it was written only at sign-in, so every session died
   silently after 15 minutes and unsaved editor work was lost.
