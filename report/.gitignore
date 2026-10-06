@@ -1,0 +1,5 @@
+# Intermediates of build.py and the PDF step; only the finished documents are kept.
+build/*
+!build/Inkwell-PFE-Report.pdf
+!build/Inkwell-PFE-Report.docx
+!build/pdf.cjs
