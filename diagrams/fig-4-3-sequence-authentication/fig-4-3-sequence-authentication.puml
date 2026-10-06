@@ -55,8 +55,8 @@ end
 note over U, D
   The credential routes are rate-limited per address: 10 a minute on
   sign-in and 5 on registration, against 60 everywhere else (NFR-05).
-  The cookie is refreshed as well as the client store. Before
-  Phase Q it was written only at sign-in, so every session died
-  silently after 15 minutes and unsaved editor work was lost.
+  The cookie is refreshed as well as the client store: the route
+  proxy reads the cookie, so a refresh that updated only the store
+  would end the session after 15 minutes and lose unsaved work.
 end note
 @enduml
