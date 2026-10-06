@@ -211,16 +211,21 @@ host-side on this project at all; the skill's `references/environment.md`
 
 ---
 
-## 6. Open questions — these block work
+## 6. Questions answered by the user (2026-10-06)
 
-1. **The Gantt dates.** `fig-2-4` says `[Report submission] happens at
-   2026-08-31` and `[Defense] happens at 2026-09-07`. Both are in the past and
-   neither happened. The figure also has no S8/S9 bars; the commit record
-   suggests roughly Sep 7–14 and Sep 15–21, but the user's own tracking wins.
-   `fig-2-4` cannot be regenerated until this is answered.
-2. **Is `GOOGLE_CLIENT_ID` populated in the capture environment?** The sign-in
-   button is gated on Google being *configured* (2026-08-24), so this decides
-   whether `guest-02-login` and `guest-03-register` show it.
+Both questions that blocked work are now answered.
+
+1. **The Gantt window is 2026-02-01 → 2026-07-31.** `fig-2-4` presents the
+   project as running from February 1 to July 31, 2026. It no longer
+   carries `[Report submission]` or `[Defense]` milestones: the real dates
+   (submission 2026-10-14, defense around 2026-10-21) are deliberately kept
+   off the chart. The sprints, Sprints 7–9 included, are laid out inside that
+   window — the commit dates do not set it.
+2. **Google sign-in is configured in the capture environment.**
+   `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` are set in `docker.inkwell.ai/.env`,
+   and so is `NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED=true`, the flag the button
+   actually reads (`components/shared/google-oauth-button.tsx`). Both
+   `guest-02-login` and `guest-03-register` show **"Continue with Google"**.
 
 ---
 

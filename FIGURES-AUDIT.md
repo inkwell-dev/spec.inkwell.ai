@@ -57,7 +57,7 @@ architectural figure is judged against the system as built.
 |---|---|
 | `fig-2-2-classes-core-domain` | Global, so all sprints count. Missing `CommentLike` (FR-60), `Block` (FR-62), `Save` (FR-63). `Article` is missing `publisherId` (FR-73) and the magazine's *publishes* association. The `NotificationType` box lists 9 values; the enum has **12** — `comment_like`, `save`, `article_published` were appended. |
 | `fig-2-3-classes-ai-marketplace-analytics` | Missing `Document`, `DocumentChunk`, `ArticleDocument` (FR-84/85) and the `DocumentStatus` enumeration. The two global class diagrams split "24 persisted classes" between them; there are now **30 tables**. |
-| `fig-2-4-gantt` | Captioned *"the eight sprints, as executed"* and stops at S7 (Aug 24 – Sep 6); three more sprints ran to Sep 21. `[Report writing] starts 2026-08-19 lasts 8 days`, `[Report submission] happens at 2026-08-31` and `[Defense] happens at 2026-09-07` are all in the past and none of them happened. **Blocked on the real dates.** |
+| `fig-2-4-gantt` | Captioned *"the eight sprints, as executed"* and stops at S7 (Aug 24 – Sep 6); three more sprints ran to Sep 21. `[Report writing] starts 2026-08-19 lasts 8 days`, `[Report submission] happens at 2026-08-31` and `[Defense] happens at 2026-09-07` are all in the past and none of them happened. **Unblocked 2026-10-06:** the chart covers 2026-02-01 → 2026-07-31 and carries no submission or defense milestone (`REPORT-CONTEXT.md` §6). |
 | `fig-3-2-architecture-backend` | Four worker queues drawn; there are **six** — `embeddings`, `analytics`, `marketplace`, `ai-tokens`, plus `documents` (09-17) and `ai-models` (09-04). No `Documents` module box. The Social box reads *"likes · reposts · follows · notifications"* and omits saves, blocks and comment likes. The guards strip omits the global `ThrottlerGuard`. The provider box says *"LLM, embeddings, moderation"*; speech is a fourth use — Groq transcription, Gemini synthesis. |
 | `fig-6-1-use-case-sprint-5` | Sprint 5 gained FR-73: the magazine's own act of publishing an article it bought (`POST /magazines/me/library/:articleId/publish`). FR-72 also makes purchase exclusive, which the `BUY` use case does not convey. |
 | `fig-6-2-classes-sprint-5` | Licensing is this figure's subject and `Article.publisherId` — the one column that encodes §4.2's three states — is absent, with it the *publishes* association. |
@@ -188,9 +188,9 @@ The dev database must be the **`full` preset** — a bare `make dci-seed` shrink
 tiny corpus. Embeddings must be backfilled, or the assistant figures show zero passages.
 `magazine-03-purchase-confirm` needs an untouched listing, so it needs a fresh seed.
 `/editor/:id` is the one figure addressed by id rather than slug, so `draftId` needs
-re-reading after any reseed. One open question: whether `GOOGLE_CLIENT_ID` is populated in
-the capture environment decides whether `guest-02-login` and `guest-03-register` show the
-Google button, which is gated on being configured (08-24).
+re-reading after any reseed. Google sign-in is configured in the capture environment
+(answered 2026-10-06, `REPORT-CONTEXT.md` §6), so `guest-02-login` and `guest-03-register`
+show the "Continue with Google" button.
 
 ---
 
