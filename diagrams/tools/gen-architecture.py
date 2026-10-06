@@ -50,23 +50,25 @@ def write(name, title, cells, w=1300, h=900):
 # ── Figure 3.1 — logical frontend ────────────────────────────────────────────
 c = [
     cell("browser", "Browser", 520, 20, 200, 40, HEAD + GREY),
-    cell("fe", "Frontend — Next.js 15, App Router", 60, 100, 1140, 380, GRP + BLUE),
-    cell("routes", "Routes (app/)&lt;br&gt;&lt;br&gt;/ · /articles/[slug]&lt;br&gt;/editor/[id] · /search&lt;br&gt;/dashboard · /discover&lt;br&gt;/m/[slug] · /admin",
+    cell("fe", "Frontend — Next.js 16, App Router", 60, 100, 1140, 380, GRP + BLUE),
+    cell("routes", "Routes (app/) — 28 pages&lt;br&gt;&lt;br&gt;/ · /articles/[slug] · /search&lt;br&gt;/editor/[id] · /dashboard/*&lt;br&gt;/following · /saved · /library&lt;br&gt;/discover · /marketplace · /m/[slug]&lt;br&gt;/u/[username] · /settings · /admin",
          100, 150, 240, 150, BOX + WHITE),
-    cell("features", "Features (features/)&lt;br&gt;&lt;br&gt;editor — TipTap&lt;br&gt;ai-chat · inline actions&lt;br&gt;analytics capture&lt;br&gt;marketplace · notifications",
+    cell("features", "Features (features/) — 18 modules&lt;br&gt;&lt;br&gt;editor — TipTap · inline actions&lt;br&gt;ai — docked panel, voice,&lt;br&gt;document sources&lt;br&gt;documents · saves · reposts&lt;br&gt;marketplace · evaluation&lt;br&gt;notifications · moderation",
          370, 150, 240, 150, BOX + WHITE),
-    cell("state", "State and data&lt;br&gt;&lt;br&gt;React Query&lt;br&gt;Zustand&lt;br&gt;axios interceptors&lt;br&gt;401 → refresh → retry",
+    cell("state", "State and data&lt;br&gt;&lt;br&gt;React Query&lt;br&gt;Zustand&lt;br&gt;axios interceptors&lt;br&gt;401 → refresh → retry&lt;br&gt;analytics tracker (lib/)",
          640, 150, 240, 150, BOX + WHITE),
-    cell("mw", "Edge middleware&lt;br&gt;&lt;br&gt;route protection&lt;br&gt;before the page renders",
+    cell("mw", "Request proxy (proxy.ts)&lt;br&gt;&lt;br&gt;route protection&lt;br&gt;before the page renders",
          910, 150, 250, 150, BOX + WHITE),
-    cell("sse", "SSE client — EventSource, live notifications", 100, 330, 380, 60, BOX + AMBER),
-    cell("upload", "Direct upload — browser PUTs to presigned URL", 520, 330, 380, 60, BOX + AMBER),
+    cell("sse", "SSE client — EventSource, live notifications", 100, 330, 300, 60, BOX + AMBER),
+    cell("upload", "Direct upload — browser PUTs to presigned URL", 430, 330, 300, 60, BOX + AMBER),
     cell("be", "Backend — NestJS 11", 400, 560, 400, 60, HEAD + GREEN),
     cell("store", "Object storage — MinIO", 900, 560, 260, 60, HEAD + PURPLE),
     edge("e1", "browser", "fe", "", EV),
     edge("e2", "state", "be", "REST /api (HTTP/JSON)", EV),
     edge("e3", "sse", "be", "GET /api/notifications/stream", EV),
-    edge("e4", "upload", "store", "PUT, presigned, 10-minute TTL", EV),
+    # Out of the right side, so it cannot share the SSE edge's horizontal run.
+    edge("e4", "upload", "store", "PUT, presigned, 10-minute TTL",
+         EDGE + "exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;"),
 ]
 write("fig-3-1-architecture-frontend", "Figure 3.1 - Logical frontend architecture", c, 1300, 700)
 
