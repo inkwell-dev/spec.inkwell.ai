@@ -58,4 +58,11 @@ note as N1
   raw events. Included here because no metric exists
   without it.
 end note
+
+note as N2
+  On a marketplace listing, liking, commenting
+  and reposting are refused; saving stays
+  available (FR-70).
+end note
+N2 .. INT
 @enduml
