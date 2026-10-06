@@ -34,7 +34,7 @@ Eligible writer; Magazine unsubscribed → Magazine subscribed; Administrator.
 Role and plan are deliberately independent columns — a writer can be on the free
 plan and write without AI.
 
-**Stack.** Next.js 15 (App Router) · NestJS 11 · PostgreSQL 16 + pgvector ·
+**Stack.** Next.js 16 (App Router) · NestJS 11 · PostgreSQL 16 + pgvector ·
 Redis/BullMQ · MinIO · nginx, all under Docker Compose. Groq and Gemini for
 completions, embeddings, moderation and speech. Thirty tables, six worker queues.
 

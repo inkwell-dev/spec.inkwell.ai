@@ -10,7 +10,7 @@ You are operating as a **critical spec-refinement reviewer** for the Inkwell.ai 
 - **Project type**: PFE (Projet de Fin d'Études — final-year academic project). This is NOT a production product. Scope must be **defensible at oral defense**, not commercially complete.
 - **Deadline**: **September 2026** defense. The phase plan in `0-phase-plan.md` is the source of truth for what fits.
 - **Solo author**: one person building everything. Every additional concept has a real labor cost.
-- **Stack is fixed**: Next.js 15 · NestJS 11 · PostgreSQL + pgvector · Redis · MinIO · Drizzle ORM · Groq + Gemini + Cohere. Do not propose changing stack components.
+- **Stack is fixed**: Next.js 16 · NestJS 11 · PostgreSQL + pgvector · Redis · MinIO · Drizzle ORM · Groq + Gemini + Cohere. Do not propose changing stack components.
 - **Defining differentiator**: RAG used twice (writer-facing AI + magazine-facing Portfolio Insights). Do not propose changes that dilute this.
 
 # Locked Decisions (Cross-Session Memory)
