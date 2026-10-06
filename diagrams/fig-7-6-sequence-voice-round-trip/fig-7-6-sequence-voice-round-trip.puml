@@ -1,0 +1,65 @@
+@startuml
+' Figure 7.6 – System sequence diagram: the voice round trip
+' Sprint 8 (FR-82, FR-83). Sources: src/ai/voice.service.ts,
+' src/ai/voice-billing.ts and the transcribe/speak routes in ai.controller.ts;
+' features/ai/use-voice-input.ts and use-speech-out.ts (frontend).
+!include ../_style.puml
+mainframe interaction SequenceDiagram Voice round trip
+autonumber "0 :"
+
+participant "Writer" as R
+participant "Assistant\npanel" as P
+participant "System" as A
+participant "Speech-to-text\n(Groq Whisper)" as S
+participant "Text-to-speech\n(Gemini)" as T
+participant "Database" as D
+
+ref over R, D : Sign in
+
+R -> P : Record a prompt (at most 5 minutes)
+activate P
+P -> A : POST /ai/transcribe with the audio and its length
+activate A
+A -> A : Check the allowance, the audio type and the size
+
+alt longer than 5 minutes, or over the byte cap
+  A --> P : 413, "Recording too long (max 5 minutes)"
+else accepted
+  A -> S : Transcribe
+  activate S
+  S --> A : Text and, when reported, its duration
+  deactivate S
+  A -> A : Seconds = the provider's duration, else the larger of the\nclient's figure and a floor derived from the bytes, capped at 300
+  A -> D : Bill 200 tokens per started minute, one minute at least
+  activate D
+  D --> A : New balance
+  deactivate D
+  A --> P : Text, seconds and tokens used
+  deactivate A
+  P --> R : The transcript in the composer, editable
+end
+
+R -> P : Send the brief
+ref over P, D : Assistant turn (figure 7.4)
+
+opt the key can speak, and the writer has not muted
+  P -> A : POST /ai/speak with the reply's text
+  activate A
+  A -> A : Check 20 a minute and 300 a day for this account
+  A -> T : Synthesise the text
+  activate T
+  T --> A : Audio
+  deactivate T
+  A --> P : WAV, not billed
+  deactivate A
+  P --> R : Play the reply
+end
+deactivate P
+
+note over R, D
+  Dictation costs tokens; listening does not. Reading aloud is rate-limited
+  per account instead, and the mute control exists only when
+  GET /ai/speech-availability says the key can speak. The mute choice
+  persists in the browser.
+end note
+@enduml
