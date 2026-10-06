@@ -100,6 +100,24 @@ for key, value in includes.items():
     body = body.replace(f'<!-- INCLUDE:{key} -->', value)
 assert '<!-- INCLUDE:' not in body, re.findall(r'<!-- INCLUDE:[^ ]+', body)
 
+# Screenshots: a placeholder becomes the real image wherever the file exists in
+# figures/screens/, and stays a placeholder where it does not yet.
+SCREENS = HERE.parent / 'figures' / 'screens'
+missing = []
+
+
+def screenshot(m: re.Match) -> str:
+    name, caption = m.group(1), m.group(2)
+    if (SCREENS / name).exists():
+        return f'![{caption}](../figures/screens/{name}){{width=100%}}'
+    missing.append(name)
+    return m.group(0)
+
+
+body = re.sub(
+    r'> 📷 \*\*Screenshot placeholder\*\* — `figures/screens/([^`]+)`\n\n\*\*(Figure [0-9.]+ – [^*]+)\*\*',
+    screenshot, body)
+
 # Lists of figures and tables, from the captions in order of appearance.
 figs = re.findall(r'!\[(Figure [0-9.]+ – [^\]]+)\]|^\*\*(Figure [0-9.]+ – [^*]+)\*\*$', body, re.M)
 figs = [a or b for a, b in figs]
@@ -128,4 +146,4 @@ html = body.replace(marker, toc_html + '\n' + lists + '\n' + marker, 1).replace(
 (OUT / 'report.md').write_text(docx)
 (OUT / 'report-html.md').write_text(html)
 print(f'{len(figs)} figures, {len(tabs)} tables, {len(stories)} stories; '
-      f'{len(body.split())} words')
+      f'{len(body.split())} words; screenshots still missing: {missing or "none"}')

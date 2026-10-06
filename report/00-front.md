@@ -8,16 +8,16 @@ lang: en-GB
 
 ::: {.titlepage}
 
-**[University / School name — placeholder]**
+**TEK-UP University**
 
-**[Department — placeholder]**
+**GLSI — Software Engineering and Information Systems**
 
 &nbsp;
 
 # End-of-Studies Project Report {.unnumbered .unlisted}
 
 Submitted in partial fulfilment of the requirements for the degree of
-**[Degree title — placeholder]**
+**National Engineering Diploma in Computer Science (GLSI)**
 
 &nbsp;
 
@@ -29,11 +29,11 @@ Submitted in partial fulfilment of the requirements for the degree of
 
 Carried out by: **Oussama Bejaoui**
 
-Academic supervisor: **[Name — placeholder]**
+Academic supervisor: **Mr. Bilel Zemzem**
 
-Professional supervisor: **[Name — placeholder]**
+Professional supervisor: **Mr. Ramzy Chridi**
 
-Host organisation: **[Organisation — placeholder]**
+Host organisation: **Intuitiv Group**
 
 &nbsp;
 
@@ -47,9 +47,21 @@ Academic year **2025–2026**
 
 # Acknowledgements {.unnumbered}
 
-*[Placeholder — to be written by the author: thanks to the academic supervisor, the
-professional supervisor and the host organisation, the members of the jury, and
-family and friends.]*
+I would like to express my sincere gratitude to my academic supervisor,
+**Mr. Bilel Zemzem**, for his guidance, his availability and his valuable advice
+throughout this project, and for the rigour he encouraged in both the work and this
+report.
+
+I am equally grateful to my professional supervisor, **Mr. Ramzy Chridi**, and to the
+whole team at **Intuitiv Group**, for welcoming me, for the trust they placed in me
+and for the time they gave to following the project and sharing their experience.
+
+My thanks also go to the members of the jury for the honour they do me in examining
+this work, and to all the teaching staff of **TEK-UP University** for the knowledge
+and support they have given me throughout my studies.
+
+Finally, I thank my family and my friends for their constant encouragement and
+patience, without which this work would not have been possible.
 
 \newpage
 

@@ -139,10 +139,6 @@ only when speech synthesis is available, and the mute choice persists in the bro
 
 **Figure 7.13 – The live step on the collapsed panel**
 
-> 📷 **Screenshot placeholder** — `figures/screens/writer-19-voice-recording.png`
-
-**Figure 7.14 – Recording a prompt**
-
 ## 7.3 Sprint 9 — Document library and citations
 
 ### 7.3.1 Sprint goal and backlog
@@ -157,7 +153,7 @@ passage by document and page.
 
 ### 7.3.2 Analysis
 
-Figure 7.15 gives the use cases of Sprint 9. Managing the library specialises into
+Figure 7.14 gives the use cases of Sprint 9. Managing the library specialises into
 uploading, retrying a failed document and deleting; uploading and retrying include
 extracting, chunking and embedding the text. Attaching documents to an article is
 extended by detaching one. Asking the assistant is extended by citing passages as
@@ -166,19 +162,19 @@ PDF, DOCX, TXT or Markdown files under 10 MB and 200 pages, at most 20 per write
 document is the writer's alone: it never feeds the voice profile, portfolio insights
 or search, and no other account can read, attach or discover it.
 
-![Figure 7.15 – Use case diagram, Sprint 9](../diagrams/fig-7-7-use-case-sprint-9/fig-7-7-use-case-sprint-9.png){width=100%}
+![Figure 7.14 – Use case diagram, Sprint 9](../diagrams/fig-7-7-use-case-sprint-9/fig-7-7-use-case-sprint-9.png){width=100%}
 
 ### 7.3.3 Design
 
-**Class diagram.** Figure 7.16 shows the library: a `Document` with its status, page and
+**Class diagram.** Figure 7.15 shows the library: a `Document` with its status, page and
 chunk counts and a readable error; its `DocumentChunk`s, each keeping the page it came
 from, which is what a citation points to; and the `ArticleDocument` attachments. The
 status moves from pending to extracting to ready, or to failed with a reason the writer
 can act on; the only backward move is a retry.
 
-![Figure 7.16 – Class diagram, Sprint 9](../diagrams/fig-7-8-classes-sprint-9/fig-7-8-classes-sprint-9.png){width=100%}
+![Figure 7.15 – Class diagram, Sprint 9](../diagrams/fig-7-8-classes-sprint-9/fig-7-8-classes-sprint-9.png){width=100%}
 
-**Sequence diagram — ingestion.** Figure 7.17 shows a document's path, the companion of
+**Sequence diagram — ingestion.** Figure 7.16 shows a document's path, the companion of
 the publishing pipeline of Chapter 5. The browser asks for a presigned URL and uploads
 the file straight to a private bucket — the file never passes through the API. The
 registration checks that the object exists and is under 10 MB, counts the writer's
@@ -187,21 +183,21 @@ page by page, refuses a document over 200 pages or without a text layer with a r
 reason, then chunks it, embeds the chunks and marks it ready in one transaction. The
 file is served back only to its owner, through the API, as a short-lived URL.
 
-![Figure 7.17 – Sequence diagram: document upload and ingestion](../diagrams/fig-7-9-sequence-document-ingestion/fig-7-9-sequence-document-ingestion.png){width=100%}
+![Figure 7.16 – Sequence diagram: document upload and ingestion](../diagrams/fig-7-9-sequence-document-ingestion/fig-7-9-sequence-document-ingestion.png){width=100%}
 
 ### 7.3.4 Realisation
 
 > 📷 **Screenshot placeholder** — `figures/screens/writer-16-document-library.png`
 
-**Figure 7.18 – The document library, one document refused with its reason**
+**Figure 7.17 – The document library, one document refused with its reason**
 
 > 📷 **Screenshot placeholder** — `figures/screens/writer-17-ai-sources-tab.png`
 
-**Figure 7.19 – Attaching a document from the Sources tab**
+**Figure 7.18 – Attaching a document from the Sources tab**
 
 > 📷 **Screenshot placeholder** — `figures/screens/writer-18-ai-cited-reply.png`
 
-**Figure 7.20 – A reply citing its source as [Title, p. N]**
+**Figure 7.19 – A reply citing its source as [Title, p. N]**
 
 ## Conclusion
 
