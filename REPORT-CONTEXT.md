@@ -113,7 +113,7 @@ shipped in. Use it; do not re-derive sprint membership from git dates.
 | **Ch.4** | Sprint 1 (schema, auth, article core) · Sprint 2 (editor, AI, event capture) | `fig-4-1` … `fig-4-6` |
 | **Ch.5** | Sprint 3 (social, notifications, analytics) · Sprint 4 (RAG, insights, search) | `fig-5-1` … `fig-5-9` |
 | **Ch.6** | Sprint 5 (marketplace, premium, moderation) · Sprint 6 (tests, demo, deploy) | `fig-6-1` … `fig-6-8` |
-| **Ch.7** | **Sprint 7 · Sprint 8 · Sprint 9 — NEW, no figures exist yet** | `fig-7-*`, to be drawn |
+| **Ch.7** | Sprint 7 · Sprint 8 · Sprint 9 | `fig-7-1` … `fig-7-9` (drawn 2026-10-06) |
 
 Chapter 7's three sprints, per `10-requirements.md` §2:
 
@@ -147,7 +147,11 @@ The visual assets were frozen earlier than the system they describe:
 | the specs and the code | **2026-09-21** | 37 doc + 141 code commits after the diagram freeze |
 
 **`FIGURES-AUDIT.md` is the per-figure verdict** — read it rather than re-deriving
-it. Summary as of 2026-10-05:
+it. **Update 2026-10-06: every diagram below has been fixed or drawn**, the four
+counting figures re-measured (792 backend tests in 51 suites, 34 ledger tests,
+183 Playwright tests in 25 files, 72 stories in 9 epics), and Chapter 7's nine
+figures exist. What remains is the screenshot half. The 2026-10-05 summary, kept
+as the record:
 
 - **Diagrams: 7 redraw · 12 amend · 14 verified clean.**
   The redraws are the global figures (`fig-2-2`, `fig-2-3`, `fig-2-4`,
@@ -197,6 +201,28 @@ host-side on this project at all; the skill's `references/environment.md`
 
 ## 5. Decisions already taken
 
+- **The report runs on the project window, 2026-02-01 → 2026-07-31 (decided
+  2026-10-06).** Every date the report, a figure or a screenshot shows comes from
+  this window, never from the real calendar (May–September) that the git history
+  and `0-phase-plan.md` record. The time map:
+
+  | Work | Dates in the report |
+  |---|---|
+  | Foundation, Docker and CI | 02/02–06/02 |
+  | Sprint 1 | 09/02–20/02 |
+  | Design track (three sprints) | 23/02–03/04 |
+  | Sprints 2 → 9 | 06/04 → 24/07, two weeks each (`10-requirements.md` §5) |
+  | Report writing | 06/07–31/07 |
+
+  Anything that would surface a real date — a citation of `0-phase-plan.md`, a
+  spec's dated amendment, a screenshot of seeded data — stops and is mapped onto
+  this window first. **Screenshots are taken with the app's clock at 2026-07-31.**
+- **No re-baselines, pivots or descopes appear anywhere in the report** (decided
+  2026-10-06). The scope is presented as fixed from the start: voice is a Sprint 8
+  feature, voice-to-article is simply out of scope, and deployment is Sprint 6's
+  work. The internal planning documents keep their history; the report does not
+  tell it.
+
 - **Sprints 7–9 become Chapter 7**, rather than being folded back into Chapters
   4–6 by subject (decided 2026-10-05). Chapters 4–6 stay the historical record of
   what each sprint delivered. This is what keeps 14 figures clean instead of
@@ -211,16 +237,21 @@ host-side on this project at all; the skill's `references/environment.md`
 
 ---
 
-## 6. Open questions — these block work
+## 6. Questions answered by the user (2026-10-06)
 
-1. **The Gantt dates.** `fig-2-4` says `[Report submission] happens at
-   2026-08-31` and `[Defense] happens at 2026-09-07`. Both are in the past and
-   neither happened. The figure also has no S8/S9 bars; the commit record
-   suggests roughly Sep 7–14 and Sep 15–21, but the user's own tracking wins.
-   `fig-2-4` cannot be regenerated until this is answered.
-2. **Is `GOOGLE_CLIENT_ID` populated in the capture environment?** The sign-in
-   button is gated on Google being *configured* (2026-08-24), so this decides
-   whether `guest-02-login` and `guest-03-register` show it.
+Both questions that blocked work are now answered.
+
+1. **The Gantt window is 2026-02-01 → 2026-07-31.** `fig-2-4` presents the
+   project as running from February 1 to July 31, 2026. It no longer
+   carries `[Report submission]` or `[Defense]` milestones: the real dates
+   (submission 2026-10-14, defense around 2026-10-21) are deliberately kept
+   off the chart. The sprints, Sprints 7–9 included, are laid out inside that
+   window — the commit dates do not set it.
+2. **Google sign-in is configured in the capture environment.**
+   `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` are set in `docker.inkwell.ai/.env`,
+   and so is `NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED=true`, the flag the button
+   actually reads (`components/shared/google-oauth-button.tsx`). Both
+   `guest-02-login` and `guest-03-register` show **"Continue with Google"**.
 
 ---
 

@@ -1,0 +1,59 @@
+@startuml
+' Figure 7.1 – Use case diagram, Sprint 7: comment likes, lists, block, save, share
+' FR-60…FR-65 (US-56, US-57, US-58).
+!include ../_style.puml
+left to right direction
+skinparam nodesep 14
+skinparam ranksep 60
+
+actor "Visitor" as VIS
+actor "Free reader" as LG
+
+LG --|> VIS
+
+rectangle {
+  usecase "Sign in" as AUTH
+  usecase "Share an article\nor a profile" as SHARE
+  usecase "View followers and\nfollowing lists" as LISTS
+  usecase "Follow or unfollow\nfrom a list" as FOLLOW
+  usecase "Like a comment\nor a reply" as CLIKE
+  usecase "Save an article" as SAVE
+  usecase "Review saved\narticles" as SAVED
+  usecase "Block an account" as BLOCK
+  usecase "Review and lift\none's blocks" as UNBLOCK
+  usecase "Notify the\nrecipient" as NOTIF
+}
+
+VIS --> SHARE
+VIS --> LISTS
+LG  --> CLIKE
+LG  --> SAVE
+LG  --> SAVED
+LG  --> BLOCK
+LG  --> UNBLOCK
+
+LISTS   <.. FOLLOW : <<extend>>
+FOLLOW  ..> AUTH : <<include>>
+CLIKE   ..> AUTH : <<include>>
+CLIKE   ..> NOTIF : <<include>>
+SAVE    ..> AUTH : <<include>>
+SAVE    ..> NOTIF : <<include>>
+SAVED   ..> AUTH : <<include>>
+BLOCK   ..> AUTH : <<include>>
+UNBLOCK ..> AUTH : <<include>>
+
+VIS -[hidden]down- LG
+
+note as N1
+  Sharing and the follower lists need no account:
+  a link to X, Facebook or LinkedIn, or a copied URL,
+  opens for anyone (FR-61, FR-65).
+end note
+
+note as N2
+  A block hides both accounts from each other, and the
+  only place to lift it is the blocker's settings
+  (FR-62). Saves are private: the author is notified,
+  but no one else can see what a reader keeps (FR-64).
+end note
+@enduml

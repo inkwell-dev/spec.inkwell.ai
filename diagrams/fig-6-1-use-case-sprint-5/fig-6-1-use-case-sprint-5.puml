@@ -24,10 +24,11 @@ rectangle {
   usecase "List an article on\nthe marketplace" as LIST
   usecase "Set a price" as PRICE
   usecase "Browse marketplace\narticles" as BROWSE
-  usecase "Purchase\nan article" as BUY
+  usecase "Purchase an article\nexclusively" as BUY
   usecase "Unlock a preview\n(10% of the price)" as PREVIEW
   usecase "Move credits in\none transaction" as LEDGER
   usecase "View the library" as LIB
+  usecase "Publish a purchased\narticle" as PUBLISH
   usecase "View earnings" as EARN
   usecase "Review the\nreport queue" as MOD
   usecase "Dismiss a report" as MOD1
@@ -46,6 +47,7 @@ MA --> BROWSE
 MA --> BUY
 MA --> TOPUP
 MA --> LIB
+MA --> PUBLISH
 AD --> MOD
 AD --> ELIG
 AD --> USERS
@@ -60,6 +62,8 @@ LIST      ..> PRICE : <<include>>
 LIST      ..> AUTH : <<include>>
 BUY       ..> LEDGER : <<include>>
 BUY       <.. PREVIEW : <<extend>>
+LIB       <.. PUBLISH : <<extend>>
+PUBLISH   ..> AUTH : <<include>>
 PREVIEW   ..> LEDGER : <<include>>
 TOPUP     ..> LEDGER : <<include>>
 GRANT     ..> LEDGER : <<include>>
@@ -72,5 +76,12 @@ note as N1
   Listing on the marketplace requires eligibility:
   5,000 identified readers and 1,000 reactions,
   lifetime and monotonic, or an administrator's grant.
+end note
+
+note as N2
+  A full purchase is exclusive: once one magazine owns
+  the article, any other is refused a preview or a
+  purchase (FR-72). The owner then publishes it under
+  its own masthead, public and free (FR-73).
 end note
 @enduml

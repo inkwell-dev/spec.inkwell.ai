@@ -34,7 +34,7 @@ Eligible writer; Magazine unsubscribed → Magazine subscribed; Administrator.
 Role and plan are deliberately independent columns — a writer can be on the free
 plan and write without AI.
 
-**Stack.** Next.js 15 (App Router) · NestJS 11 · PostgreSQL 16 + pgvector ·
+**Stack.** Next.js 16 (App Router) · NestJS 11 · PostgreSQL 16 + pgvector ·
 Redis/BullMQ · MinIO · nginx, all under Docker Compose. Groq and Gemini for
 completions, embeddings, moderation and speech. Thirty tables, six worker queues.
 
@@ -97,7 +97,7 @@ the code.
 
 - Chapters: **1** methodology · **2** global model · **3** architecture ·
   **4** Sprints 1–2 · **5** Sprints 3–4 · **6** Sprints 5–6 ·
-  **7** Sprints 7–9 *(new, decided 2026-10-05, no figures exist yet)*.
+  **7** Sprints 7–9 *(decided 2026-10-05; its nine figures drawn 2026-10-06)*.
 - The authority for which sprint a feature belongs to is the **`Sprint` column of
   `10-requirements.md` §2** — not git dates. It attributes a requirement to the
   sprint whose feature it refines.
@@ -117,9 +117,10 @@ the code.
   in both Ch.4 and Ch.7.
 - Test counts in `fig-3-4` and `fig-6-7` must be re-measured by one real run in
   the container. Do not carry the "479" forward — see `FIGURES-AUDIT.md` §3.
-- Blocked on two answers only the user has: the **real submission and defense
-  dates** for the Gantt, and whether **`GOOGLE_CLIENT_ID` is configured** in the
-  capture environment.
+- The two questions that blocked work were answered on 2026-10-06
+  (`REPORT-CONTEXT.md` §6): the Gantt covers **2026-02-01 → 2026-07-31**, with no
+  submission or defense milestone, and **Google sign-in is configured** for the
+  captures.
 
 ---
 
@@ -187,7 +188,7 @@ Answer from what you have read, without reading anything further:
      class diagrams account for?
   3. How many worker queues does fig-3-2 draw, and how many exist?
   4. What exactly is wrong with the screenshot capture harness?
-  5. What two answers is the report blocked on?
+  5. What two questions blocked the report, and how were they answered?
 ```
 
 **Key — grade it against this.** If question 1 or 4 is wrong, the files did not
@@ -207,14 +208,14 @@ load properly; stop and fix that before going on.
    `frontend.inkwell.ai/src/features/ai/ai-assistant-host.tsx` now renders
    `'Ask, or say what to write…'`. The test fails its own guard and writes no
    file.
-5. The **Gantt's real submission and defense dates**, and whether
-   **`GOOGLE_CLIENT_ID` is configured** in the capture environment.
+5. The Gantt dates — answered as **2026-02-01 → 2026-07-31**, with no
+   submission or defense milestone on the chart; and whether Google sign-in is
+   configured — **it is**, so the login and register captures show the button.
 
 ### Prompt 5 — begin
 
 ```
-Good. Start on the cheap half, in the order FIGURES-AUDIT.md section 4 gives,
-skipping anything blocked on the two open answers:
+Good. Start on the cheap half, in the order FIGURES-AUDIT.md section 4 gives:
 
   1. Fix fig-4-5's voice note — reword it as a forward reference to Chapter 7
      rather than a claim that voice is future work.

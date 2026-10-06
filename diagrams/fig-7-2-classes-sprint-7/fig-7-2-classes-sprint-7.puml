@@ -1,0 +1,70 @@
+@startuml
+' Figure 7.2 – Class diagram, Sprint 7: comment likes, blocks and saves
+' Three new tables (FR-60, FR-62, FR-63) and the two notification types they emit.
+' User, Article and Comment appear with only the attributes the new classes use.
+!include ../_style.puml
+skinparam nodesep 18
+skinparam ranksep 45
+hide circle
+hide methods
+
+class User {
+  - id : UUID
+  - username : String
+}
+class Article {
+  - id : UUID
+  - title : String
+  - slug : String
+}
+class Comment {
+  - id : UUID
+  - content : Text
+}
+class CommentLike {
+  - id : UUID
+  - createdAt : Timestamp
+}
+class Block {
+  - id : UUID
+  - createdAt : Timestamp
+}
+class Save {
+  - id : UUID
+  - createdAt : Timestamp
+}
+class Notification {
+  - type : NotificationType
+  - data : Json
+  - isRead : Boolean
+}
+
+class NotificationType <<Enumeration>> {
+  ...
+  comment_like
+  save
+}
+
+User "1" -- "0..*" CommentLike : gives
+Comment "1" -- "0..*" CommentLike : receives
+User "1" -- "0..*" Block : blocker
+User "1" -- "0..*" Block : blocked
+User "1" -- "0..*" Save : keeps
+Article "1" -- "0..*" Save : is saved in
+User "1" -- "0..*" Notification : receives
+Article "1" -- "0..*" Comment : carries
+
+note as N1
+  Each table carries a unique constraint on its pair —
+  (user, comment), (blocker, blocked), (user, article) —
+  so a repeated request is a no-op, and a notification is
+  emitted only when a row was actually inserted.
+  blocks also has a CHECK: no one can block themselves.
+end note
+
+note as N2
+  A block row is directional, but every read treats it
+  both ways: a block in either direction hides the two
+  accounts from each other.
+end note
+@enduml

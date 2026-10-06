@@ -15,7 +15,7 @@ activate W
 W -> W : Observe scroll depth and engaged time
 W -> A : POST /analytics/events, batched\n(10 events, or every 5 s, or on unload)
 activate A
-A -> A : Attach the country and device server-side
+A -> A : Take the viewer from the access token, when one is sent,\nand attach the country and device server-side
 A -> D : Append to the raw event log
 activate D
 D --> A : Stored

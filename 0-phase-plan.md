@@ -1,7 +1,7 @@
 # 🗺️ Inkwell.ai — Phase Plan
 
 > **Target defense:** September 2026 (~16-week timeline from May 21, 2026 — re-baselined 2026-07-26)
-> **Stack:** Next.js 15 · NestJS 11 · PostgreSQL + pgvector · Redis · MinIO · Groq · Gemini (LLM fallback + embeddings) · Drizzle ORM
+> **Stack:** Next.js 16 · NestJS 11 · PostgreSQL + pgvector · Redis · MinIO · Groq · Gemini (LLM fallback + embeddings) · Drizzle ORM
 > **Repos:** `frontend.inkwell.ai` · `backend.inkwell.ai` · `docker.inkwell.ai` · `mobile.inkwell.ai` (deferred)
 > **Core pivot (post-mentor-review):** Inkwell is a **writer ↔ magazine marketplace**. Analytics is now decision support for magazine licensing decisions, not just writer vanity.
 > **Re-baseline (2026-07-26):** The June–July design track (Stitch prompts, desktop refinement, Figma inventory, design QA) was executed between Phase 1 and Phase 2 but was never modeled in the original plan. It is now recorded as **Phase D**, the remaining implementation phases are re-dated from Jul 27, and scope is frozen to the defensible core (see *Post-MVP Descope*). Phase numbers 2–6 are unchanged so cross-references from other spec docs remain valid.
@@ -41,7 +41,7 @@ The report presents the plan as fixed 2-week Scrum sprints. Each sprint's goal m
 - [x] Node.js upgraded to v22.22.3 via nvm
 - [x] pnpm v11 configured across all repos
 - [x] `backend.inkwell.ai` — NestJS 11 scaffold with strict TypeScript
-- [x] `frontend.inkwell.ai` — Next.js 15 (App Router) + Tailwind CSS + shadcn/ui scaffold
+- [x] `frontend.inkwell.ai` — Next.js 16 (App Router) + Tailwind CSS + shadcn/ui scaffold
 - [x] `docker.inkwell.ai` — `docker-compose.yml` with all 7 services (nginx, web, api, worker, db, redis, minio)
 - [x] `docker.inkwell.ai` — `.env.example` with all required environment variables
 - [x] `docker.inkwell.ai` — Nginx reverse proxy config with SSE support

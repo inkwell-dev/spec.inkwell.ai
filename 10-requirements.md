@@ -149,11 +149,9 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-37 | View earnings — lifetime, per article, itemised by preview and purchase | Must | 5 |
 | FR-38 | Be notified when a magazine previews or purchases an article, and when earnings are credited | Must | 5 |
 
-> **Descoped, and the report says so:** voice-to-article (FR would have been "dictate
-> an article"). Removed from the MVP in the 2026-07-26 re-baseline. *2026-09-15:*
-> `voice_transcribe` is now written — by the **voice prompt** (FR-82), which
-> dictates a request to the assistant, not an article. Voice-to-article itself
-> stays descoped.
+> **Out of scope:** voice-to-article — dictating a whole article. Voice in this
+> product is the **voice prompt** (FR-82), which dictates a request to the
+> assistant, and it is what writes `voice_transcribe`.
 
 ### 2.4 A6 / A7 — Magazine
 
@@ -412,24 +410,28 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-54 | Lower the eligibility thresholds under a flag so that the gate can be crossed live | Must | 2 | 6 |
 | US-55 | Serve the product at a public URL over TLS | Must | 8 | 6 |
 
-**54 stories, 8 epics, 259 points.**
+**72 stories, 9 epics, 345 points** (recounted 2026-10-06).
 
 ---
 
 ## 5. Release plan
 
-Three releases, six sprints. The report's sprint numbering differs from the
-calendar sprints in `0-phase-plan.md`, which ran S0–S7 including a three-sprint
-design track; the mapping is explicit so nothing is hidden.
+Four releases, nine fixed two-week sprints, on the project window of
+2026-02-01 → 2026-07-31. These are the dates the report uses, and they match
+its Gantt (`fig-2-4`). The foundation week (02/02–06/02) and the three-sprint
+design track (23/02–03/04) sit between them but are not sprints; see below.
 
-| Release | Report chapter | Sprint | Calendar | Phase | Goal |
-|---------|---------------|--------|----------|-------|------|
-| **R1 — Functional foundation** | Ch.4 | Sprint 1 | S1 · 29/05–11/06 | Phase 1 | Schema, authentication, article core, ledger invariant harness |
-| | | Sprint 2 | S5 · 27/07–09/08 | Phase 2 | Editor, AI chat and inline actions, analytics event capture |
-| **R2 — Social, analytics and AI** | Ch.5 | Sprint 3 | S5–S6 · 27/07–23/08 | Phase 3 | Social interactions, notifications, aggregation, dashboards |
-| | | Sprint 4 | S6 · 10/08–23/08 | Phase 4 | RAG, Portfolio Insights, hybrid search, memory extraction |
-| **R3 — Marketplace, testing and deployment** | Ch.6 | Sprint 5 | 13–14/08 | Phase 5 | Marketplace, subscriptions, premium, moderation, admin |
-| | | Sprint 6 | S7 · 24/08–06/09 | Phase 6 | Tests, demo mode, deployment, CI/CD |
+| Release | Report chapter | Sprint | Dates | Phase | Goal |
+|---------|---------------|--------|-------|-------|------|
+| **R1 — Functional foundation** | Ch.4 | Sprint 1 | 09/02–20/02 | Phase 1 | Schema, authentication, article core, ledger invariant harness |
+| | | Sprint 2 | 06/04–17/04 | Phase 2 | Editor, AI chat and inline actions, analytics event capture |
+| **R2 — Social, analytics and AI** | Ch.5 | Sprint 3 | 20/04–01/05 | Phase 3 | Social interactions, notifications, aggregation, dashboards |
+| | | Sprint 4 | 04/05–15/05 | Phase 4 | RAG, Portfolio Insights, hybrid search, memory extraction |
+| **R3 — Marketplace, testing and deployment** | Ch.6 | Sprint 5 | 18/05–29/05 | Phase 5 | Marketplace, subscriptions, premium, moderation, admin |
+| | | Sprint 6 | 01/06–12/06 | Phase 6 | Tests, demo mode, deployment, CI/CD |
+| **R4 — Social depth, assistant and documents** | Ch.7 | Sprint 7 | 15/06–26/06 | — | Comment likes, follower and following lists, block, save, share (FR-60…FR-65) |
+| | | Sprint 8 | 29/06–10/07 | — | Live card controls, Reposted tab, byline preview, assistant routing and in-document writes, docked panel, voice in and out (FR-66…FR-68, FR-77…FR-83) |
+| | | Sprint 9 | 13/07–24/07 | — | Document library, ingestion, per-article attachment, citations (FR-84…FR-87) |
 
 **Work that is not a sprint.** Phase 0 (foundation), Phase D (design track,
 S2–S4), Phase I (URL topology), Phase Q (quality pass) and Phase V (vendored
@@ -447,7 +449,7 @@ it.
 - Requirements record the **built** system. Five deviations from the original specs
   are noted inline (guest access to free articles, insights generation as an
   explicit action, absent topic-relevance sort, the three NULL analytics columns,
-  voice descoped) — plus the §6 route topology, reconciled in Phase 6 and recorded
+  voice-to-article out of scope) — plus the §6 route topology, reconciled in Phase 6 and recorded
   below. It was six until 2026-08-24, when the `/discover` gating deviation was
   retired: Sprint 5 had closed it and the note outlived the drift it described.
   The report reports them; recorded deviations read as maturity, hidden ones read

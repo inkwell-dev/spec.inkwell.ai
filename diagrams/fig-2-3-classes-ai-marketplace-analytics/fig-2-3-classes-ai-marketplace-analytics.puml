@@ -1,6 +1,6 @@
 @startuml
 ' Figure 2.3 – Class diagram: AI, marketplace and analytics
-' The remaining 13 persisted classes and the enumerations they reference.
+' The remaining 16 persisted classes and the enumerations they reference.
 ' User and Article appear as references only; they are defined in figure 2.2.
 !include ../_style.puml
 skinparam nodesep 20
@@ -28,6 +28,23 @@ class PortfolioInsight {
   - consistencyScore : Integer
   - expiresAt : Timestamp
 }
+class Document {
+  - title : String
+  - filename : String
+  - sizeBytes : Integer
+  - storageKey : String
+  - status : DocumentStatus
+  - pageCount : Integer
+  - error : Text
+  - deletedAt : Timestamp
+}
+class DocumentChunk {
+  - chunkIndex : Integer
+  - page : Integer
+  - content : Text
+  - embedding : Vector
+}
+class ArticleDocument
 class AiInteraction {
   - actionType : AiActionType
   - tokensUsed : Integer
@@ -115,6 +132,12 @@ class EligibilitySource <<Enumeration>> {
   threshold
   admin_grant
 }
+class DocumentStatus <<Enumeration>> {
+  pending
+  extracting
+  ready
+  failed
+}
 class AiActionType <<Enumeration>> {
   chat
   inline_reformulate
@@ -138,6 +161,10 @@ Article "1" -- "0..*" ArticleChunk : is chunked into
 User "1" -- "0..1" WriterMemory
 User "1" -- "0..1" PortfolioInsight
 User "1" -- "0..*" AiInteraction
+User "1" -- "0..*" Document : owns
+Document "1" -- "0..*" DocumentChunk : is chunked into
+Document "1" -- "0..*" ArticleDocument
+Article "1" -- "0..*" ArticleDocument : is grounded in
 Article "1" -- "0..*" Purchase
 User "1" -- "0..*" Purchase : buys
 Purchase "0..1" -- "0..1" Purchase : prior preview
@@ -158,11 +185,19 @@ note as N1
   distinguishable from "measured, and none".
 end note
 
+note as N2
+  A Document is private to its owner: its chunks are
+  retrieved only for the articles it is attached to,
+  never for writer memory, insights or search (FR-87).
+end note
+
 ' Layout: stack the leaves and group the enumerations, otherwise the
 ' User hub spreads the figure into a 2800px strip.
 ArticleChunk -[hidden]down- WriterMemory
 WriterMemory -[hidden]down- PortfolioInsight
 PortfolioInsight -[hidden]down- AiInteraction
+Document -[hidden]down- DocumentChunk
+DocumentChunk -[hidden]down- ArticleDocument
 Purchase -[hidden]down- Transaction
 Transaction -[hidden]down- MagazineSubscription
 MagazineSubscription -[hidden]down- EligibilityAuditLog
@@ -173,6 +208,7 @@ WriterContentMetrics -[hidden]down- WriterQualityMetrics
 PurchaseStage -[hidden]down- TransactionType
 TransactionType -[hidden]down- TransactionStatus
 SubscriptionStatus -[hidden]down- EligibilitySource
+EligibilitySource -[hidden]down- DocumentStatus
 AiActionType -[hidden]down- AnalyticsEventType
 PurchaseStage -[hidden]right- SubscriptionStatus
 SubscriptionStatus -[hidden]right- AiActionType

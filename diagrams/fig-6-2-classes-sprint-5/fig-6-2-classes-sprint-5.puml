@@ -23,7 +23,9 @@ class MagazineProfile {
 }
 class Article {
   - id : UUID
+  - publisherId : UUID
   - placement : Placement
+  - visibility : Visibility
   - marketplacePrice : Integer
 }
 class Purchase {
@@ -101,6 +103,7 @@ class ReportStatus <<Enumeration>> {
 
 User "1" -- "0..1" MagazineProfile
 User "1" -- "0..*" Article : writes
+User "0..1" -- "0..*" Article : publishes
 Article "1" -- "0..*" Purchase
 User "1" -- "0..*" Purchase : magazine
 Purchase "0..1" -- "0..1" Purchase : prior preview
@@ -117,6 +120,15 @@ note as N1
   information without moving a balance.
   amount is always positive; direction comes from type
   plus the from/to user, enforced by a CHECK constraint.
+end note
+
+note as N2
+  A marketplace article is in one of three states, and
+  publisherId is what tells them apart:
+  listed — no full purchase, publisherId NULL;
+  owned — a full_purchase row, still not public;
+  published — placement public, visibility free, price
+  cleared, publisherId set to the buying magazine.
 end note
 
 PurchaseStage -[hidden]down- TransactionType

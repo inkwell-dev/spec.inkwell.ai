@@ -14,6 +14,14 @@ Everything between those dates is candidate drift. This document is the per-figu
 verdict, measured against the code rather than against the specs, so that a figure is
 only called stale when something in `src/` actually disagrees with it.
 
+> **Status, 2026-10-06 — the diagram half is done.** All 7 REDRAW and 12 AMEND
+> figures were brought up to the code, `fig-6-6`'s open branch was confirmed, and
+> Chapter 7's nine figures (`fig-7-1` … `fig-7-9`) were drawn — one commit per
+> figure in this repo's history, each naming the code path it was checked
+> against. The counts in §3 were re-measured by a real run (results in §3). The
+> verdicts below are kept as the record of what was wrong. **Still open: the
+> screenshots (§2)** — the capture harness repair and the full recapture.
+
 **Structural decision taken:** Sprints 7, 8 and 9 become **Chapter 7**. Chapters 4–6 stay
 the historical record of what each sprint delivered. That decision is what makes most of
 this set cheap — see §1.
@@ -57,7 +65,7 @@ architectural figure is judged against the system as built.
 |---|---|
 | `fig-2-2-classes-core-domain` | Global, so all sprints count. Missing `CommentLike` (FR-60), `Block` (FR-62), `Save` (FR-63). `Article` is missing `publisherId` (FR-73) and the magazine's *publishes* association. The `NotificationType` box lists 9 values; the enum has **12** — `comment_like`, `save`, `article_published` were appended. |
 | `fig-2-3-classes-ai-marketplace-analytics` | Missing `Document`, `DocumentChunk`, `ArticleDocument` (FR-84/85) and the `DocumentStatus` enumeration. The two global class diagrams split "24 persisted classes" between them; there are now **30 tables**. |
-| `fig-2-4-gantt` | Captioned *"the eight sprints, as executed"* and stops at S7 (Aug 24 – Sep 6); three more sprints ran to Sep 21. `[Report writing] starts 2026-08-19 lasts 8 days`, `[Report submission] happens at 2026-08-31` and `[Defense] happens at 2026-09-07` are all in the past and none of them happened. **Blocked on the real dates.** |
+| `fig-2-4-gantt` | Captioned *"the eight sprints, as executed"* and stops at S7 (Aug 24 – Sep 6); three more sprints ran to Sep 21. `[Report writing] starts 2026-08-19 lasts 8 days`, `[Report submission] happens at 2026-08-31` and `[Defense] happens at 2026-09-07` are all in the past and none of them happened. **Unblocked 2026-10-06:** the chart covers 2026-02-01 → 2026-07-31 and carries no submission or defense milestone (`REPORT-CONTEXT.md` §6). |
 | `fig-3-2-architecture-backend` | Four worker queues drawn; there are **six** — `embeddings`, `analytics`, `marketplace`, `ai-tokens`, plus `documents` (09-17) and `ai-models` (09-04). No `Documents` module box. The Social box reads *"likes · reposts · follows · notifications"* and omits saves, blocks and comment likes. The guards strip omits the global `ThrottlerGuard`. The provider box says *"LLM, embeddings, moderation"*; speech is a fourth use — Groq transcription, Gemini synthesis. |
 | `fig-6-1-use-case-sprint-5` | Sprint 5 gained FR-73: the magazine's own act of publishing an article it bought (`POST /magazines/me/library/:articleId/publish`). FR-72 also makes purchase exclusive, which the `BUY` use case does not convey. |
 | `fig-6-2-classes-sprint-5` | Licensing is this figure's subject and `Article.publisherId` — the one column that encodes §4.2's three states — is absent, with it the *publishes* association. |
@@ -99,7 +107,7 @@ architectural figure is judged against the system as built.
 | `fig-5-9-sequence-notification-delivery` | Structurally unchanged; only enum values were appended. |
 | `fig-6-4-activity-eligibility-gate` | Verified in `eligibility.service.ts`: reactions are still `likes + comments`; comment likes and saves are deliberately excluded. |
 | `fig-6-5-sequence-moderation` | The `Classifier` participant names no model, so replacing the retired model and dropping the OpenAI path (both 09-04) leave it accurate. |
-| `fig-6-6-activity-article-access` | A published licensed article is `placement = public, visibility = free` and falls correctly through the existing public branch. **One branch to confirm:** what a subscribed magazine is shown for a marketplace article another magazine already owns exclusively (FR-72). |
+| `fig-6-6-activity-article-access` | A published licensed article is `placement = public, visibility = free` and falls correctly through the existing public branch. **Confirmed 2026-10-06:** a subscribed magazine shown a marketplace article another magazine owns falls through the existing "not previewed or purchased" branch — title, excerpt and price, content null (`articles/article-access.ts`, `resolveArticleAccess`); the 409 of FR-72 comes only when it then tries to preview or buy, which `fig-6-3` now draws. No change to this figure. |
 
 **Totals: 7 REDRAW · 12 AMEND · 14 OK.** Choosing Chapter 7 moved six figures out of
 REDRAW and into OK: `fig-4-4`, `fig-5-1`, `fig-5-2`, `fig-5-4`, `fig-5-5`, `fig-5-6`.
@@ -188,9 +196,9 @@ The dev database must be the **`full` preset** — a bare `make dci-seed` shrink
 tiny corpus. Embeddings must be backfilled, or the assistant figures show zero passages.
 `magazine-03-purchase-confirm` needs an untouched listing, so it needs a fresh seed.
 `/editor/:id` is the one figure addressed by id rather than slug, so `draftId` needs
-re-reading after any reseed. One open question: whether `GOOGLE_CLIENT_ID` is populated in
-the capture environment decides whether `guest-02-login` and `guest-03-register` show the
-Google button, which is gated on being configured (08-24).
+re-reading after any reseed. Google sign-in is configured in the capture environment
+(answered 2026-10-06, `REPORT-CONTEXT.md` §6), so `guest-02-login` and `guest-03-register`
+show the "Continue with Google" button.
 
 ---
 
@@ -214,6 +222,15 @@ each suite, in the container, and the figures regenerated from its output.
 
 Per the project's own notes: backend tests run inside the container against a `_test`
 database, and the jest scripts carry `--experimental-vm-modules` for `pdf-parse`.
+
+**Measured 2026-10-06, and now carried by the figures:**
+
+| Claim | Measured by | Result |
+|---|---|---|
+| backend tests | `npm test` in `inkwell-api-1`, one full run | **51 suites, 792 tests, all passing** |
+| ledger harness | the same run, `test/ledger/` | **34 tests** (amount-check 4, ledger-invariants 19, seed-ledger 11) |
+| Playwright | `playwright test --list` | **183 tests in 25 spec files** — listed, not run: no browser in the container |
+| backlog | `10-requirements.md` §4 rows | **72 stories, 9 epics, 345 points** |
 
 ---
 

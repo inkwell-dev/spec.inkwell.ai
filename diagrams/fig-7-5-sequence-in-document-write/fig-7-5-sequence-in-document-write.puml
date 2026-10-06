@@ -1,0 +1,60 @@
+@startuml
+' Figure 7.5 – System sequence diagram: the assistant writing into the document
+' Sprint 8 (FR-79). Sources: write_to_article in src/ai/ai.service.ts and
+' pipeArticleWrite in src/ai/article-write-stream.ts (backend);
+' features/ai/article-writer.ts and features/editor/ai-write-range.ts (frontend).
+!include ../_style.puml
+mainframe interaction SequenceDiagram In-document write
+autonumber "0 :"
+
+participant "Writer" as R
+participant "Editor" as E
+participant "Assistant\npanel" as P
+participant "System" as A
+participant "Language\nmodel" as L
+participant "Database" as D
+
+A -> D : Retrieve passages from the writer's\npublished articles, this one excluded
+activate A
+activate D
+D --> A : Passages
+deactivate D
+A --> P : Step "retrieval" done, step "writing" active with the brief
+activate P
+A -> L : Stream the article text, with the draft, the profile,\nthe passages and any selection to replace
+activate L
+A --> P : data-article-start (placement: cursor or replace_selection)
+P -> E : Open the range after the cursor's block,\nor over the selected blocks
+activate E
+E -> E : Tint the range and refuse the writer's own edits inside it
+
+loop while the model streams Markdown
+  L --> A : Text
+  A --> P : data-article-delta
+  P -> E : Insert each block once a blank line closes it,\noutside the undo history
+end
+L --> A : End of stream
+deactivate L
+A --> P : data-article-done, with the words and the headings
+A --> P : Step "writing" done, "N words, M sections"
+deactivate A
+P --> R : Show Keep and Discard
+
+alt the writer keeps the text
+  R -> P : Keep
+  P -> E : Replace the range with its final content as ONE undo step,\nthen release it
+else the writer discards it
+  R -> P : Discard
+  P -> E : Remove the range and restore the replaced blocks\nwhere they were
+end
+E --> R : An ordinary, editable document
+deactivate E
+deactivate P
+
+note over R, D
+  The range always opens at a block boundary, never inside the writer's
+  paragraph, so every node the writer owns stays byte-identical and Discard
+  restores the document exactly. A selection is widened to whole blocks
+  before it is sent. Only after Keep can one Ctrl+Z undo the whole write.
+end note
+@enduml

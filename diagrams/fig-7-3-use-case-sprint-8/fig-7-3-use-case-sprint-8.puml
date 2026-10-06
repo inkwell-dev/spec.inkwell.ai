@@ -1,0 +1,61 @@
+@startuml
+' Figure 7.3 – Use case diagram, Sprint 8: live cards, the reworked assistant and voice
+' FR-66…FR-68, FR-77…FR-83 (US-59…US-62, US-65…US-69).
+!include ../_style.puml
+skinparam nodesep 12
+skinparam ranksep 60
+
+actor "Visitor" as VIS
+actor "Free reader" as LG
+actor "Writer" as R
+
+LG --|> VIS
+R  --|> LG
+
+rectangle {
+  usecase "Sign in" as AUTH
+  usecase "Read an account's\nreposts" as REPOSTED
+  usecase "Preview an account\nfrom a byline" as BYLINE
+  usecase "React from a\nfeed card" as CARD
+  usecase "See a card's\nrecent comments" as RECENT
+  usecase "Brief the assistant" as BRIEF
+  usecase "Receive an answer\nin the panel" as ANSWER
+  usecase "Have text written\ninto the document" as WRITE
+  usecase "Keep or discard\nthe written text" as KEEP
+  usecase "Follow the live\npipeline steps" as STEPS
+  usecase "Dictate the brief" as VOICEIN
+  usecase "Hear the reply\nread aloud" as VOICEOUT
+  usecase "Consume the daily\ntoken allowance" as QUOTA
+}
+
+VIS --> REPOSTED
+VIS --> BYLINE
+LG  --> CARD
+LG  --> RECENT
+R   --> BRIEF
+R   --> KEEP
+
+CARD     ..> AUTH : <<include>>
+ANSWER   --|> BRIEF
+WRITE    --|> BRIEF
+BRIEF    ..> STEPS : <<include>>
+BRIEF    ..> QUOTA : <<include>>
+BRIEF    ..> AUTH : <<include>>
+BRIEF    <.. VOICEIN : <<extend>>
+ANSWER   <.. VOICEOUT : <<extend>>
+VOICEIN  ..> QUOTA : <<include>>
+KEEP     ..> WRITE : <<include>>
+
+
+note as N1
+  Answer or write is the assistant's decision, made per
+  message (FR-78). It replaces Sprint 2's manual
+  "insert the answer into the document" (FR-30).
+end note
+
+note as N2
+  Dictation is billed at 200 tokens a minute; reading
+  a reply aloud is free and rate-limited instead, and
+  is offered only when the key can speak (FR-82, FR-83).
+end note
+@enduml

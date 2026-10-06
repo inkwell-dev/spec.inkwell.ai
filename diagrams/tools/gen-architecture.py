@@ -35,6 +35,17 @@ def edge(i, s, t, label="", style=EDGE):
     return (f'<mxCell id="{i}" value="{label}" style="{style}" edge="1" parent="1" '
             f'source="{s}" target="{t}"><mxGeometry relative="1" as="geometry"/></mxCell>')
 
+def lane(i, s, t, label, sx, tx, y, exit_x, entry_x):
+    """An edge pinned to leave s at exit_x and enter t at entry_x, running
+    horizontally at height y in between — one lane per edge, so no two edges
+    share a run and no label sits on another edge's line."""
+    style = (EDGE + f"exitX={exit_x};exitY=1;exitDx=0;exitDy=0;"
+             f"entryX={entry_x};entryY=0;entryDx=0;entryDy=0;")
+    return (f'<mxCell id="{i}" value="{label}" style="{style}" edge="1" parent="1" '
+            f'source="{s}" target="{t}"><mxGeometry relative="1" as="geometry">'
+            f'<Array as="points"><mxPoint x="{sx}" y="{y}"/><mxPoint x="{tx}" y="{y}"/></Array>'
+            f'</mxGeometry></mxCell>')
+
 def write(name, title, cells, w=1300, h=900):
     xml = ('<mxfile host="Electron" type="device">\n'
            f'  <diagram id="{name}" name="{title}">\n'
@@ -50,58 +61,67 @@ def write(name, title, cells, w=1300, h=900):
 # ── Figure 3.1 — logical frontend ────────────────────────────────────────────
 c = [
     cell("browser", "Browser", 520, 20, 200, 40, HEAD + GREY),
-    cell("fe", "Frontend — Next.js 15, App Router", 60, 100, 1140, 380, GRP + BLUE),
-    cell("routes", "Routes (app/)&lt;br&gt;&lt;br&gt;/ · /articles/[slug]&lt;br&gt;/editor/[id] · /search&lt;br&gt;/dashboard · /discover&lt;br&gt;/m/[slug] · /admin",
+    cell("fe", "Frontend — Next.js 16, App Router", 60, 100, 1140, 380, GRP + BLUE),
+    cell("routes", "Routes (app/) — 28 pages&lt;br&gt;&lt;br&gt;/ · /articles/[slug] · /search&lt;br&gt;/editor/[id] · /dashboard/*&lt;br&gt;/following · /saved · /library&lt;br&gt;/discover · /marketplace · /m/[slug]&lt;br&gt;/u/[username] · /settings · /admin",
          100, 150, 240, 150, BOX + WHITE),
-    cell("features", "Features (features/)&lt;br&gt;&lt;br&gt;editor — TipTap&lt;br&gt;ai-chat · inline actions&lt;br&gt;analytics capture&lt;br&gt;marketplace · notifications",
+    cell("features", "Features (features/) — 18 modules&lt;br&gt;&lt;br&gt;editor — TipTap · inline actions&lt;br&gt;ai — docked panel, voice,&lt;br&gt;document sources&lt;br&gt;documents · saves · reposts&lt;br&gt;marketplace · evaluation&lt;br&gt;notifications · moderation",
          370, 150, 240, 150, BOX + WHITE),
-    cell("state", "State and data&lt;br&gt;&lt;br&gt;React Query&lt;br&gt;Zustand&lt;br&gt;axios interceptors&lt;br&gt;401 → refresh → retry",
+    cell("state", "State and data&lt;br&gt;&lt;br&gt;React Query&lt;br&gt;Zustand&lt;br&gt;axios interceptors&lt;br&gt;401 → refresh → retry&lt;br&gt;analytics tracker (lib/)",
          640, 150, 240, 150, BOX + WHITE),
-    cell("mw", "Edge middleware&lt;br&gt;&lt;br&gt;route protection&lt;br&gt;before the page renders",
+    cell("mw", "Request proxy (proxy.ts)&lt;br&gt;&lt;br&gt;route protection&lt;br&gt;before the page renders",
          910, 150, 250, 150, BOX + WHITE),
-    cell("sse", "SSE client — EventSource, live notifications", 100, 330, 380, 60, BOX + AMBER),
-    cell("upload", "Direct upload — browser PUTs to presigned URL", 520, 330, 380, 60, BOX + AMBER),
+    cell("sse", "SSE client — EventSource, live notifications", 100, 330, 300, 60, BOX + AMBER),
+    cell("upload", "Direct upload — browser PUTs to presigned URL", 430, 330, 300, 60, BOX + AMBER),
     cell("be", "Backend — NestJS 11", 400, 560, 400, 60, HEAD + GREEN),
     cell("store", "Object storage — MinIO", 900, 560, 260, 60, HEAD + PURPLE),
     edge("e1", "browser", "fe", "", EV),
     edge("e2", "state", "be", "REST /api (HTTP/JSON)", EV),
     edge("e3", "sse", "be", "GET /api/notifications/stream", EV),
-    edge("e4", "upload", "store", "PUT, presigned, 10-minute TTL", EV),
+    # Out of the right side, so it cannot share the SSE edge's horizontal run.
+    edge("e4", "upload", "store", "PUT, presigned, 10-minute TTL",
+         EDGE + "exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;"),
 ]
 write("fig-3-1-architecture-frontend", "Figure 3.1 - Logical frontend architecture", c, 1300, 700)
 
 # ── Figure 3.2 — logical backend ─────────────────────────────────────────────
 c = [
     cell("fe2", "Frontend — Next.js", 520, 20, 240, 40, HEAD + BLUE),
-    cell("be2", "Backend — NestJS 11 (api)", 40, 100, 900, 430, GRP + GREEN),
-    cell("guards", "Guards, composed once by @Auth()&lt;br&gt;JwtAuth · Roles · Plans · AccountType · Subscription · AiQuota",
+    cell("be2", "Backend — NestJS 11 (api)", 40, 100, 900, 590, GRP + GREEN),
+    cell("guards", "Global ThrottlerGuard on every route, then guards composed once by @Auth()&lt;br&gt;"
+                   "JwtAuth · Roles · Plans · AccountType · Subscription · AiQuota",
          80, 150, 820, 60, BOX + AMBER),
-    cell("m1", "Auth and Users&lt;br&gt;JWT · Google OAuth&lt;br&gt;profiles", 80, 240, 190, 90, BOX + WHITE),
-    cell("m2", "Articles&lt;br&gt;tags · comments&lt;br&gt;access matrix", 290, 240, 190, 90, BOX + WHITE),
-    cell("m3", "Social&lt;br&gt;likes · reposts&lt;br&gt;follows · notifications", 500, 240, 190, 90, BOX + WHITE),
-    cell("m4", "AI&lt;br&gt;chat · inline · RAG&lt;br&gt;memory · insights", 710, 240, 190, 90, BOX + WHITE),
-    cell("m5", "Analytics&lt;br&gt;event ingestion&lt;br&gt;rollup reads", 80, 350, 190, 90, BOX + WHITE),
-    cell("m6", "Marketplace&lt;br&gt;purchases · ledger&lt;br&gt;subscriptions", 290, 350, 190, 90, BOX + WHITE),
-    cell("m7", "Search&lt;br&gt;lexical · semantic&lt;br&gt;fusion", 500, 350, 190, 90, BOX + WHITE),
-    cell("m8", "Moderation, uploads&lt;br&gt;health and readiness", 710, 350, 190, 90, BOX + WHITE),
-    cell("wk", "Worker — same image, second entrypoint", 980, 100, 280, 430, GRP + GREEN),
+    cell("m1", "Auth and Users&lt;br&gt;JWT · Google OAuth&lt;br&gt;profiles", 80, 240, 190, 100, BOX + WHITE),
+    cell("m2", "Articles&lt;br&gt;tags · comments&lt;br&gt;access matrix", 290, 240, 190, 100, BOX + WHITE),
+    cell("m3", "Social&lt;br&gt;likes · comment likes · reposts&lt;br&gt;follows · blocks · saves&lt;br&gt;notifications",
+         500, 240, 190, 100, BOX + WHITE),
+    cell("m4", "AI&lt;br&gt;chat · inline · RAG&lt;br&gt;memory · insights&lt;br&gt;voice in and out", 710, 240, 190, 100, BOX + WHITE),
+    cell("m5", "Analytics&lt;br&gt;event ingestion&lt;br&gt;rollup reads", 80, 370, 190, 100, BOX + WHITE),
+    cell("m6", "Marketplace&lt;br&gt;purchases · ledger&lt;br&gt;subscriptions · publishing", 290, 370, 190, 100, BOX + WHITE),
+    cell("m7", "Search and discovery&lt;br&gt;lexical · semantic&lt;br&gt;fusion", 500, 370, 190, 100, BOX + WHITE),
+    cell("m8", "Moderation, uploads&lt;br&gt;health and readiness", 710, 370, 190, 100, BOX + WHITE),
+    cell("m9", "Documents&lt;br&gt;private library · attachment&lt;br&gt;citations", 80, 500, 190, 100, BOX + WHITE),
+    cell("wk", "Worker — same image, second entrypoint", 980, 100, 280, 590, GRP + GREEN),
     cell("q1", "embeddings&lt;br&gt;chunk · embed · memory", 1005, 150, 230, 70, BOX + WHITE),
     cell("q2", "analytics&lt;br&gt;article and writer rollups", 1005, 240, 230, 70, BOX + WHITE),
     cell("q3", "marketplace&lt;br&gt;eligibility · renewal", 1005, 330, 230, 70, BOX + WHITE),
     cell("q4", "ai-tokens&lt;br&gt;nightly UTC reset", 1005, 420, 230, 70, BOX + WHITE),
-    cell("pg", "PostgreSQL 16 + pgvector&lt;br&gt;relational · tsvector · HNSW", 60, 600, 300, 70, HEAD + PURPLE),
-    cell("rd", "Redis&lt;br&gt;BullMQ broker only", 400, 600, 240, 70, HEAD + RED),
-    cell("mn", "MinIO&lt;br&gt;object storage", 680, 600, 220, 70, HEAD + PURPLE),
-    cell("ext", "Groq · Gemini&lt;br&gt;LLM, embeddings, moderation", 950, 600, 300, 70, HEAD + AMBER),
+    cell("q5", "documents&lt;br&gt;extract · chunk · embed", 1005, 510, 230, 70, BOX + WHITE),
+    cell("q6", "ai-models&lt;br&gt;daily model liveness check", 1005, 600, 230, 70, BOX + WHITE),
+    cell("pg", "PostgreSQL 16 + pgvector&lt;br&gt;relational · tsvector · HNSW", 60, 800, 300, 70, HEAD + PURPLE),
+    cell("rd", "Redis&lt;br&gt;BullMQ broker only", 400, 800, 240, 70, HEAD + RED),
+    cell("mn", "MinIO&lt;br&gt;images · private documents", 680, 800, 220, 70, HEAD + PURPLE),
+    cell("ext", "Groq · Gemini&lt;br&gt;LLM, embeddings, moderation, speech", 950, 800, 300, 70, HEAD + AMBER),
     edge("f1", "fe2", "be2", "REST and SSE", EV),
-    edge("f2", "m5", "pg", "Drizzle", EV),
-    edge("f3", "m6", "rd", "enqueue", EV),
-    edge("f4", "q4", "rd", "consume", EHL),
-    edge("f5", "q2", "pg", "", EHL),
-    edge("f6", "m8", "mn", "presign", EV),
-    edge("f7", "m4", "ext", "Vercel AI SDK", EV),
+    # Explicit lanes below the two groups, so no edge crosses a datastore box.
+    lane("f2", "be2", "pg", "Drizzle", 175, 180, 725, 0.15, 0.4),
+    lane("f3", "be2", "rd", "enqueue", 490, 496, 725, 0.5, 0.4),
+    lane("f4", "wk", "rd", "consume", 1050, 604, 748, 0.25, 0.85),
+    lane("f6", "be2", "mn", "presign · read", 715, 710, 725, 0.75, 0.1),
+    lane("f8", "be2", "ext", "Vercel AI SDK", 913, 1010, 712, 0.97, 0.2),
+    lane("f7", "wk", "ext", "embeddings", 1190, 1175, 725, 0.75, 0.75),
+    lane("f5", "wk", "pg", "rollups, chunks", 994, 330, 772, 0.05, 0.9),
 ]
-write("fig-3-2-architecture-backend", "Figure 3.2 - Logical backend architecture", c, 1320, 730)
+write("fig-3-2-architecture-backend", "Figure 3.2 - Logical backend architecture", c, 1320, 930)
 
 # ── Figure 3.3 — physical architecture ───────────────────────────────────────
 # Layout note: nginx sits above the three application containers and the
@@ -111,32 +131,33 @@ write("fig-3-2-architecture-backend", "Figure 3.2 - Logical backend architecture
 c = [
     cell("user", "User's browser", 80, 30, 240, 50, HEAD + GREY),
     cell("ghcr", "GHCR — images tagged latest and git SHA", 940, 30, 320, 50, HEAD + GREY),
-    cell("vps", "VPS — Docker Compose, 8 services", 40, 110, 1220, 610, GRP + GREY),
+    cell("vps", "VPS — Docker Compose, 8 services", 40, 110, 1220, 620, GRP + GREY),
     cell("nginx", "nginx&lt;br&gt;TLS termination · reverse proxy · SSE unbuffered&lt;br&gt;the only service published publicly: 80, 443",
          420, 160, 460, 80, BOX + ORANGE),
     cell("web", "web&lt;br&gt;Next.js standalone&lt;br&gt;listens 3000", 80, 300, 240, 80, BOX + BLUE),
     cell("api", "api&lt;br&gt;NestJS&lt;br&gt;listens 3000, publishes nothing", 380, 300, 240, 80, BOX + GREEN),
-    cell("worker", "worker&lt;br&gt;same image, second entrypoint&lt;br&gt;4 queues", 680, 300, 240, 80, BOX + GREEN),
+    cell("worker", "worker&lt;br&gt;same image, second entrypoint&lt;br&gt;6 queues", 680, 300, 240, 80, BOX + GREEN),
     cell("migrate", "migrate&lt;br&gt;one-shot, must exit 0&lt;br&gt;before api and worker start", 980, 300, 240, 80, BOX + AMBER),
-    cell("db", "db&lt;br&gt;pgvector/pgvector:pg16&lt;br&gt;127.0.0.1:5433", 80, 440, 260, 80, BOX + PURPLE),
-    cell("redis", "redis&lt;br&gt;7-alpine&lt;br&gt;127.0.0.1:6379", 380, 440, 240, 80, BOX + RED),
-    cell("minio", "minio&lt;br&gt;S3 API proxied by nginx at /storage&lt;br&gt;console on 127.0.0.1:9001 only",
-         660, 440, 300, 80, BOX + PURPLE),
-    cell("ext3", "Groq · Gemini&lt;br&gt;Sentry", 1000, 440, 220, 80, BOX + AMBER),
-    cell("vols", "Volumes — postgres_data · minio_data · redis_data · certbot_webroot", 80, 580, 1140, 50, BOX + WHITE),
+    cell("db", "db&lt;br&gt;pgvector/pgvector:pg16&lt;br&gt;127.0.0.1:5433", 80, 510, 260, 80, BOX + PURPLE),
+    cell("redis", "redis&lt;br&gt;7-alpine&lt;br&gt;127.0.0.1:6379", 380, 510, 240, 80, BOX + RED),
+    cell("minio", "minio&lt;br&gt;public image bucket, proxied at /storage&lt;br&gt;private documents bucket, served via /api&lt;br&gt;console on 127.0.0.1:9001 only",
+         660, 510, 300, 80, BOX + PURPLE),
+    cell("ext3", "Groq · Gemini&lt;br&gt;Sentry", 1000, 510, 220, 80, BOX + AMBER),
+    cell("vols", "Volumes — postgres_data · minio_data · redis_data · certbot_webroot", 80, 640, 1140, 50, BOX + WHITE),
     edge("g1", "user", "nginx", "HTTPS", EV),
     edge("g2", "nginx", "web", "/", EV),
     edge("g3", "nginx", "api", "/api", EV),
-    edge("g4", "api", "db", "", EV),
+    lane("g4", "api", "db", "", 428, 288, 400, 0.2, 0.8),
     edge("g5", "api", "redis", "enqueue", EV),
-    edge("g6", "worker", "redis", "consume", EV),
-    edge("g7", "worker", "ext3", "embeddings", EV),
-    edge("g8", "migrate", "db", "", EV),
+    lane("g6", "worker", "redis", "consume", 716, 584, 445, 0.15, 0.85),
+    lane("g7", "worker", "ext3", "embeddings", 884, 1033, 400, 0.85, 0.15),
+    lane("g8", "migrate", "db", "", 1100, 132, 490, 0.5, 0.2),
     edge("g9", "ghcr", "vps", "docker compose pull", EV),
-    edge("g10", "api", "minio", "presign", EV),
-    edge("g11", "api", "ext3", "completions", EV),
+    lane("g10", "api", "minio", "presign · read documents", 608, 705, 420, 0.95, 0.15),
+    edge("g12", "worker", "minio", "read documents", EDGE + "exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.4667;entryY=0;entryDx=0;entryDy=0;"),
+    lane("g11", "api", "ext3", "completions", 572, 1066, 468, 0.8, 0.3),
 ]
-write("fig-3-3-architecture-physical", "Figure 3.3 - Physical architecture", c, 1320, 790)
+write("fig-3-3-architecture-physical", "Figure 3.3 - Physical architecture", c, 1320, 850)
 
 # ── Figure 3.4 — CI/CD pipeline ──────────────────────────────────────────────
 c = [
@@ -145,7 +166,7 @@ c = [
     cell("s1", "1. Install dependencies (pnpm)", 70, 210, 260, 40, BOX + WHITE),
     cell("s2", "2. Lint — eslint --max-warnings=0", 70, 260, 260, 40, BOX + WHITE),
     cell("s3", "3. Typecheck — tsc --noEmit", 70, 310, 260, 40, BOX + WHITE),
-    cell("s4", "4. Test — 479 backend tests", 360, 210, 270, 40, BOX + WHITE),
+    cell("s4", "4. Test — 792 backend tests", 360, 210, 270, 40, BOX + WHITE),
     cell("s5", "5. Schema-drift check", 360, 260, 270, 40, BOX + AMBER),
     cell("s6", "6. Build the multi-stage image", 360, 310, 270, 40, BOX + WHITE),
     cell("ghcr2", "GHCR&lt;br&gt;tagged latest and git SHA", 740, 220, 260, 80, HEAD + PURPLE),

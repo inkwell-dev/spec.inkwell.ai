@@ -41,7 +41,7 @@ nodes = {
     "ACCOUNT":  ("Create an account",                        250,  60, 200, 50, UC),
     "FEED":     ("Browse the feed and read an article",      250, 130, 200, 56, UC),
     "SEARCH":   ("Search (lexical + semantic)",              250, 205, 200, 50, UC),
-    "INTERACT": ("Interact (like, comment, follow, report)", 250, 300, 200, 60, UC),
+    "INTERACT": ("Interact (like, comment, repost, save, follow, block, report)", 250, 290, 200, 80, UC),
     "WRITE":    ("Write and publish an article",             250, 400, 200, 50, UC),
     "LIST":     ("List on the marketplace",                  250, 480, 200, 50, UC),
     "AI":       ("Use the AI assistant",                     250, 580, 200, 50, UC),
@@ -51,6 +51,7 @@ nodes = {
     "GOOGLE":   ("Sign in with Google",                      530, 300, 170, 50, UC),
     "SIGNIN":   ("Sign in",                                  530, 400, 170, 50, UC),
     "RETRIEVE": ("Retrieve passages from the writer's own corpus", 505, 570, 220, 66, UC),
+    "DOCS":     ("Ground answers in uploaded reference documents", 505, 680, 220, 66, UC),
 
     # right column
     "SUBS":    ("Manage subscription and credits",           830, 300, 200, 56, UC),
@@ -58,6 +59,7 @@ nodes = {
     "ACQUIRE": ("Acquire an article",                        830, 490, 200, 50, UC),
     "PREVIEW": ("Unlock a preview (10% of the price)",       830, 570, 200, 56, UC),
     "ADMIN":   ("Administer the platform",                   830, 680, 200, 50, UC),
+    "PUBLISH": ("Publish a licensed article",                830, 790, 200, 50, UC),
 
     # external systems, outside the boundary
     "EXT_LLM": ("Large language model provider",            1270, 395, 180, 50, EXT),
@@ -81,6 +83,7 @@ edges = [
     ("A_WRIT", "WRITE", ASSOC, ""), ("A_WRIT", "STATS", ASSOC, ""),
     ("A_ELIG", "LIST", ASSOC, ""), ("A_MUN", "SUBS", ASSOC, ""),
     ("A_MSUB", "EVAL", ASSOC, ""), ("A_MSUB", "ACQUIRE", ASSOC, ""),
+    ("A_MSUB", "PUBLISH", ASSOC, ""),
     ("A_ADM", "ADMIN", ASSOC, ""),
 
     # every authenticated use case includes Sign in — drawn, not implied
@@ -91,12 +94,14 @@ edges = [
     ("SUBS",     "SIGNIN", DASH, "\u00abinclude\u00bb"),
     ("EVAL",     "SIGNIN", DASH, "\u00abinclude\u00bb"),
     ("ACQUIRE",  "SIGNIN", DASH, "\u00abinclude\u00bb"),
+    ("PUBLISH",  "SIGNIN", DASH, "\u00abinclude\u00bb"),
     ("ADMIN",    "SIGNIN", DASH, "\u00abinclude\u00bb"),
 
     # extensions — optional behaviour on a base use case
     ("GOOGLE",  "SIGNIN",  DASH, "\u00abextend\u00bb"),
     ("LIST",    "WRITE",   DASH, "\u00abextend\u00bb"),
     ("PREVIEW", "ACQUIRE", DASH, "\u00abextend\u00bb"),
+    ("DOCS",    "AI",      DASH, "\u00abextend\u00bb"),
 
     # a mandatory sub-behaviour
     ("AI", "RETRIEVE", DASH, "\u00abinclude\u00bb"),

@@ -1,0 +1,66 @@
+@startuml
+' Figure 7.4 – System sequence diagram: one assistant turn, answer or write
+' Sprint 8 (FR-78, FR-80). Source: AiService.chat in src/ai/ai.service.ts.
+!include ../_style.puml
+mainframe interaction SequenceDiagram Assistant turn
+autonumber "0 :"
+
+participant "Writer" as R
+participant "Assistant\npanel" as P
+participant "System" as A
+participant "Language\nmodel" as L
+participant "Database" as D
+
+ref over R, D : Sign in
+
+R -> P : Type or dictate a brief
+activate P
+P -> A : POST /ai/chat with the messages,\nthe article and the selection
+activate A
+A -> A : Check and grant the daily AI allowance
+
+A -> D : Read the draft
+activate D
+D --> A : Draft text
+A --> P : Step "draft" done, with its word count
+A -> D : Read the writer's style profile
+D --> A : Memory block
+A --> P : Step "profile" done
+opt documents are attached to the article
+  A -> D : Retrieve passages from the attached documents
+  D --> A : Passages, with document and page
+  A --> P : Step "documents" done, with counts
+end
+deactivate D
+
+A --> P : Step "thinking" active
+A -> L : Stream the routing call, with the write_to_article tool
+activate L
+
+alt the model answers in the panel
+  L --> A : Text
+  A --> P : Step "thinking" done, the answer streams as Markdown
+  P --> R : Read the answer in the panel
+else the model calls write_to_article(placement, brief)
+  L --> A : Tool call
+  A --> P : Step "thinking" done
+  ref over P, D : In-document write (figure 7.5)
+  A -> L : Continue the turn with the tool's result
+  L --> A : One-line recap
+  A --> P : The recap
+end
+deactivate L
+
+A -> D : Record the interaction and settle the tokens of both calls
+A --> P : Step "done"
+deactivate A
+P --> R : The steps collapse into one finished run
+deactivate P
+
+note over R, D
+  The routing call may run at most three steps: decide, call the tool,
+  recap. Each stage is reported only once it has actually run, so the
+  panel shows the real pipeline, not an animation. A Stop still bills
+  an estimate of what was produced.
+end note
+@enduml

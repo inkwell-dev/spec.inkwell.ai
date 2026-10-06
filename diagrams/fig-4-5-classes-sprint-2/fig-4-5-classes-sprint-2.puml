@@ -65,9 +65,9 @@ Article "1" -- "0..*" AnalyticsEvent : is measured by
 User "0..1" -- "0..*" AnalyticsEvent : viewer
 
 note as N1
-  voice_transcribe exists in the enumeration but has
-  no implementation: voice input was descoped in the
-  2026-07-26 re-baseline and is reported as future work.
+  voice_transcribe is reserved in the enumeration but
+  unused in this sprint. Voice input ships in Sprint 8
+  (FR-82, FR-83) and is presented in Chapter 7.
 end note
 
 AiActionType -[hidden]down- AnalyticsEventType

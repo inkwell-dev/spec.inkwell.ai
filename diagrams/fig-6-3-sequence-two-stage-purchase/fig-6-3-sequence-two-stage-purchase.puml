@@ -10,13 +10,18 @@ participant "Database" as D
 
 ref over M, D : Sign in
 
-M -> A : POST /purchases/preview with an idempotency key
+M -> A : POST /purchases/preview/:articleId with an idempotency key
 activate A
 A -> A : Check the account type, the active subscription,\nthe placement and that the buyer is not the author
 
 group One database transaction
-  A -> D : SELECT the credit balance FOR UPDATE
+  A -> D : Lock the article row and read its full-purchase owner
   activate D
+  D --> A : Owner, or none
+  alt another magazine already owns the article
+    A --> M : 409, purchased exclusively by another magazine
+  else not owned by a rival
+  A -> D : SELECT the credit balance FOR UPDATE
   D --> A : Locked balance
   alt balance below the preview price
     A --> M : 402, offer to top up
@@ -27,6 +32,7 @@ group One database transaction
     A -> D : Insert three transaction rows\n(debit, writer payout, platform fee)
     D --> A : Committed
   end
+  end
   deactivate D
 end
 A --> M : Preview unlocked, new balance
@@ -35,7 +41,7 @@ M -> A : Read the full article
 
 |||
 
-M -> A : POST /purchases/buy with an idempotency key
+M -> A : POST /purchases/buy/:articleId with an idempotency key
 activate A
 A -> D : Look up the prior preview for this article and magazine
 activate D
@@ -44,15 +50,33 @@ deactivate D
 A -> A : Remaining = price minus what the preview already paid
 
 group One database transaction
-  A -> D : SELECT the credit balance FOR UPDATE
+  A -> D : Lock the article row and read its full-purchase owner
   activate D
+  D --> A : Owner, or none
+  alt another magazine already owns the article
+    A --> M : 409, purchased exclusively by another magazine
+  else not owned by a rival
+  A -> D : SELECT the credit balance FOR UPDATE
   A -> D : Debit the remaining amount, credit the writer
   A -> D : Insert the purchase row, stage full_purchase,\nlinked to the preview
   A -> D : Insert three transaction rows
   D --> A : Committed
+  end
   deactivate D
 end
-A --> M : Republish rights granted, article added to the library
+A --> M : Article added to the library, owned and not yet published
+deactivate A
+
+|||
+
+M -> A : POST /magazines/me/library/:articleId/publish
+activate A
+A -> D : Lock the article, check it is owned by this magazine\nand not yet published
+activate D
+A -> D : Make it public and free, clear the price,\nrecord the magazine as publisher
+D --> A : Updated
+deactivate D
+A --> M : Published under the magazine's masthead
 deactivate A
 
 note over M, D
