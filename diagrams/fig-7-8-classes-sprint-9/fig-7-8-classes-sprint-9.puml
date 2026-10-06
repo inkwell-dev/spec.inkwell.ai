@@ -1,0 +1,67 @@
+@startuml
+' Figure 7.8 – Class diagram, Sprint 9: the document library
+' Three new tables (FR-84, FR-85) and the DocumentStatus enumeration.
+' Source: src/database/schema/documents.ts.
+!include ../_style.puml
+skinparam nodesep 18
+skinparam ranksep 45
+hide circle
+hide methods
+
+class User {
+  - id : UUID
+}
+class Article {
+  - id : UUID
+  - authorId : UUID
+}
+class Document {
+  - id : UUID
+  - title : String
+  - filename : String
+  - contentType : String
+  - sizeBytes : Integer
+  - storageKey : String
+  - status : DocumentStatus
+  - pageCount : Integer
+  - chunkCount : Integer
+  - error : Text
+  - createdAt : Timestamp
+  - deletedAt : Timestamp
+}
+class DocumentChunk {
+  - chunkIndex : Integer
+  - page : Integer
+  - content : Text
+  - embedding : Vector
+}
+class ArticleDocument {
+  - createdAt : Timestamp
+}
+
+class DocumentStatus <<Enumeration>> {
+  pending
+  extracting
+  ready
+  failed
+}
+
+User "1" -- "0..20" Document : owns
+Document "1" -- "0..*" DocumentChunk : is chunked into
+Document "1" -- "0..*" ArticleDocument
+Article "1" -- "0..*" ArticleDocument : is grounded in
+
+note as N1
+  pending → extracting → ready, or failed with a
+  writer-readable reason in error. Nothing moves
+  backwards except a retry, which puts a failed
+  document back to pending.
+end note
+
+note as N2
+  Each chunk keeps the page it came from, which is
+  what a citation [Title, p. N] points at. Deleting
+  a document removes its chunks and attachments
+  with it (ON DELETE CASCADE).
+end note
+@enduml
