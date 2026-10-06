@@ -1,6 +1,6 @@
 @startuml
 ' Figure 2.2 – Class diagram: core domain
-' 11 of the 24 persisted classes, plus the enumerations they reference.
+' 14 of the 30 persisted classes, plus the enumerations they reference.
 ' Audit columns (created_at, updated_at) are omitted for legibility.
 ' Behaviour is not shown: the model is relational and operations live in
 ' the service layer, so the classes carry no methods of their own.
@@ -32,6 +32,7 @@ class MagazineProfile {
 }
 class Article {
   - id : UUID
+  - publisherId : UUID
   - title : String
   - slug : String
   - content : Json
@@ -54,8 +55,11 @@ class Comment {
   - deletedAt : Timestamp
 }
 class Like
+class CommentLike
 class Repost
+class Save
 class Follow
+class Block
 class Notification {
   - type : NotificationType
   - data : Json
@@ -103,6 +107,9 @@ class NotificationType <<Enumeration>> {
   article_purchased
   earnings_credited
   subscription_renewed
+  comment_like
+  save
+  article_published
 }
 class ReportTargetType <<Enumeration>> {
   article
@@ -119,14 +126,20 @@ class ReportStatus <<Enumeration>> {
 User "1" -- "0..1" MagazineProfile : extends
 User "1" -- "0..*" Article : writes
 User "1" -- "0..*" Comment : posts
+User "0..1" -- "0..*" Article : publishes
 User "1" -- "0..*" Like : gives
+User "1" -- "0..*" CommentLike : gives
 User "1" -- "0..*" Repost : shares
+User "1" -- "0..*" Save : keeps
 User "1" -- "0..*" Follow : follows
+User "1" -- "0..*" Block : blocks
 User "1" -- "0..*" Notification : receives
 User "0..1" -- "0..*" Report : files
 Article "1" -- "0..*" Comment : carries
 Article "1" -- "0..*" Like
 Article "1" -- "0..*" Repost
+Article "1" -- "0..*" Save
+Comment "1" -- "0..*" CommentLike
 Article "1" -- "0..*" ArticleTag
 Tag "1" -- "0..*" ArticleTag
 Comment "0..1" -- "0..*" Comment : replies to
@@ -135,6 +148,8 @@ note as N1
   role and plan are NULL for a magazine account,
   enforced by a CHECK constraint. They are
   orthogonal: a writer may stay on the free plan.
+  publisherId names the magazine that published a
+  licensed article; it is NULL for everything else.
 end note
 
 ' Keep the enumerations in one column to the side, as the example
