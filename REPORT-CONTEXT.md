@@ -11,6 +11,9 @@ this report is currently recovering from (see §4).
 
 **Read order for a cold session**
 
+0. `START-HERE.md` first if the repos are linked to a Claude Project rather
+   than opened in Claude Code — it carries the handover prompts, since a
+   Project loads no `CLAUDE.md`
 1. this file, end to end — about ten minutes
 2. `FIGURES-AUDIT.md` in this repo — the per-figure verdict
 3. `diagrams/README.md` — the figure house style, and the two traps that cost real time
