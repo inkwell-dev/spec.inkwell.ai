@@ -73,9 +73,9 @@ c = [
     cell("roles", "The three Scrum roles, and how they collapse here&lt;br&gt;&lt;br&gt;"
                   "Product Owner · Scrum Master · Development Team — on this project all three "
                   "are the same person. The academic supervisor acts as Product Owner at sprint "
-                  "boundaries: scope was re-baselined twice on that basis, on 2026-07-26 and "
-                  "2026-08-10. Stated in §1.4.2 rather than left implied, because it is the first "
-                  "thing an examiner asks about a solo Scrum project.",
+                  "boundaries, reviewing each increment against the backlog. Stated in §1.4.2 "
+                  "rather than left implied, because it is the first thing an examiner asks about "
+                  "a solo Scrum project.",
          60, 470, 1080, 130, NOTE + AMBER),
     edge("a1", "pb", "plan", "highest priority first", EH),
     edge("a2", "plan", "sb", "commit", EV),
@@ -101,12 +101,12 @@ c = [
     cell("s2", "Sprint 2 — plan · build · verify → increment", 650, 190, 450, 50, BOX + WHITE),
     cell("s3", "Sprint n — plan · build · verify → increment", 650, 260, 450, 50, BOX + WHITE),
     cell("s4", "Working software every two weeks", 650, 330, 450, 50, BOX + GREEN),
-    cell("s5", "Scope absorbed between sprints, not frozen", 650, 400, 450, 50, BOX + AMBER),
+    cell("s5", "Each increment reviewed before the next is planned", 650, 400, 450, 50, BOX + AMBER),
     cell("why", "Why Scrum was chosen for this project&lt;br&gt;&lt;br&gt;"
-                "The scope moved twice and neither change restarted the work: voice input and "
-                "three other features were descoped on 2026-07-26, and deployment was resequenced "
-                "on 2026-08-10. A sequential plan would have had to re-open its requirements phase "
-                "for both. Each phase also carries written exit criteria, which is what lets every "
+                "The product is built in layers that each need the one before: the marketplace "
+                "evaluates writers on analytics, and analytics need published articles. Fixed "
+                "two-week sprints deliver those layers in order, each one a working increment the "
+                "next builds on, and each with written exit criteria — which is what lets every "
                 "release chapter show evidence rather than assert completion.",
          60, 540, 1080, 130, NOTE + AMBER),
     edge("b1", "w1", "w2", "", EV), edge("b2", "w2", "w3", "", EV),
