@@ -412,15 +412,18 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-54 | Lower the eligibility thresholds under a flag so that the gate can be crossed live | Must | 2 | 6 |
 | US-55 | Serve the product at a public URL over TLS | Must | 8 | 6 |
 
-**54 stories, 8 epics, 259 points.**
+**72 stories, 9 epics, 345 points** (recounted 2026-10-06).
 
 ---
 
 ## 5. Release plan
 
-Three releases, six sprints. The report's sprint numbering differs from the
+Four releases, nine sprints. The report's sprint numbering differs from the
 calendar sprints in `0-phase-plan.md`, which ran S0–S7 including a three-sprint
-design track; the mapping is explicit so nothing is hidden.
+design track; the mapping is explicit so nothing is hidden. Sprints 7–9 ran
+after the phase plan's last calendar sprint, so they map to no phase. The
+report's Gantt (`fig-2-4`) presents all of this on the 2026-02-01 → 2026-07-31
+window set for the report; the dates below are the real ones.
 
 | Release | Report chapter | Sprint | Calendar | Phase | Goal |
 |---------|---------------|--------|----------|-------|------|
@@ -430,6 +433,9 @@ design track; the mapping is explicit so nothing is hidden.
 | | | Sprint 4 | S6 · 10/08–23/08 | Phase 4 | RAG, Portfolio Insights, hybrid search, memory extraction |
 | **R3 — Marketplace, testing and deployment** | Ch.6 | Sprint 5 | 13–14/08 | Phase 5 | Marketplace, subscriptions, premium, moderation, admin |
 | | | Sprint 6 | S7 · 24/08–06/09 | Phase 6 | Tests, demo mode, deployment, CI/CD |
+| **R4 — Social depth, assistant and documents** | Ch.7 | Sprint 7 | 26/08–06/09 | — | Comment likes, follower and following lists, block, save, share (FR-60…FR-65) |
+| | | Sprint 8 | 07/09–14/09 | — | Live card controls, Reposted tab, byline preview, assistant routing and in-document writes, docked panel, voice in and out (FR-66…FR-68, FR-77…FR-83) |
+| | | Sprint 9 | 15/09–21/09 | — | Document library, ingestion, per-article attachment, citations (FR-84…FR-87) |
 
 **Work that is not a sprint.** Phase 0 (foundation), Phase D (design track,
 S2–S4), Phase I (URL topology), Phase Q (quality pass) and Phase V (vendored
