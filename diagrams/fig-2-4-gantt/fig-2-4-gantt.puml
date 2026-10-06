@@ -1,43 +1,60 @@
 @startgantt
-' Figure 2.4 – Gantt chart: the eight sprints, as executed
-' Dates are the real sprint boundaries recorded in 0-phase-plan.md § Sprint Map,
-' not a plan drawn after the fact.
+' Figure 2.4 – Gantt chart: the project from February to July 2026
+' Laid out on the 2026-02-01 → 2026-07-31 window set for the report
+' (REPORT-CONTEXT.md §6), in the report's own sprint numbering and in the order
+' the work was actually done: foundation, Sprint 1, the design track, then
+' Sprints 2–9. Every sprint is a fixed two-week sprint. The real calendar dates
+' are kept in 0-phase-plan.md and 10-requirements.md §5.
 !include ../_style.puml
 projectscale weekly
-Project starts 2026-05-22
+Project starts 2026-02-01
 saturday are closed
 sunday are closed
 
--- Release 0: foundation --
-[S0 Foundation, Docker and CI] lasts 5 days
-[S0 Foundation, Docker and CI] is colored in White/Black
+-- Foundation --
+[Foundation, Docker and CI] starts 2026-02-02
+[Foundation, Docker and CI] lasts 5 days
+[Foundation, Docker and CI] is colored in White/Black
 
 -- Release 1: functional foundation --
-[S1 Schema, authentication, article core] lasts 10 days
-[S1 Schema, authentication, article core] starts at [S0 Foundation, Docker and CI]'s end
-[S5 Editor, AI assistance, event capture] lasts 10 days
-[S5 Editor, AI assistance, event capture] starts 2026-07-27
+[Sprint 1: schema, authentication, article core] starts at [Foundation, Docker and CI]'s end
+[Sprint 1: schema, authentication, article core] lasts 10 days
 
 -- Design track --
-[S2 Design system and mobile screens] lasts 10 days
-[S2 Design system and mobile screens] starts 2026-06-12
-[S3 Desktop screens and refinement] lasts 10 days
-[S3 Desktop screens and refinement] starts at [S2 Design system and mobile screens]'s end
-[S4 Figma audit and re-baseline] lasts 13 days
-[S4 Figma audit and re-baseline] starts at [S3 Desktop screens and refinement]'s end
+[Design system and mobile screens] starts at [Sprint 1: schema, authentication, article core]'s end
+[Design system and mobile screens] lasts 10 days
+[Desktop screens and refinement] starts at [Design system and mobile screens]'s end
+[Desktop screens and refinement] lasts 10 days
+[Figma audit and re-baseline] starts at [Desktop screens and refinement]'s end
+[Figma audit and re-baseline] lasts 10 days
+
+-- Release 1: functional foundation (continued) --
+[Sprint 2: editor, AI assistance, event capture] starts at [Figma audit and re-baseline]'s end
+[Sprint 2: editor, AI assistance, event capture] lasts 10 days
 
 -- Release 2: social, analytics and AI --
-[S6 RAG, insights and hybrid search] lasts 10 days
-[S6 RAG, insights and hybrid search] starts 2026-08-10
+[Sprint 3: social, notifications, analytics] starts at [Sprint 2: editor, AI assistance, event capture]'s end
+[Sprint 3: social, notifications, analytics] lasts 10 days
+[Sprint 4: RAG, insights, hybrid search] starts at [Sprint 3: social, notifications, analytics]'s end
+[Sprint 4: RAG, insights, hybrid search] lasts 10 days
 
 -- Release 3: marketplace, testing and deployment --
-[S7 Marketplace, tests and deployment] lasts 10 days
-[S7 Marketplace, tests and deployment] starts 2026-08-24
+[Sprint 5: marketplace, premium, moderation] starts at [Sprint 4: RAG, insights, hybrid search]'s end
+[Sprint 5: marketplace, premium, moderation] lasts 10 days
+[Sprint 6: tests, demo, deployment] starts at [Sprint 5: marketplace, premium, moderation]'s end
+[Sprint 6: tests, demo, deployment] lasts 10 days
 
--- Report and defense --
-[Report writing] lasts 8 days
-[Report writing] starts 2026-08-19
-[Report submission] happens at 2026-08-31
-[Defense] happens at 2026-09-07
+-- Release 4: social depth, assistant and documents --
+[Sprint 7: comment likes, lists, block, save, share] starts at [Sprint 6: tests, demo, deployment]'s end
+[Sprint 7: comment likes, lists, block, save, share] lasts 10 days
+[Sprint 8: live cards, in-document writing, voice] starts at [Sprint 7: comment likes, lists, block, save, share]'s end
+[Sprint 8: live cards, in-document writing, voice] lasts 10 days
+[Sprint 9: document library and citations] starts at [Sprint 8: live cards, in-document writing, voice]'s end
+[Sprint 9: document library and citations] lasts 10 days
+
+-- Report --
+[Report writing] starts 2026-07-06
+[Report writing] lasts 20 days
+[Report writing] is colored in White/Black
 
 @endgantt
