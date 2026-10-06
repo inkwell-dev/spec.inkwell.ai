@@ -4,23 +4,31 @@ The application screenshots the report uses. Unlike `diagrams/`, these are raste
 they are the source — there is no vector original to re-render them from, so they are
 committed rather than ignored.
 
-Captured on **2026-08-22** against the dev stack, all in one run so the set matches:
-1280×800, ×2 device pixel ratio, light theme, Chromium, the Next.js dev overlay and the
-React Query devtools button suppressed.
+Captured against the dev stack **with its clock at 2026-07-31**, the last day of the
+project window the report presents — so every date a figure shows falls inside it.
+1280×800 at ×2 (the AI figures 1440×900), light theme, Chromium, the Next.js dev overlay
+and the React Query devtools button suppressed.
 
 ## Regenerating
 
-They are produced by a Playwright runner in the frontend repo, not by hand:
+Driven from the superproject, not by hand — the clock is the reason:
 
 ```bash
-cd docker.inkwell.ai/src/frontend.inkwell.ai
-npx playwright test --config capture/playwright.capture.ts
-mv capture/figures/*.png ../../../spec.inkwell.ai/figures/screens/
+cd docker.inkwell.ai
+make dciup-capture      # the stack on the report's clock (2026-07-31)
+make capture-seed       # fresh full seed, no date before 2026-02-01 — REPLACES dev data
+make capture            # sitting 1: every figure that can show a date
+make capture-real       # sitting 2: the AI and document figures (needs the embedding quota)
+mv src/frontend.inkwell.ai/capture/figures/*.png spec.inkwell.ai/figures/screens/
+make dciup-all          # back to the real clock
 ```
 
-`capture/README.md` there carries the prerequisites — the stack has to be up, seeded and
-embedded, and four of the figures cost either AI tokens or a dialog that must not be
-confirmed. Read it before re-running.
+`.infra/compose/docker-compose.capture.yml` explains how the clock is moved and why the
+database moves with it; `src/frontend.inkwell.ai/capture/README.md` carries what each
+figure needs. Two sittings because the AI providers' TLS certificates postdate the
+report's clock: the AI figures run with the api and worker on the real clock and
+everything a screen shows — the database, the web app, the browser — still on the
+report's.
 
 ## Naming
 
@@ -28,17 +36,36 @@ confirmed. Read it before re-running.
 it is **not** the report's figure number. Assign those when the chapters are written and
 reference these files by name, the way `diagrams/README.md` does for the UML figures.
 
-Six accounts across five personas, because the seed puts the only draft on one writer and
-the only sales on another:
-
 | Prefix | Account | What it is there to show |
 |---|---|---|
-| `guest-` | signed out | the public surface, both registration paths, the premium gate |
-| `reader-` | `hakim@example.com` | free plan, so the paywall and upgrade prompt are real |
-| `writer-01…08`, `writer-12`, `writer-13` | `nadia@example.com` | the dashboard overview, My articles, drafting, the editor, both AI surfaces, notifications |
+| `guest-` | signed out | the public surface, both registration paths (with Google sign-in), the premium gate, a licensed article |
+| `reader-` | `lena@example.com` | the free plan, so the paywall and upgrade prompt are real; Sprint 7's saved shelf, blocked accounts, following feed, follower search and Reposted tab |
+| `writer-01…08`, `writer-12…19` | `nadia@example.com` | the dashboard, My articles, the editor, both AI surfaces, notifications, and Sprint 8–9's assistant, write, document library, sources, citations and voice |
 | `writer-09…11` | `yusuf@example.com` | the two-stage sale, itemised |
-| `magazine-` | `editors@longformreview.example.com` | subscribed, 953 credits, one article licensed |
+| `magazine-` | `editors@longformreview.example.com` | subscribed, licensing; publishing from its library (Sprint 5) |
 | `admin-` | `admin@inkwell.ai` | the moderation console |
+
+## Added for Chapter 7, and for Sprint 5's licensing
+
+| Figure | Shows | Requirement |
+|---|---|---|
+| `reader-05-saved` | the Saved shelf | FR-63/64 |
+| `reader-06-blocked-accounts` | blocked accounts, from settings | FR-62 |
+| `reader-07-following-feed` | the following feed | — |
+| `reader-08-followers-search` | a follower list, searched | FR-61 |
+| `reader-09-reposted-tab` | the Reposted tab of a profile | FR-67 |
+| `guest-10-licensed-article` | a licensed article under the magazine's masthead | FR-76 |
+| `magazine-09-publish-from-library` | publishing what the magazine bought | FR-73/74 |
+| `writer-14-ai-keep-discard` | a write awaiting Keep or Discard | FR-79 |
+| `writer-15-ai-rail-live-step` | the live step on the collapsed rail | FR-80/81 |
+| `writer-16-document-library` | the library, one document refused with its reason | FR-84 |
+| `writer-17-ai-sources-tab` | the Sources tab, a document attached | FR-85 |
+| `writer-18-ai-cited-reply` | a reply citing `[Title, p. N]` | FR-86 |
+| `writer-19-voice-recording` | recording a prompt | FR-82 |
+
+**Still to take: sitting 2** — `writer-03`, `writer-05…08` and `writer-14…19`, which need
+the embedding provider's daily quota. Until then `writer-03` and `writer-05…08` here are
+the previous set's.
 
 ## Captured whole, 2026-08-23
 
@@ -87,14 +114,13 @@ what changed in substance; everything else changed only in its navigation column
 
 ## The three that carry the most
 
-- **`magazine-01-marketplace`** — the three listings in three different states at once:
-  previewed (75 credits, 68 outstanding), untouched (preview 12 / buy 120), and already
-  in the library. This is what §4.5.5 describes.
-- **`writer-09-earnings`** — the split payment as the writer sees it, now at both
-  levels: the KPI row separates `4` preview payouts from `29` purchase payouts against
-  a `33` lifetime total, the Revenue by article table attributes all of it to one piece
-  bought by one magazine, and the payout history itemises `PREVIEW +4` (4 paid, 0 fee)
-  then `PURCHASE +29` (36 paid, 7 fee).
+- **`magazine-01-marketplace`** — listings priced in credits, each with its preview
+  price (10%) beside the full one: Preview · 14 / Buy · 147. This is what §4.5.5 describes.
+- **`writer-09-earnings`** — the split payment as the writer sees it, at both levels: the
+  KPI row separates `9` preview payouts from `85` purchase payouts against a `94`
+  lifetime total, the Revenue by article table attributes them to two pieces each bought
+  by one magazine, and the payout history itemises each stage — `PURCHASE +44` (54 paid,
+  10 fee), `PREVIEW +4` (5 paid, 1 fee).
 - **`admin-03-report-queue`** — reports across `PENDING` / `REVIEWED` / `DISMISSED`,
   including one with no reporter shown. That row is the platform's publish-time
   classifier (`reports.reporter_id IS NULL`, see `6-database-schema.md`), and it is in
