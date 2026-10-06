@@ -58,9 +58,16 @@ closes with the development methodology adopted and the reasons for choosing it.
 
 ## 1.1 Host organisation
 
-*[Placeholder — presentation of the host organisation: identity, field of activity,
-organisation chart and the team the project was carried out in. To be completed by the
-author.]*
+This project was carried out at **Intuitiv Group**. Intuitiv describes itself as a
+company with a dual culture: at once an innovative **ESN** (*Entreprise de Services du
+Numérique*, an IT services company) and an **interactive agency**. It positions itself
+on reactivity, innovation, reliability and quality of service, and works with large
+national and international groups while deliberately keeping a human-scale structure.
+
+That dual culture suits a project like Inkwell.ai, which is as much a software
+engineering effort — architecture, data, security, delivery — as a product and
+interface design effort, from the design system to the screens a writer works in
+every day.
 
 ## 1.2 Project context
 

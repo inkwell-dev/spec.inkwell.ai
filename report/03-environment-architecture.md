@@ -12,12 +12,22 @@ deployment and its delivery pipeline.
 
 ### 3.1.1 Hardware environment
 
-*[Placeholder — the development machine: processor, memory, storage, operating
-system. To be completed by the author.]*
+The project was developed on a single workstation, described in Table 3.1.
+
+**Table 3.1 – Hardware environment**
+
+| Component | Specification |
+|---|---|
+| Machine | Lenovo ThinkPad |
+| Processor | Intel Core i7-1355U |
+| Memory | 24 GB RAM |
+| Graphics | NVIDIA GeForce MX550 |
+| Storage | 512 GB NVMe SSD |
+| Operating system | Ubuntu Linux |
 
 ### 3.1.2 Software environment
 
-**Table 3.1 – Software tools**
+**Table 3.2 – Software tools**
 
 | Tool | Use |
 |---|---|
@@ -57,7 +67,7 @@ superproject therefore identifies one exact, deployable revision of the whole sy
 
 ### 3.2.1 Frontend
 
-**Table 3.2 – Frontend technologies**
+**Table 3.3 – Frontend technologies**
 
 | Technology | Role | Why it was chosen |
 |---|---|---|
@@ -71,7 +81,7 @@ superproject therefore identifies one exact, deployable revision of the whole sy
 
 ### 3.2.2 Backend
 
-**Table 3.3 – Backend technologies**
+**Table 3.4 – Backend technologies**
 
 | Technology | Role | Why it was chosen |
 |---|---|---|
@@ -85,7 +95,7 @@ superproject therefore identifies one exact, deployable revision of the whole sy
 
 ### 3.2.3 Artificial-intelligence services
 
-**Table 3.4 – AI models and their use**
+**Table 3.5 – AI models and their use**
 
 | Use | Provider and model |
 |---|---|
