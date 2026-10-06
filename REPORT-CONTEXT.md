@@ -201,6 +201,28 @@ host-side on this project at all; the skill's `references/environment.md`
 
 ## 5. Decisions already taken
 
+- **The report runs on the project window, 2026-02-01 → 2026-07-31 (decided
+  2026-10-06).** Every date the report, a figure or a screenshot shows comes from
+  this window, never from the real calendar (May–September) that the git history
+  and `0-phase-plan.md` record. The time map:
+
+  | Work | Dates in the report |
+  |---|---|
+  | Foundation, Docker and CI | 02/02–06/02 |
+  | Sprint 1 | 09/02–20/02 |
+  | Design track (three sprints) | 23/02–03/04 |
+  | Sprints 2 → 9 | 06/04 → 24/07, two weeks each (`10-requirements.md` §5) |
+  | Report writing | 06/07–31/07 |
+
+  Anything that would surface a real date — a citation of `0-phase-plan.md`, a
+  spec's dated amendment, a screenshot of seeded data — stops and is mapped onto
+  this window first. **Screenshots are taken with the app's clock at 2026-07-31.**
+- **No re-baselines, pivots or descopes appear anywhere in the report** (decided
+  2026-10-06). The scope is presented as fixed from the start: voice is a Sprint 8
+  feature, voice-to-article is simply out of scope, and deployment is Sprint 6's
+  work. The internal planning documents keep their history; the report does not
+  tell it.
+
 - **Sprints 7–9 become Chapter 7**, rather than being folded back into Chapters
   4–6 by subject (decided 2026-10-05). Chapters 4–6 stay the historical record of
   what each sprint delivered. This is what keeps 14 figures clean instead of
