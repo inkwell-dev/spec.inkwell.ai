@@ -1,0 +1,92 @@
+@startuml
+' Figure 7.9 – System sequence diagram: uploading and ingesting a reference document
+' Sprint 9 (FR-84). Sources: DocumentsService.presign/register/retry and
+' DocumentIngestionService.ingest in src/documents/.
+' The companion of fig-5-8: a second background pipeline, for a second corpus.
+!include ../_style.puml
+mainframe interaction SequenceDiagram Document ingestion
+autonumber "0 :"
+
+participant "Writer" as R
+participant "System" as A
+participant "Object\nstorage" as S
+participant "Worker" as K
+participant "Embedding\nprovider" as E
+participant "Database" as D
+
+ref over R, D : Sign in
+
+R -> A : POST /documents/presign with the filename
+activate A
+A -> A : Accept PDF, DOCX, TXT or MD only
+A --> R : Presigned upload URL and storage key
+deactivate A
+R -> S : PUT the file to the private documents bucket
+activate S
+S --> R : Stored
+deactivate S
+
+R -> A : POST /documents with the storage key
+activate A
+A -> S : Check the object exists and is under 10 MB
+activate S
+S --> A : Size
+deactivate S
+group One database transaction, under a per-writer lock
+  A -> D : Count the writer's documents
+  activate D
+  alt already 20 documents
+    A --> R : 409, the library is full
+  else room left
+    A -> D : Insert the document, status pending
+    D --> A : Row
+  end
+  deactivate D
+end
+A -> K : Queue ingest-document
+A --> R : The document, shown as pending
+deactivate A
+
+K -> D : Set the status to extracting
+activate K
+activate D
+K -> S : Read the file
+activate S
+S --> K : Bytes
+deactivate S
+K -> K : Extract the text page by page
+
+alt over 200 pages, or no text layer to read
+  K -> D : Set the status to failed, with a readable reason
+else text extracted
+  K -> K : Split into chunks, keeping each chunk's page
+  K -> E : Embed the chunks
+  activate E
+  E --> K : One vector per chunk
+  deactivate E
+  K -> D : In one transaction, replace the chunks\nand set the status to ready, with the page count
+end
+deactivate D
+deactivate K
+
+R -> A : GET /documents (the list polls while a row is in progress)
+activate A
+A --> R : Ready, or failed with its reason
+deactivate A
+
+opt the document failed
+  R -> A : POST /documents/:id/retry
+  activate A
+  A -> D : Set the status back to pending
+  A -> K : Queue ingest-document again
+  A --> R : Pending
+  deactivate A
+end
+
+note over R, D
+  The file never passes through the api: the browser puts it straight
+  into the private bucket. The bucket has no anonymous read policy, so
+  the file is served back only through GET /documents/:id/file, as a
+  10-minute presigned URL for its owner.
+end note
+@enduml
