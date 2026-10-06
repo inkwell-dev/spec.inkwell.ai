@@ -113,7 +113,7 @@ shipped in. Use it; do not re-derive sprint membership from git dates.
 | **Ch.4** | Sprint 1 (schema, auth, article core) · Sprint 2 (editor, AI, event capture) | `fig-4-1` … `fig-4-6` |
 | **Ch.5** | Sprint 3 (social, notifications, analytics) · Sprint 4 (RAG, insights, search) | `fig-5-1` … `fig-5-9` |
 | **Ch.6** | Sprint 5 (marketplace, premium, moderation) · Sprint 6 (tests, demo, deploy) | `fig-6-1` … `fig-6-8` |
-| **Ch.7** | **Sprint 7 · Sprint 8 · Sprint 9 — NEW, no figures exist yet** | `fig-7-*`, to be drawn |
+| **Ch.7** | Sprint 7 · Sprint 8 · Sprint 9 | `fig-7-1` … `fig-7-9` (drawn 2026-10-06) |
 
 Chapter 7's three sprints, per `10-requirements.md` §2:
 
@@ -147,7 +147,11 @@ The visual assets were frozen earlier than the system they describe:
 | the specs and the code | **2026-09-21** | 37 doc + 141 code commits after the diagram freeze |
 
 **`FIGURES-AUDIT.md` is the per-figure verdict** — read it rather than re-deriving
-it. Summary as of 2026-10-05:
+it. **Update 2026-10-06: every diagram below has been fixed or drawn**, the four
+counting figures re-measured (792 backend tests in 51 suites, 34 ledger tests,
+183 Playwright tests in 25 files, 72 stories in 9 epics), and Chapter 7's nine
+figures exist. What remains is the screenshot half. The 2026-10-05 summary, kept
+as the record:
 
 - **Diagrams: 7 redraw · 12 amend · 14 verified clean.**
   The redraws are the global figures (`fig-2-2`, `fig-2-3`, `fig-2-4`,

@@ -14,6 +14,14 @@ Everything between those dates is candidate drift. This document is the per-figu
 verdict, measured against the code rather than against the specs, so that a figure is
 only called stale when something in `src/` actually disagrees with it.
 
+> **Status, 2026-10-06 — the diagram half is done.** All 7 REDRAW and 12 AMEND
+> figures were brought up to the code, `fig-6-6`'s open branch was confirmed, and
+> Chapter 7's nine figures (`fig-7-1` … `fig-7-9`) were drawn — one commit per
+> figure in this repo's history, each naming the code path it was checked
+> against. The counts in §3 were re-measured by a real run (results in §3). The
+> verdicts below are kept as the record of what was wrong. **Still open: the
+> screenshots (§2)** — the capture harness repair and the full recapture.
+
 **Structural decision taken:** Sprints 7, 8 and 9 become **Chapter 7**. Chapters 4–6 stay
 the historical record of what each sprint delivered. That decision is what makes most of
 this set cheap — see §1.
@@ -99,7 +107,7 @@ architectural figure is judged against the system as built.
 | `fig-5-9-sequence-notification-delivery` | Structurally unchanged; only enum values were appended. |
 | `fig-6-4-activity-eligibility-gate` | Verified in `eligibility.service.ts`: reactions are still `likes + comments`; comment likes and saves are deliberately excluded. |
 | `fig-6-5-sequence-moderation` | The `Classifier` participant names no model, so replacing the retired model and dropping the OpenAI path (both 09-04) leave it accurate. |
-| `fig-6-6-activity-article-access` | A published licensed article is `placement = public, visibility = free` and falls correctly through the existing public branch. **One branch to confirm:** what a subscribed magazine is shown for a marketplace article another magazine already owns exclusively (FR-72). |
+| `fig-6-6-activity-article-access` | A published licensed article is `placement = public, visibility = free` and falls correctly through the existing public branch. **Confirmed 2026-10-06:** a subscribed magazine shown a marketplace article another magazine owns falls through the existing "not previewed or purchased" branch — title, excerpt and price, content null (`articles/article-access.ts`, `resolveArticleAccess`); the 409 of FR-72 comes only when it then tries to preview or buy, which `fig-6-3` now draws. No change to this figure. |
 
 **Totals: 7 REDRAW · 12 AMEND · 14 OK.** Choosing Chapter 7 moved six figures out of
 REDRAW and into OK: `fig-4-4`, `fig-5-1`, `fig-5-2`, `fig-5-4`, `fig-5-5`, `fig-5-6`.
@@ -214,6 +222,15 @@ each suite, in the container, and the figures regenerated from its output.
 
 Per the project's own notes: backend tests run inside the container against a `_test`
 database, and the jest scripts carry `--experimental-vm-modules` for `pdf-parse`.
+
+**Measured 2026-10-06, and now carried by the figures:**
+
+| Claim | Measured by | Result |
+|---|---|---|
+| backend tests | `npm test` in `inkwell-api-1`, one full run | **51 suites, 792 tests, all passing** |
+| ledger harness | the same run, `test/ledger/` | **34 tests** (amount-check 4, ledger-invariants 19, seed-ledger 11) |
+| Playwright | `playwright test --list` | **183 tests in 25 spec files** — listed, not run: no browser in the container |
+| backlog | `10-requirements.md` §4 rows | **72 stories, 9 epics, 345 points** |
 
 ---
 

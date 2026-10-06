@@ -97,7 +97,7 @@ the code.
 
 - Chapters: **1** methodology · **2** global model · **3** architecture ·
   **4** Sprints 1–2 · **5** Sprints 3–4 · **6** Sprints 5–6 ·
-  **7** Sprints 7–9 *(new, decided 2026-10-05, no figures exist yet)*.
+  **7** Sprints 7–9 *(decided 2026-10-05; its nine figures drawn 2026-10-06)*.
 - The authority for which sprint a feature belongs to is the **`Sprint` column of
   `10-requirements.md` §2** — not git dates. It attributes a requirement to the
   sprint whose feature it refines.
