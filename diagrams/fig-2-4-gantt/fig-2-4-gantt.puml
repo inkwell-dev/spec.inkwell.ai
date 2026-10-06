@@ -1,10 +1,8 @@
 @startgantt
 ' Figure 2.4 – Gantt chart: the project from February to July 2026
-' Laid out on the 2026-02-01 → 2026-07-31 window set for the report
-' (REPORT-CONTEXT.md §6), in the report's own sprint numbering and in the order
-' the work was actually done: foundation, Sprint 1, the design track, then
-' Sprints 2–9. Every sprint is a fixed two-week sprint. The real calendar dates
-' are kept in 0-phase-plan.md and 10-requirements.md §5.
+' The project window is 2026-02-01 → 2026-07-31 (REPORT-CONTEXT.md §5–§6):
+' foundation, Sprint 1, the design track, then Sprints 2–9, each a fixed
+' two-week sprint. Same dates as 10-requirements.md §5.
 !include ../_style.puml
 projectscale weekly
 Project starts 2026-02-01
@@ -25,11 +23,11 @@ sunday are closed
 [Design system and mobile screens] lasts 10 days
 [Desktop screens and refinement] starts at [Design system and mobile screens]'s end
 [Desktop screens and refinement] lasts 10 days
-[Figma audit and re-baseline] starts at [Desktop screens and refinement]'s end
-[Figma audit and re-baseline] lasts 10 days
+[Figma audit and design QA] starts at [Desktop screens and refinement]'s end
+[Figma audit and design QA] lasts 10 days
 
 -- Release 1: functional foundation (continued) --
-[Sprint 2: editor, AI assistance, event capture] starts at [Figma audit and re-baseline]'s end
+[Sprint 2: editor, AI assistance, event capture] starts at [Figma audit and design QA]'s end
 [Sprint 2: editor, AI assistance, event capture] lasts 10 days
 
 -- Release 2: social, analytics and AI --
