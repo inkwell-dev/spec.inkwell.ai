@@ -24,7 +24,7 @@ D --> A : Remaining tokens
 deactivate D
 
 alt allowance exhausted
-  A --> W : 402 with the plan-aware notice
+  A --> W : 403 with the plan-aware notice
   W --> R : Offer the upgrade path
 else allowance available
   A -> A : Build the prompt from the action, the selection\nand the surrounding article
@@ -53,5 +53,7 @@ note over R, D
   The range is captured once, before the stream starts. Reading
   the selection again after the stream let any click or blur move
   it, so "Replace" could silently overwrite different text.
+  The allowance is checked once, before the call. A reply may cost
+  more than what remained; the balance then stops at zero.
 end note
 @enduml
