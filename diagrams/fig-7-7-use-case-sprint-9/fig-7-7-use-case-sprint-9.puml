@@ -1,0 +1,54 @@
+@startuml
+' Figure 7.7 – Use case diagram, Sprint 9: the document library and citations
+' FR-84…FR-87 (US-70, US-71, US-72).
+!include ../_style.puml
+left to right direction
+skinparam nodesep 14
+skinparam ranksep 60
+
+actor "Writer" as R
+
+rectangle {
+  usecase "Sign in" as AUTH
+  usecase "Manage the\ndocument library" as LIB
+  usecase "Upload a reference\ndocument" as UPLOAD
+  usecase "Retry a failed\ndocument" as RETRY
+  usecase "Delete a document" as DELETE
+  usecase "Extract, chunk and\nembed the text" as INGEST
+  usecase "Attach documents\nto an article" as ATTACH
+  usecase "Detach a document" as DETACH
+  usecase "Ask the assistant\nabout the article" as ASK
+  usecase "Cite passages as\n[Title, p. N]" as CITE
+  usecase "Open a cited passage\nat its page" as OPEN
+}
+
+R --> LIB
+R --> ATTACH
+R --> ASK
+
+UPLOAD --|> LIB
+RETRY  --|> LIB
+DELETE --|> LIB
+
+LIB    ..> AUTH : <<include>>
+UPLOAD ..> INGEST : <<include>>
+RETRY  ..> INGEST : <<include>>
+ATTACH ..> AUTH : <<include>>
+ATTACH <.. DETACH : <<extend>>
+ASK    <.. CITE : <<extend>>
+CITE   <.. OPEN : <<extend>>
+
+note as N1
+  PDF, DOCX, TXT or MD, under 10 MB and 200 pages,
+  at most 20 per writer (FR-84). A document is the
+  writer's alone: it never feeds writer memory,
+  Portfolio Insights or search, and no other account
+  can read, attach or discover it (FR-87).
+end note
+
+note as N2
+  Citations appear only when attached documents
+  supplied passages; with none attached, the assistant
+  writes from the writer's published work (FR-86).
+end note
+@enduml
