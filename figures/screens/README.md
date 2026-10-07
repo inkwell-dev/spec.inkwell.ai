@@ -63,9 +63,9 @@ reference these files by name, the way `diagrams/README.md` does for the UML fig
 | `writer-18-ai-cited-reply` | a reply citing `[Title, p. N]` | FR-86 |
 | `writer-19-voice-recording` | recording a prompt | FR-82 |
 
-**Still to take: sitting 2** — `writer-03`, `writer-05…08` and `writer-14…19`, which need
-the embedding provider's daily quota. Until then `writer-03` and `writer-05…08` here are
-the previous set's.
+Both sittings are taken. `writer-19-voice-recording` was taken by hand in a real
+browser: Chromium blocks the microphone on the dev app's plain-http origin, so the
+headless capture cannot record.
 
 ## Captured whole, 2026-08-23
 
