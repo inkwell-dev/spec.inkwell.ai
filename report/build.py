@@ -1,25 +1,41 @@
 #!/usr/bin/env python3
-"""Assemble the report and generate its tables, then hand off to pandoc.
+"""Assemble the report, generate its tables, and write the pandoc inputs.
 
-  python3 report/build.py            # writes report/build/report.md (docx flavour)
-                                     # and report/build/report-html.md (pdf flavour)
+  python3 report/build.py      # writes build/report-latex.md and build/report-docx.md
+  report/make-pdf.sh           # runs build.py, then pandoc → LuaLaTeX and pandoc → DOCX
+
+Conventions in the chapter sources
+----------------------------------
+* Headings carry no numbers; LaTeX numbers them. `{.unnumbered}` for the
+  chapter introductions and conclusions.
+* A figure is `![Caption](path){#fig:id}` and is cited as `@fig:id`; a table is
+  followed by `: Caption {#tbl:id}` and cited as `@tbl:id`; a section is cited
+  as `@sec:id`. pandoc-crossref numbers all of them by chapter.
+* A bibliography entry is cited as `[@key]` (references.bib, IEEE style).
+* `<!-- INCLUDE:name -->` is replaced by a table generated here.
 
 The requirement, backlog and sprint tables are generated from
 ../10-requirements.md rather than copied, so the report cannot drift from the
-specification. Internal dated annotations in that file (amendment notes, "(added
-2026-…)") are stripped: the report presents the plan on its own timeline.
+specification. Dated annotations in that file are stripped: the report presents
+the plan on its own timeline.
 """
+import os
 import re
+from collections import Counter, defaultdict
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 SPEC = HERE.parent / '10-requirements.md'
+DIAGRAMS = HERE.parent / 'diagrams'
+SCREENS = HERE.parent / 'figures' / 'screens'
 OUT = HERE / 'build'
 OUT.mkdir(exist_ok=True)
 
-CHAPTERS = ['00-front.md', '01-introduction.md', '02-requirements.md',
-            '03-environment-architecture.md', '04-release-1.md', '05-release-2.md',
-            '06-release-3.md', '07-release-4.md', '08-conclusion.md']
+FRONT = ['00-front.md']
+BODY = ['01-introduction.md', '02-context-requirements.md', '03-environment-architecture.md',
+        '04-release-1.md', '05-release-2.md', '06-release-3.md', '07-release-4.md',
+        '08-evaluation.md', '09-conclusion.md']
+ANNEX = ['10-annexes.md']
 
 spec = SPEC.read_text()
 
@@ -35,9 +51,7 @@ def clean(text: str) -> str:
 
 def section(title_prefix: str) -> str:
     start = spec.index(title_prefix)
-    nxt = spec.find('\n### ', start + 4)
-    nxt2 = spec.find('\n## ', start + 4)
-    ends = [e for e in (nxt, nxt2) if e != -1]
+    ends = [e for e in (spec.find('\n### ', start + 4), spec.find('\n## ', start + 4)) if e != -1]
     return spec[start:min(ends)] if ends else spec[start:]
 
 
@@ -47,103 +61,199 @@ def rows(block: str):
             yield [clean(c) for c in line.strip().strip('|').split('|')]
 
 
+def num(ident: str) -> int:
+    return int(ident.split('-')[1])
+
+
+def short_title(story: str) -> str:
+    """The goal of a user story, without its "so that…" clause."""
+    goal = re.split(r',? so that | — so that ', story, maxsplit=1)[0]
+    goal = re.split(r',? without anyone', goal, maxsplit=1)[0]
+    goal = goal.strip().rstrip(',')
+    return goal[0].upper() + goal[1:]
+
+
 includes = {}
 
-# Functional requirements per actor section (2.1 … 2.6).
-for n in range(1, 7):
-    block = section(f'### 2.{n} ')
-    table = ['| ID | Requirement | Priority | Sprint |', '|---|---|---|---|']
-    for r in rows(block):
-        table.append(f'| {r[0]} | {r[1]} | {r[2]} | {r[3]} |')
-    includes[f'fr-2.{n}'] = '\n'.join(table)
+# ── Functional requirements ──────────────────────────────────────────────────
+ACTOR_SECTIONS = [
+    (1, 'Visitor (A1)', 'visitor'),
+    (2, 'Free and premium reader (A2, A3)', 'readers'),
+    (3, 'Writer and eligible writer (A4, A5)', 'writers'),
+    (4, 'Magazine (A6, A7)', 'magazines'),
+    (5, 'Administrator (A8)', 'administrator'),
+    (6, 'Cross-cutting', 'cross-cutting'),
+]
+fr_all = []
+summary = ['| Actor | Requirements | Must | Should | Could | Sprints |',
+           '|:----------------------|:-:|:-:|:-:|:-:|:------|']
+for n, actor, slug in ACTOR_SECTIONS:
+    rs = sorted(rows(section(f'### 2.{n} ')), key=lambda r: num(r[0]))
+    fr_all += rs
+    pri = Counter(r[2] for r in rs)
+    sprints = sorted({int(s) for r in rs for s in r[3].split(',') if s.strip().isdigit()})
+    summary.append(f'| {actor} | {len(rs)} | {pri["Must"]} | {pri["Should"]} | {pri["Could"]} | '
+                   f'{", ".join(map(str, sprints))} |')
+    table = ['| ID | Requirement | Priority | Sprint |', '|:----|:------------------------------------------|:---|:--|']
+    table += [f'| {r[0]} | {r[1]} | {r[2]} | {r[3]} |' for r in rs]
+    includes[f'fr-{slug}'] = '\n'.join(table) + f'\n\n: Functional requirements — {actor.split(" (")[0].lower()} {{#tbl:fr-{slug}}}'
+pri = Counter(r[2] for r in fr_all)
+summary.append(f'| **Total** | **{len(fr_all)}** | **{pri["Must"]}** | **{pri["Should"]}** | **{pri["Could"]}** | |')
+includes['fr-summary'] = '\n'.join(summary) + '\n\n: Functional requirements by actor and priority {#tbl:fr-summary}'
+FR_COUNT, FR_MUST = len(fr_all), pri['Must']
 
-# Backlog.
-backlog_start = spec.index('## 4. Product backlog')
-backlog_end = spec.index('## 5. Release plan')
-backlog = spec[backlog_start:backlog_end]
-epics = re.split(r'\n### ', backlog)[1:]
-stories = []          # (epic, id, story, actor, pri, pts, sprint)
-summary = ['| Epic | Stories | Points |', '|---|---:|---:|']
-full = []
-for e in epics:
+# ── Backlog ──────────────────────────────────────────────────────────────────
+backlog = spec[spec.index('## 4. Product backlog'):spec.index('## 5. Release plan')]
+stories = []           # dicts
+epic_rows = []
+annex = []
+for e in re.split(r'\n### ', backlog)[1:]:
     name = e.splitlines()[0].strip()
-    rs = list(rows(e))
-    pts = 0
-    full.append(f'**{name}**\n')
-    full.append('| ID | User story | Actor | Priority | Points | Sprint |')
-    full.append('|---|---|---|---|---:|---|')
-    for r in rs:
+    rs = []
+    for r in rows(e):
         if len(r) == 5:            # E9 has no actor column
             r = [r[0], r[1], '—', r[2], r[3], r[4]]
-        stories.append((name, *r))
-        pts += int(r[4])
-        full.append(f'| {r[0]} | {r[1]} | {r[2]} | {r[3]} | {r[4]} | {r[5]} |')
-    full.append('')
-    summary.append(f'| {name} | {len(rs)} | {pts} |')
-summary.append(f'| **Total** | **{len(stories)}** | **{sum(int(s[5]) for s in stories)}** |')
-includes['backlog-summary'] = '\n'.join(summary)
-includes['backlog'] = '**Table 2.9 (continued) – The product backlog, by epic**\n\n' + '\n'.join(full)
+        rs.append(dict(epic=name, id=r[0], story=r[1], actor=r[2], pri=r[3], pts=int(r[4]),
+                       sprints=[s.strip() for s in r[5].split(',')]))
+    rs.sort(key=lambda s: num(s['id']))
+    stories += rs
+    epic_rows.append((name, len(rs), sum(s['pts'] for s in rs)))
+    annex.append(f'\n**{name}**\n')
+    annex.append('| ID | User story | Actor | Priority | Points | Sprint |')
+    annex.append('|:----|:--------------------------------------------|:--|:---|:-:|:-:|')
+    annex += [f'| {s["id"]} | {s["story"]} | {s["actor"]} | {s["pri"]} | {s["pts"]} | {", ".join(s["sprints"])} |'
+              for s in rs]
+TOTAL_PTS = sum(s['pts'] for s in stories)
+summary = ['| Epic | Stories | Points | Share of points |', '|:------------------------------------|:-:|:-:|:-:|']
+summary += [f'| {n} | {c} | {p} | {100 * p / TOTAL_PTS:.0f} % |' for n, c, p in epic_rows]
+summary.append(f'| **Total** | **{len(stories)}** | **{TOTAL_PTS}** | 100 % |')
+includes['backlog-summary'] = '\n'.join(summary) + '\n\n: Product backlog by epic {#tbl:backlog-summary}'
+includes['backlog-annex'] = '\n'.join(annex)
 
-# Sprint backlogs.
+# ── Sprint backlogs ──────────────────────────────────────────────────────────
+sprint_pts = {}
 for n in range(1, 10):
-    t = ['| ID | User story | Priority | Points |', '|---|---|---|---:|']
-    sel = [s for s in stories if str(n) in [x.strip() for x in s[6].split(',')]]
-    for s in sel:
-        t.append(f'| {s[1]} | {s[2]} | {s[4]} | {s[5]} |')
-    t.append(f'| | **{len(sel)} stories** | | **{sum(int(s[5]) for s in sel)}** |')
-    includes[f'sprint-{n}'] = '\n'.join(t)
+    sel = sorted((s for s in stories if str(n) in s['sprints']), key=lambda s: num(s['id']))
+    sprint_pts[n] = sum(s['pts'] for s in sel)
+    t = ['| ID | User story (goal) | Priority | Points |', '|:----|:---------------------------------------------|:---|:-:|']
+    t += [f'| {s["id"]} | {short_title(s["story"])} | {s["pri"]} | {s["pts"]} |' for s in sel]
+    t.append(f'| | **{len(sel)} stories** | | **{sprint_pts[n]}** |')
+    includes[f'sprint-{n}'] = '\n'.join(t) + f'\n\n: Sprint {n} backlog {{#tbl:sprint-{n}}}'
 
-assert len(stories) == 72, len(stories)
+assert len(stories) == 74, len(stories)
 
-body = '\n\n'.join((HERE / c).read_text() for c in CHAPTERS)
-for key, value in includes.items():
-    body = body.replace(f'<!-- INCLUDE:{key} -->', value)
-assert '<!-- INCLUDE:' not in body, re.findall(r'<!-- INCLUDE:[^ ]+', body)
-
-# Screenshots: a placeholder becomes the real image wherever the file exists in
-# figures/screens/, and stays a placeholder where it does not yet.
-SCREENS = HERE.parent / 'figures' / 'screens'
-missing = []
+# ── Numbers the prose quotes, checked against the generated tables ───────────
+FACTS = {
+    'STORIES': str(len(stories)), 'POINTS': str(TOTAL_PTS), 'FRS': str(FR_COUNT), 'FR_MUST': str(FR_MUST),
+    **{f'S{n}PTS': str(p) for n, p in sprint_pts.items()},
+}
 
 
-def screenshot(m: re.Match) -> str:
-    name, caption = m.group(1), m.group(2)
-    if (SCREENS / name).exists():
-        return f'![{caption}](../figures/screens/{name}){{width=100%}}'
-    missing.append(name)
-    return m.group(0)
+def assemble(files):
+    return '\n\n'.join((HERE / f).read_text() for f in files)
 
 
-body = re.sub(
-    r'> 📷 \*\*Screenshot placeholder\*\* — `figures/screens/([^`]+)`\n\n\*\*(Figure [0-9.]+ – [^*]+)\*\*',
-    screenshot, body)
+def expand(text: str) -> str:
+    for key, value in includes.items():
+        text = text.replace(f'<!-- INCLUDE:{key} -->', value)
+    assert '<!-- INCLUDE:' not in text, re.findall(r'<!-- INCLUDE:[^ ]+', text)
+    for key, value in FACTS.items():
+        text = text.replace(f'{{{{{key}}}}}', value)
+    left = re.findall(r'\{\{[A-Z0-9_]+\}\}', text)
+    if os.environ.get('DRAFT'):
+        text = re.sub(r'\{\{[A-Z0-9_]+\}\}', '**??**', text)
+    else:
+        assert not left, left
+    return text
 
-# Lists of figures and tables, from the captions in order of appearance.
-figs = re.findall(r'!\[(Figure [0-9.]+ – [^\]]+)\]|^\*\*(Figure [0-9.]+ – [^*]+)\*\*$', body, re.M)
-figs = [a or b for a, b in figs]
-tabs = re.findall(r'^\*\*(Table [0-9.]+ – [^*]+)\*\*$', body, re.M)
-lists = ('# List of figures {.unnumbered}\n\n' + '\n'.join(f'- {f}' for f in figs) +
-         '\n\n\\newpage\n\n# List of tables {.unnumbered}\n\n' +
-         '\n'.join(f'- {t}' for t in tabs) + '\n\n\\newpage\n')
 
-PAGE_DOCX = '```{=openxml}\n<w:p><w:r><w:br w:type="page"/></w:r></w:p>\n```'
-PAGE_HTML = '<div class="pagebreak"></div>'
-TOC_DOCX = ('# Table of contents {.unnumbered}\n\n```{=openxml}\n'
-            '<w:p><w:r><w:fldChar w:fldCharType="begin" w:dirty="true"/>'
-            '<w:instrText xml:space="preserve"> TOC \\o "1-3" \\h \\z \\u </w:instrText>'
-            '<w:fldChar w:fldCharType="separate"/><w:t>Right-click and choose Update Field to build the table of contents.</w:t>'
-            '<w:fldChar w:fldCharType="end"/></w:r></w:p>\n```\n\n\\newpage\n')
+# ── Images: the right file for each output ───────────────────────────────────
+def image_for(path: str, flavour: str) -> str:
+    """Diagrams are vector in the PDF: draw.io as a cropped PDF, PlantUML as SVG
+    (pandoc converts it with rsvg-convert). Screenshots stay PNG."""
+    m = re.match(r'\.\./diagrams/([^/]+)/\1\.png$', path)
+    if not m or flavour == 'docx':
+        return path
+    name = m.group(1)
+    if (DIAGRAMS / name / f'{name}.drawio').exists():
+        assert (DIAGRAMS / name / f'{name}.pdf').exists(), f'export {name}.pdf first (make-pdf.sh does)'
+        return f'../diagrams/{name}/{name}.pdf'
+    return f'../diagrams/{name}/{name}.svg'
 
-heads = re.findall(r'^(#{1,2}) (.+?)(?: \{[^}]*\})?$', body, re.M)
-toc_html = '# Table of contents {.unnumbered}\n\n' + '\n'.join(
-    ('- ' if h == '#' else '    - ') + t for h, t in heads
-    if t not in ('Acknowledgements', 'Abstract', 'Résumé', 'List of acronyms',
-                 'End-of-Studies Project Report', 'Inkwell.ai')) + '\n\n\\newpage\n'
 
-marker = '# General introduction'
-docx = body.replace(marker, TOC_DOCX + '\n' + lists + '\n' + marker, 1).replace('\\newpage', PAGE_DOCX)
-html = body.replace(marker, toc_html + '\n' + lists + '\n' + marker, 1).replace('\\newpage', PAGE_HTML)
-(OUT / 'report.md').write_text(docx)
-(OUT / 'report-html.md').write_text(html)
-print(f'{len(figs)} figures, {len(tabs)} tables, {len(stories)} stories; '
-      f'{len(body.split())} words; screenshots still missing: {missing or "none"}')
+def images(text: str, flavour: str) -> str:
+    def fig(m):
+        caption, path, attrs = m.group(1), m.group(2), m.group(3) or ''
+        if not re.search(r'\bwidth=', attrs):
+            attrs += ' width=80%' if 'figures/screens/' in path else ' width=100%'
+        if not re.search(r'\bheight=', attrs):
+            attrs += ' height=58%' if 'figures/screens/' in path else ' height=72%'
+        return f'![{caption}]({image_for(path, flavour)}){{{attrs.strip()}}}'
+    return re.sub(r'!\[([^\]]*)\]\(([^)]+)\)(?:\{([^}]*)\})?', fig, text)
+
+
+figure_files = re.findall(r'!\[[^\]]*\]\(([^)]+)\)', assemble(BODY + ANNEX))
+missing = [f for f in figure_files if not (HERE / f).exists()]
+assert not missing, missing
+
+# ── Title page and front matter ──────────────────────────────────────────────
+TITLE_LATEX = r'''```{=latex}
+\begin{titlepage}
+\centering\sffamily
+{\large\bfseries TEK-UP University\par}
+\vspace{2pt}
+{\normalsize GLSI — Software Engineering and Information Systems\par}
+\vspace{3.2cm}
+{\Large\bfseries End-of-Studies Project Report\par}
+\vspace{6pt}
+{\normalsize Submitted in partial fulfilment of the requirements for the degree of\par}
+{\normalsize\bfseries National Engineering Diploma in Computer Science (GLSI)\par}
+\vspace{2.2cm}
+\rule{\linewidth}{0.6pt}\par\vspace{10pt}
+{\Huge\bfseries Inkwell.ai\par}
+\vspace{8pt}
+{\Large An AI-powered writing marketplace connecting\\ independent writers and magazine publishers\par}
+\vspace{6pt}\rule{\linewidth}{0.6pt}\par
+\vspace{2.6cm}
+\begin{tabular}{rl}
+Carried out by: & \textbf{Oussama Bejaoui} \\[3pt]
+Academic supervisor: & \textbf{Mr. Bilel Zemzem} \\[3pt]
+Professional supervisor: & \textbf{Mr. Ramzy Chridi} \\[3pt]
+Host organisation: & \textbf{Intuitiv Group} \\
+\end{tabular}
+\vfill
+{\normalsize Project period: 1 February 2026 – 31 July 2026\par}
+{\normalsize Academic year 2025–2026\par}
+\end{titlepage}
+```'''
+
+LISTS_LATEX = '```{=latex}\n\\tableofcontents\n\\listoffigures\n\\listoftables\n```\n'
+LISTS_DOCX = ('# Table of contents {.unnumbered}\n\n```{=openxml}\n'
+              '<w:p><w:r><w:fldChar w:fldCharType="begin" w:dirty="true"/>'
+              '<w:instrText xml:space="preserve"> TOC \\o "1-3" \\h \\z \\u </w:instrText>'
+              '<w:fldChar w:fldCharType="separate"/><w:t>Right-click and choose Update Field to build the table of contents.</w:t>'
+              '<w:fldChar w:fldCharType="end"/></w:r></w:p>\n```\n\n'
+              '\\listoffigures\n\n\\listoftables\n')
+
+front_docx = (HERE / FRONT[0]).read_text()
+front_latex = re.sub(r'::: \{\.titlepage\}.*?\n:::\n', lambda m: TITLE_LATEX + '\n', front_docx, flags=re.S)
+body = expand(assemble(BODY))
+annexes = expand(assemble(ANNEX))
+refs = '# References {.unnumbered}\n\n::: {#refs}\n:::\n'
+
+for flavour in ('latex', 'docx'):
+    f = front_latex if flavour == 'latex' else front_docx
+    lists = LISTS_LATEX if flavour == 'latex' else LISTS_DOCX
+    f = f.replace('<!-- LISTS -->', lists)
+    main = '```{=latex}\n\\mainmatter\n```\n\n' if flavour == 'latex' else ''
+    appendix = '```{=latex}\n\\appendix\n```\n\n' if flavour == 'latex' else ''
+    start = '```{=latex}\n\\frontmatter\n```\n\n' if flavour == 'latex' else ''
+    doc = start + f + '\n\n' + main + body + '\n\n' + refs + '\n\n' + appendix + annexes
+    doc = images(doc, flavour)
+    if flavour == 'docx':
+        doc = doc.replace('\\newpage', '```{=openxml}\n<w:p><w:r><w:br w:type="page"/></w:r></w:p>\n```')
+    (OUT / f'report-{flavour}.md').write_text(doc)
+
+print(f'{len(figure_files)} figures; {len(stories)} stories, {TOTAL_PTS} points; '
+      f'{FR_COUNT} FRs ({FR_MUST} Must); sprint points {sprint_pts}; '
+      f'{len(body.split()) + len(annexes.split())} words in the body and annexes')
