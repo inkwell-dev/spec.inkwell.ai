@@ -107,19 +107,25 @@ shipped in. Use it; do not re-derive sprint membership from git dates.
 
 | Chapter | Content | Figures |
 |---|---|---|
-| **Ch.1** | methodology — Scrum, waterfall vs agile | `fig-1-1`, `fig-1-2` |
-| **Ch.2** | global model — use cases, the two global class diagrams, Gantt | `fig-2-1` … `fig-2-4` |
-| **Ch.3** | working environment and architecture | `fig-3-1` … `fig-3-4` |
-| **Ch.4** | Sprint 1 (schema, auth, article core) · Sprint 2 (editor, AI, event capture) | `fig-4-1` … `fig-4-6` |
-| **Ch.5** | Sprint 3 (social, notifications, analytics) · Sprint 4 (RAG, insights, search) | `fig-5-1` … `fig-5-9` |
-| **Ch.6** | Sprint 5 (marketplace, premium, moderation) · Sprint 6 (tests, demo, deploy) | `fig-6-1` … `fig-6-8` |
-| **Ch.7** | Sprint 7 · Sprint 8 · Sprint 9 | `fig-7-1` … `fig-7-9` (drawn 2026-10-06) |
+| **Ch.1** | context, methodology (Scrum adapted to one person, MoSCoW, points) and requirements — actors, FRs (summary; full list in Annex A), NFRs with verification, global use cases and classes, backlog (summary; full in Annex B), release plan, Gantt | `fig-1-1`, `fig-1-2`, `fig-2-1` … `fig-2-4` |
+| **Ch.2** | working environment, technology choices against alternatives, parameters and their justification, architecture | `fig-3-1` … `fig-3-4` |
+| **Ch.3** | Sprint 1 (schema, auth, article core) · Sprint 2 (editor, AI, event capture) | `fig-4-1` … `fig-4-6` |
+| **Ch.4** | Sprint 3 (social, notifications, analytics) · Sprint 4 (RAG, insights, search) | `fig-5-1` … `fig-5-9` |
+| **Ch.5** | Sprint 5 (marketplace, premium, moderation) · Sprint 6 (tests, demo, deploy) | `fig-6-1` … `fig-6-8` |
+| **Ch.6** | Sprint 7 · Sprint 8 · Sprint 9 | `fig-7-1` … `fig-7-9` |
+| **Ch.7** | evaluation — RAG, hybrid search, moderation, performance, accessibility, velocity, retrospective (scripts and results in `backend.inkwell.ai/eval/`) | — |
 
-Chapter 7's three sprints, per `10-requirements.md` §2:
+**Restructured 2026-10-11 after the supervisor's review** (`report/SUPERVISOR-REVIEW.md`):
+the old Chapter 1 became the first part of Chapter 1, every chapter after it moved
+down one, and the evaluation became Chapter 7. Figure *files* keep their old
+numbers; the report numbers figures by order of appearance (pandoc-crossref). The
+report is built with `report/make-pdf.sh` (pandoc → LuaLaTeX).
+
+Chapter 6's three sprints (Release 4), per `10-requirements.md` §2:
 
 | Sprint | Requirements | What shipped |
 |---|---|---|
-| **7** | FR-60…FR-65 (US-56, US-57, US-58) | like a comment, follower/following lists, block, save, share |
+| **7** | FR-60…FR-65 (US-56, US-57, US-58, US-73, US-74) | like a comment, follower/following lists, block, save, share |
 | **8** | FR-66…FR-68, FR-77…FR-83 (US-59…US-62, US-65…US-69) | live card controls, Reposted tab, recent comments, byline preview, assistant routing and in-document writes, status steps, docked panel, voice in, voice out |
 | **9** | FR-84…FR-87 (US-70, US-71, US-72) | document library, ingestion, per-article attachment, citations |
 

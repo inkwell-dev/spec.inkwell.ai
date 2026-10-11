@@ -66,12 +66,12 @@ report's sprint numbering (§5), not the calendar sprint.
 | ID | Requirement | Priority | Sprint |
 |----|-------------|----------|--------|
 | FR-01 | Browse the public feed, paginated, with title, excerpt, thumbnail and tags | Must | 1 |
-| FR-69 | Continue any article list as the reader scrolls, with a "Load more" control that remains available and a failed page that neither discards loaded rows nor retries itself | Must | 1 |
+| FR-69 | Continue any article list as the reader scrolls, with a "Load more" control that remains available and a failed page that neither discards loaded rows nor retries itself | Must | 8 |
 | FR-02 | Read the full body of a **free public** article without an account | Must | 1 |
 | FR-03 | Be blocked from premium and marketplace articles, with an explicit prompt to sign up | Must | 1 |
-| FR-71 | Not see a marketplace listing on the writer's public profile at all — the exceptions being the article's own author and an administrator | Must | 1 |
-| FR-75 | Read a magazine's published articles on its public profile, paginated, without an account | Must | 1 |
-| FR-76 | See both the writer and the publishing magazine named on a licensed article, each linking to its own profile | Must | 1 |
+| FR-71 | Not see a marketplace listing on the writer's public profile at all — the exceptions being the article's own author and an administrator | Must | 5 |
+| FR-75 | Read a magazine's published articles on its public profile, paginated, without an account | Must | 5 |
+| FR-76 | See both the writer and the publishing magazine named on a licensed article, each linking to its own profile | Must | 5 |
 | FR-77 | Preview a writer or magazine from any byline by hovering it — name, bio, counts and a follow control for a writer; logo, description and founding date for a magazine — without leaving the page | Should | 8 |
 | FR-04 | Register as a personal account, or as a magazine account | Must | 1 |
 | FR-05 | Authenticate by email/password or Google OAuth | Must | 1 |
@@ -99,7 +99,7 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-66 | Like, repost and comment on an article from a feed card, and see whether one has already liked or reposted it | Must | 8 |
 | FR-68 | See a feed card's most recent comments from the last hour, up to three, without opening the article | Could | 8 |
 | FR-11 | Repost an article | Could | 3 |
-| FR-70 | Be refused when liking, commenting on or reposting a marketplace listing, while saving one stays available | Must | 3 |
+| FR-70 | Be refused when liking, commenting on or reposting a marketplace listing, while saving one stays available | Must | 5 |
 | FR-67 | Read any account's reposts from the Reposted tab on its profile, without an account | Should | 8 |
 | FR-12 | Follow and unfollow a writer | Should | 3 |
 | FR-61 | View any profile's followers and following lists, and follow or unfollow from them | Must | 7 |
@@ -111,8 +111,7 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-14 | List past notifications and mark them read | Must | 3 |
 | FR-15 | Upgrade to premium, and downgrade (simulated payment) | Must | 5 |
 | FR-16 | *(A3 only)* Read premium-visibility articles | Must | 5 |
-| FR-17 | *(A3 only)* Consume a daily AI token allowance | Must | 2 |
-
+| FR-17 | *(A3 only)* Consume a daily AI token allowance | Must | 2, 5 |
 ### 2.3 A4 / A5 — Writer
 
 | ID | Requirement | Priority | Sprint |
@@ -122,8 +121,8 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-20 | Insert images by paste, drag or file picker, uploaded directly to object storage | Must | 2 |
 | FR-21 | Set a cover image, excerpt and tags | Must | 2 |
 | FR-22 | See live word count and estimated reading time | Should | 2 |
-| FR-23 | Publish an article, choosing its placement: public or marketplace | Must | 1 |
-| FR-24 | Choose a visibility for public articles: free or premium | Must | 1 |
+| FR-23 | Publish an article, choosing its placement: public or marketplace | Must | 1, 5 |
+| FR-24 | Choose a visibility for public articles: free or premium | Must | 1, 5 |
 | FR-25 | Update or soft-delete an own article | Must | 1 |
 | FR-26 | Switch an article from marketplace to public (one-way; the reverse is refused) | Should | 5 |
 | FR-27 | Converse with an AI assistant grounded in the writer's **own** published corpus | Must | 2, 4 |
@@ -162,7 +161,7 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-41 | Subscribe, receiving a monthly credit allowance (simulated payment) | Must | 5 |
 | FR-42 | Top up credits outside the monthly grant | Should | 5 |
 | FR-43 | See the credit balance, the renewal date and the transaction history | Must | 5 |
-| FR-44 | Browse eligible writers, filtered by topic, searchable, with four sort orders | Must | 3 |
+| FR-44 | Browse eligible writers, filtered by topic, searchable, with four sort orders | Must | 3, 5 |
 | FR-45 | Read a writer evaluation report — audience, content, quality panels | Must | 3 |
 | FR-46 | Request AI Portfolio Insights for a writer, as an explicit action | Must | 4 |
 | FR-47 | Browse a writer's marketplace-listed articles with prices | Must | 5 |
@@ -204,7 +203,7 @@ report's sprint numbering (§5), not the calendar sprint.
 
 | ID | Requirement | Priority | Sprint |
 |----|-------------|----------|--------|
-| FR-56 | Every article body access decision is taken server-side against the §7.4 matrix; locked content arrives as null | Must | 5 |
+| FR-56 | Every article body access decision is taken server-side against the article access decision (the activity diagram of Sprint 5); locked content arrives as null | Must | 5 |
 | FR-57 | Content is classified at publish time; a flag files a pending report but never blocks publication | Should | 5 |
 | FR-58 | Any credit movement writes ledger rows inside one transaction, under a row lock | Must | 5 |
 | FR-59 | Report an article, a user or a comment | Must | 5 |
@@ -221,14 +220,14 @@ evidence that supports it, so the report can cite code rather than assert.
 | ID | Requirement | Evidence |
 |----|-------------|----------|
 | NFR-01 | Passwords stored as bcrypt hashes, cost factor 12 | `auth` module |
-| NFR-02 | Access tokens expire in 15 minutes; refresh tokens in 7 days | `ACCESS_TOKEN_MAX_AGE = 900`. **Not revocable** — corrected 2026-08-21. `9-implementation-guide.md` §2.3 specified opaque UUIDs in Redis expressly to allow revocation; `auth.service.ts` issues a second JWT and verifies it against `JWT_REFRESH_SECRET`, storing nothing. Logout clears the client's copy only, so until it expires a captured refresh token survives a password change and a ban. The 7-day TTL is the whole of the bound. |
+| NFR-02 | Access tokens expire in 15 minutes; refresh tokens in 7 days | `ACCESS_TOKEN_MAX_AGE = 900`. **Not revocable** — corrected 2026-08-21. `9-implementation-guide.md` §2.3 specified opaque UUIDs in Redis expressly to allow revocation; `auth.service.ts` issues a second JWT and verifies it against `JWT_REFRESH_SECRET`, storing nothing. Logout clears the client's copy only, so until it expires a captured refresh token survives a password change (a ban is still enforced: `refresh()` checks `deleted_at`, so a banned account loses access when its 15-minute access token expires). The 7-day TTL is the whole of the bound. |
 | NFR-03 | Every protected route passes a guard stack composed once via `@Auth()` | 6 guards: Jwt, Roles, Plans, AccountType, Subscription, AiQuota |
 | NFR-04 | Authorisation is decided server-side; the client is told the verdict and never computes it | §7.4 matrix in `article-access.ts` |
 | NFR-05 | Per-IP rate limits on every endpoint, tightened on the credential routes | `@nestjs/throttler`: 60/min globally, **10/min on `POST /auth/login` and 5/min on `POST /auth/register`**, 10 per 10s on analytics ingest. Keyed on the real client IP — `app.set('trust proxy', 1)` plus nginx's `X-Forwarded-For`, without which every request would share nginx's container IP and the limit would be global rather than per-IP. **Counters are in-process memory** — the module is configured with no `storage`, so limits are per API process and reset on restart. Corrected 2026-08-24: the auth tightening this row claimed was not implemented until that date, and "AI and purchase routes" was never true — AI spend is capped by the token quota, which is the more meaningful limit, and purchases by idempotency keys. |
 | NFR-06 | Financial operations are idempotent under retry | `transactions.idempotency_key` UNIQUE |
 | NFR-07 | Uploads are presigned, time-limited, and never routed through the API | 10-minute PUT TTL; bucket grants `s3:GetObject` only, never `s3:ListBucket` |
 | NFR-08 | Datastore ports bind to loopback only, never `0.0.0.0` | Phase V fixed this in dev and production |
-| NFR-09 | A ban takes effect at the next authentication; no session is silently immortal | `deleted_at` checked in `login()`, `refresh()` and the Google path |
+| NFR-09 | A ban takes effect within 15 minutes at most: it is refused at sign-in, Google sign-in and token refresh, and an access token already issued expires within 15 minutes | `deleted_at` checked in `login()`, `refresh()` and the Google path |
 | NFR-10 | No stored HTML is rendered as markup — no `dangerouslySetInnerHTML` anywhere | Confirmed by sweep; `ts_headline` deliberately not adopted |
 
 ### 3.2 Performance
@@ -252,7 +251,7 @@ evidence that supports it, so the report can cite code rather than assert.
 | NFR-20 | Concurrent purchases cannot double-spend | `SELECT … FOR UPDATE` on the balance-owning row inside the transaction |
 | NFR-21 | Schema changes are versioned and applied before the app starts | one-shot `migrate` service, gated `service_completed_successfully` |
 | NFR-22 | The vector extension exists before any migration that needs it | runner issues `CREATE EXTENSION IF NOT EXISTS vector` first — measured failure otherwise |
-| NFR-23 | Failed background jobs retry with exponential backoff, 3 attempts | BullMQ `defaultJobOptions` |
+| NFR-23 | Failed background jobs retry with exponential backoff, 3 attempts | **Unmet** (found 2026-10-11): no queue sets `attempts` or `backoff`, and BullMQ's default is a single attempt, so a failed job is not retried |
 | NFR-24 | An AI **provider** outage degrades AI only; the rest of the product keeps working | Corrected 2026-08-21, re-corrected 2026-08-24, **restored 2026-09-03**. The 2026-08-24 correction downgraded this from *provider* to *model* and recorded that the specified Groq → Gemini chain "cannot be" built, because Gemini's free tier was measured granting `generateContent` a quota of 0 on every model offered to new projects. **That measurement was true when taken and is now false**: re-measured 2026-09-03 against the project's current key, `generateContent` answers 200, and the cross-provider chain specified all along is now implemented. The chain is **`openai/gpt-oss-120b` → `openai/gpt-oss-20b` → `gemini-3.5-flash`** (`llm-chain.ts`; the first two are Groq, so per-model failover is preserved and Gemini is reached only when Groq as a whole is gone). Not `gemini-2.0-flash` as §13.5 specifies — that id now returns 404, as do `gemini-2.5-flash` and `gemini-2.5-flash-lite`; `gemini-flash-latest` returned 503 on 4 of 4 attempts and was rejected for it. Failover works because the first chunk is pulled by hand: `streamText` defers the provider call until the stream is consumed, so a 401/429/unavailable surfaces while nothing has been written to the response and another provider can still take over. Verified end to end by invalidating the Groq key and observing `x-ai-model: gemini-3.5-flash` with a real answer. 503 + "AI is temporarily unavailable" only when **all three** refuse — a total outage of both providers, which no free-tier arrangement covers. |
 | NFR-25 | Every service reports liveness and readiness | `GET /health`, `GET /ready` — **Postgres only**. The Redis half was specified in three documents and never built (`health.controller.ts` returns `{ status, db }`). |
 
@@ -270,7 +269,7 @@ evidence that supports it, so the report can cite code rather than assert.
 |----|-------------|----------|
 | NFR-29 | Both repositories compile under `strict: true` with zero lint warnings | `tsc --noEmit`, `eslint --max-warnings=0` in CI |
 | NFR-30 | The API contract is generated from OpenAPI and verified in CI against the committed types | `pnpm api:codegen`; hook signatures are hand-written against it — see §6 |
-| NFR-31 | Business rules are tested, not asserted | 479 backend tests, 155 Playwright specs across 23 files |
+| NFR-31 | Business rules are tested, not asserted | 796 backend tests in 52 suites (recounted 2026-10-11), 183 Playwright tests across 25 files |
 | NFR-32 | CI fails when the schema and the migrations disagree | schema-drift check |
 | NFR-33 | Errors are captured in four runtimes with no PII | Sentry in API, worker, Next server, browser; `sendDefaultPii: false`, traces 0.1 |
 
@@ -326,6 +325,13 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-17 | See which of my passages the assistant used so that I can trust the answer | A4 | Should | 5 | 4 |
 | US-18 | See my remaining allowance so that I can pace my usage | A3 | Must | 2 | 2 |
 | US-19 | Have my voice profile extracted from my corpus so that the assistant stays consistent when retrieval finds nothing | A4 | Should | 8 | 4 |
+| US-66 | Tell the assistant what to write and watch it appear in my draft, then keep or discard it, so that generation happens where I write rather than in a chat I copy from | A4 | Must | 8 | 8 |
+| US-67 | See what the assistant is doing while it works — and minimize it without losing sight of that — so that a slow step is not a frozen screen | A4 | Should | 3 | 8 |
+| US-68 | Say my request instead of typing it so that I can brief the assistant while my hands are busy or my thoughts are faster than my typing | A4 | Should | 5 | 8 |
+| US-69 | Hear the assistant's recap read out so that I can keep my eyes on the draft — and mute it when I would rather not | A4 | Could | 3 | 8 |
+| US-70 | Upload the documents I am working from so that the assistant can use their facts without my retyping them | A4 | Must | 8 | 9 |
+| US-71 | Choose which documents apply to an article so that a piece on tides is not fed my notes on fermentation | A4 | Must | 3 | 9 |
+| US-72 | See which document and page a claim came from so that I can check it before it goes out under my name | A4 | Should | 5 | 9 |
 
 ### E4 — Discovery and search
 
@@ -344,22 +350,17 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-25 | Comment and reply in a thread so that discussion has structure | A2 | Must | 5 | 3 |
 | US-26 | Follow a writer so that I keep up with them | A2 | Should | 3 | 3 |
 | US-27 | Repost an article so that my followers see it | A2 | Could | 2 | 3 |
+| US-28 | Be told the moment someone reacts to my work, without reloading | A4 | Must | 5 | 3 |
+| US-29 | Review notifications I missed so that nothing is lost between sessions | A2 | Must | 3 | 3 |
+| US-57 | Save an article to come back to it later, without anyone else seeing what I keep | A2 | Must | 5 | 7 |
+| US-58 | Pass an article on to people outside the platform so that they can read it without signing up | A1 | Should | 3 | 7 |
 | US-59 | React to an article from the feed so that I can engage without losing my place | A2 | Must | 5 | 8 |
 | US-60 | See what an account has reposted so that I can judge what they rate | A2 | Should | 3 | 8 |
 | US-61 | Reply in the moment from the feed so that a fresh conversation is easy to join | A2 | Could | 3 | 8 |
 | US-62 | Keep reading as I scroll so that a list does not end at an arbitrary point I have to click past | A1 | Must | 5 | 8 |
 | US-65 | See who a writer or magazine is from where their name appears so that I can decide to follow without leaving the feed | A1 | Should | 3 | 8 |
-| US-66 | Tell the assistant what to write and watch it appear in my draft, then keep or discard it, so that generation happens where I write rather than in a chat I copy from | A4 | Must | 8 | 8 |
-| US-67 | See what the assistant is doing while it works — and minimize it without losing sight of that — so that a slow step is not a frozen screen | A4 | Should | 3 | 8 |
-| US-68 | Say my request instead of typing it so that I can brief the assistant while my hands are busy or my thoughts are faster than my typing | A4 | Should | 5 | 8 |
-| US-69 | Hear the assistant's recap read out so that I can keep my eyes on the draft — and mute it when I would rather not | A4 | Could | 3 | 8 |
-| US-70 | Upload the documents I am working from so that the assistant can use their facts without my retyping them | A4 | Must | 8 | 9 |
-| US-71 | Choose which documents apply to an article so that a piece on tides is not fed my notes on fermentation | A4 | Must | 3 | 9 |
-| US-72 | See which document and page a claim came from so that I can check it before it goes out under my name | A4 | Should | 5 | 9 |
-| US-57 | Save an article to come back to it later, without anyone else seeing what I keep | A2 | Must | 5 | 7 |
-| US-58 | Pass an article on to people outside the platform so that they can read it without signing up | A1 | Should | 3 | 7 |
-| US-28 | Be told the moment someone reacts to my work, without reloading | A4 | Must | 5 | 3 |
-| US-29 | Review notifications I missed so that nothing is lost between sessions | A2 | Must | 3 | 3 |
+| US-73 | Like a comment so that I can credit a good reply without writing one | A2 | Must | 2 | 7 |
+| US-74 | Browse who follows an account and whom it follows, and follow from the list, so that I find people through people | A1 | Must | 3 | 7 |
 
 ### E6 — Analytics
 
@@ -381,22 +382,22 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-38 | Pay 10% to read an article in full so that I can judge before buying | A7 | Must | 8 | 5 |
 | US-39 | Pay the remainder to acquire republish rights so that I can publish it | A7 | Must | 8 | 5 |
 | US-40 | Keep purchased articles in a library so that my acquisitions are in one place | A7 | Must | 3 | 5 |
-| US-63 | Publish an article I have bought when I am ready, rather than the purchase publishing it for me, so that my masthead stays mine to decide | A7 | Must | 5 | 5 |
-| US-64 | Have the articles I publish appear on my public profile under my masthead so that licensing buys me a shelf and not just a file | A7 | Must | 5 | 5 |
 | US-41 | List an article for sale at my own price so that I am paid for exclusivity | A5 | Must | 5 | 5 |
 | US-42 | See my earnings itemised by preview and purchase so that I trust the accounting | A4 | Must | 5 | 5 |
 | US-43 | See how far I am from eligibility so that the gate feels reachable | A4 | Should | 3 | 5 |
+| US-63 | Publish an article I have bought when I am ready, rather than the purchase publishing it for me, so that my masthead stays mine to decide | A7 | Must | 5 | 5 |
+| US-64 | Have the articles I publish appear on my public profile under my masthead so that licensing buys me a shelf and not just a file | A7 | Must | 5 | 5 |
 
 ### E8 — Moderation and administration
 
 | ID | User story | Actor | Pri | Pts | Sprint |
 |----|-----------|-------|-----|-----|--------|
 | US-44 | Report content so that abuse has a channel | A2 | Must | 3 | 5 |
-| US-56 | Block an account so that I stop seeing someone without having to explain myself | A2 | Must | 5 | 7 |
 | US-45 | Work a queue of reports so that moderation is systematic | A8 | Must | 5 | 5 |
 | US-46 | Remove an article or ban an author so that decisions are enforceable | A8 | Must | 3 | 5 |
 | US-47 | Grant eligibility manually so that a promising writer is not held back by a counter | A8 | Must | 3 | 5 |
 | US-48 | Search and filter users so that I can act on the right account | A8 | Should | 5 | 5 |
+| US-56 | Block an account so that I stop seeing someone without having to explain myself | A2 | Must | 5 | 7 |
 
 ### E9 — Quality and operations (technical stories)
 
@@ -410,7 +411,7 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-54 | Lower the eligibility thresholds under a flag so that the gate can be crossed live | Must | 2 | 6 |
 | US-55 | Serve the product at a public URL over TLS | Must | 8 | 6 |
 
-**72 stories, 9 epics, 345 points** (recounted 2026-10-06).
+**74 stories, 9 epics, 350 points** (recounted 2026-10-11: US-66…US-72 moved from E5 to E3, where the assistant's stories belong; US-73 and US-74 added, because FR-60 and FR-61 had no story).
 
 ---
 
