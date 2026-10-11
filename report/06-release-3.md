@@ -35,14 +35,14 @@ estimate held is discussed with the velocity in @sec:velocity.
 
 ![Use case diagram, Sprint 5](../diagrams/fig-6-1-use-case-sprint-5/fig-6-1-use-case-sprint-5.png){#fig:uc-s5}
 
-An unsubscribed magazine can only subscribe; a subscribed magazine browses the
-marketplace, purchases an article exclusively — unlocking a preview extends the
+A magazine without an active subscription can only subscribe; with one, it browses
+the marketplace, purchases an article exclusively — unlocking a preview extends the
 purchase — tops up credits, views its library and publishes a purchased article from
-it. Every credit movement includes moving credits in one transaction. An eligible
-writer lists an article, which includes setting a price and classifying the content at
+it. Every credit movement includes moving credits in one transaction. A writer lists
+an article when the condition `[writer is eligible]` holds, which includes setting a price and classifying the content at
 publish time; the administrator reviews the report queue, grants eligibility and
 manages users. The diagram shows that the subscription is the gate of every magazine
-use case but one, which is what the actor split A6 / A7 of @sec:actors expresses.
+use case but one: it is the condition `[subscription active]` of @sec:actors, drawn here as the wall in front of the marketplace.
 
 **Business rules.** The marketplace is governed by the rules of @tbl:rules. They are
 part of the analysis because every screen and every test of the sprint applies them.

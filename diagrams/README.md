@@ -30,7 +30,7 @@ diagrams/
 ├── _style.puml                          shared style, included by every .puml
 ├── Makefile
 ├── tools/                               the draw.io generators
-│   ├── gen-fig-2-1.py
+│   ├── gen-method-figures.py
 │   └── gen-architecture.py
 └── fig-5-4-sequence-ai-chat-rag/
     ├── fig-5-4-sequence-ai-chat-rag.puml
@@ -117,9 +117,12 @@ that actually help, in order:
    `fig-2-3` from 2784×405 to 1463×1014.
 2. `left to right direction` for wide figures; omit it for tall ones.
 3. `skinparam nodesep` / `ranksep` for density.
-4. Keep a *global* diagram coarse. The first draft of `fig-2-1` had 17 use cases
-   and rendered 2332×679; at 11 coarse use cases it is 842×754. The per-sprint
-   diagrams are where refinement belongs.
+4. Split a *global* diagram by actor group rather than coarsening it. After the
+   supervisor's review the single global diagram (`fig-2-1`, bundled use cases
+   such as "Interact (like, comment, …)") was replaced by three — visitor and
+   reader, writer, magazine and administrator — with one action per use case.
+   Put extensions and inclusions on the right of their base (`BASE <.. EXT`,
+   `BASE ..> INC`) so the actor's links only reach the first column.
 
 Budget a few minutes per figure for this. It is the real cost of the set.
 
@@ -146,7 +149,9 @@ diagrams need it.
 |------|--------|------|------|
 | `fig-1-1-scrum-framework/` | Ch.1 §1.4.2 | draw.io | 1625×755 |
 | `fig-1-2-waterfall-vs-agile/` | Ch.1 §1.4.1 | draw.io | 1625×905 |
-| `fig-2-1-use-case-global/` | Ch.2 §2.2 | draw.io | 2189×1446 |
+| `fig-1-3-use-case-visitor-reader/` | Ch.1 §1.6 | PlantUML | |
+| `fig-1-4-use-case-writer/` | Ch.1 §1.6 | PlantUML | |
+| `fig-1-5-use-case-magazine-admin/` | Ch.1 §1.6 | PlantUML | |
 | `fig-2-2-classes-core-domain/` | Ch.2 §2.3 | PlantUML | 1732×710 |
 | `fig-2-3-classes-ai-marketplace-analytics/` | Ch.2 §2.3 | PlantUML | 1708×968 |
 | `fig-2-4-gantt/` | Ch.2 §2.4.3 | PlantUML gantt | 1096×568 |

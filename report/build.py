@@ -78,10 +78,10 @@ includes = {}
 # ── Functional requirements ──────────────────────────────────────────────────
 ACTOR_SECTIONS = [
     (1, 'Visitor (A1)', 'visitor'),
-    (2, 'Free and premium reader (A2, A3)', 'readers'),
-    (3, 'Writer and eligible writer (A4, A5)', 'writers'),
-    (4, 'Magazine (A6, A7)', 'magazines'),
-    (5, 'Administrator (A8)', 'administrator'),
+    (2, 'Reader (A2)', 'readers'),
+    (3, 'Writer (A3)', 'writers'),
+    (4, 'Magazine (A4)', 'magazines'),
+    (5, 'Administrator (A5)', 'administrator'),
     (6, 'Cross-cutting', 'cross-cutting'),
 ]
 fr_all = []

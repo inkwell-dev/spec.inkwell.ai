@@ -195,36 +195,39 @@ describe.
 
 ## Identification of the actors {#sec:actors}
 
-The platform has eight actors. @tbl:actors lists them with the way each is represented
+The platform has five actors. @tbl:actors lists them with the way each is represented
 in the data model, because the actors are not invented for the analysis: they follow
-from the three independent properties every account carries — its **account type**
-(personal or magazine), its **role** (reader, writer or administrator) and its
-**plan** (free or premium) — plus the writer's marketplace eligibility.
+from two properties every account carries — its **account type** (personal or
+magazine) and its **role** (reader, writer or administrator).
 
 | # | Actor | Data-model representation | Definition |
-|:--|:------------------|:-----------------------|:----------------------------------------|
-| A1 | Visitor | no account | Unauthenticated. Sees the public feed and free article bodies; cannot interact. |
-| A2 | Free reader | personal account, free plan | Reads free public articles, interacts socially, has no AI allowance. |
-| A3 | Premium reader | personal account, premium plan | Everything A2 has, plus premium articles and the daily AI allowance. |
-| A4 | Writer | personal account, role writer | A2 or A3 plus drafting, publishing and editing their own articles. |
-| A5 | Eligible writer | writer marked eligible | A4 plus the right to publish premium articles and to list on the marketplace. |
-| A6 | Magazine (unsubscribed) | magazine account, no active subscription | Registered magazine stopped at the subscription wall. |
-| A7 | Magazine (subscribed) | magazine account, active subscription | Browses writers, reads evaluation reports, spends credits to preview and purchase. |
-| A8 | Administrator | personal account, role admin | Moderation queue, user management, manual eligibility grants. |
+|:--|:----------------|:-----------------------|:--------------------------------------------|
+| A1 | Visitor | no account | Unauthenticated. Browses the public feed and reads free articles; cannot interact. |
+| A2 | Reader | personal account | Reads and interacts: likes, comments, reposts, saves, follows, blocks, reports. On the premium plan, also reads premium articles and uses the AI assistant. |
+| A3 | Writer | personal account, role writer | Everything a reader does, plus drafting, publishing and analysing their own articles. Once eligible, also publishes premium articles and lists on the marketplace. |
+| A4 | Magazine | magazine account | Subscribes, then browses writers, reads evaluation reports, previews, buys and publishes licensed articles. |
+| A5 | Administrator | personal account, role admin | Works the moderation queue, manages users and grants eligibility manually. |
 
 : Actors of the system {#tbl:actors}
 
-Each generalisation in the table follows one of the three properties, so the table
-also fixes which generalisations hold. On the **plan**, the premium reader specialises
-the free reader; on the **role**, the writer specialises the free reader and the
-eligible writer specialises the writer; on the **subscription**, the subscribed
-magazine specialises the unsubscribed one. Two actors specialise no other. A
-**magazine** is a different account type with no role and no plan — a database
-constraint enforces it — so it inherits nothing from the readers or writers; a person
-who runs a magazine and also writes uses two accounts. The **administrator** holds a
-role that cannot be obtained through the interface and is granted in the database; its
-capabilities are moderation and management, not an extension of reading, so it is not
-drawn as a specialised reader either.
+Three further properties change what an actor may do without making it a different
+actor: a reader's **plan** (free or premium), a writer's **marketplace eligibility**,
+and a magazine's **subscription** (active or not). They are states of an account —
+the same person moves between them by upgrading, by being read, or by subscribing — so
+they are drawn in the use case diagrams as **conditions** on the use cases they unlock,
+not as separate actors: *Read a premium article* extends *Read an article* when
+`[plan = premium]`, *List on the marketplace* extends *Publish an article* when
+`[writer is eligible]`, and every marketplace use case requires an active
+subscription.
+
+Two generalisations hold: the reader specialises the visitor, and the writer
+specialises the reader. The other two actors specialise nobody. A **magazine** is a
+different account type with no role and no plan — a database constraint enforces it —
+so it inherits nothing from the readers or writers; a person who runs a magazine and
+also writes uses two accounts. The **administrator** holds a role that cannot be
+obtained through the interface and is granted in the database; its capabilities are
+moderation and management, not an extension of reading or writing, so it is not drawn
+as a specialised reader either.
 
 ## Functional requirements {#sec:fr}
 
@@ -315,27 +318,62 @@ designed for but was never exercised) and NFR-37 (met on desktop and for critica
 violations, not on mobile — see @sec:eval-perf). They return as limitations in the
 general conclusion.
 
-## Global use case diagram {#sec:uc-global}
+## Global use case diagrams {#sec:uc-global}
 
-@fig:uc-global gives the global use case diagram. It is deliberately coarse: each use
-case stands for a family of interactions refined in the per-sprint diagrams of
-Chapters 3 to 6. The actors are drawn in three separate groups — the personal accounts
-on the left, the magazines and the administrator on the right — so that only the
-generalisations of @sec:actors appear.
+The global use cases are drawn in three diagrams, one per group of actors, so that
+each use case is a single action and every label can be read at page width. The
+use cases are those of the functional requirements; the per-sprint diagrams of
+Chapters 3 to 6 then refine each sprint's share. In the three diagrams, every use case
+of a signed-in actor includes *Sign in*, which is stated once in a note rather than
+drawn twenty times.
 
-![Global use case diagram](../diagrams/fig-2-1-use-case-global/fig-2-1-use-case-global.png){#fig:uc-global}
+**Visitor and reader.** @fig:uc-visitor-reader gives the use cases of the two actors
+who read.
 
-Every authenticated use case includes *Sign in*. *Sign in with Google* and *Create an
-account* both extend it: a visitor reaches registration from the sign-in page, and
-Google sign-in creates the account on first use. Listing on the marketplace extends
-publishing; unlocking a preview extends acquiring an article; grounding answers in
-uploaded documents extends the use of the assistant, which always includes retrieval
-from the writer's own corpus. The administrator's three use cases — reviewing the
-report queue, managing users and granting eligibility — are the concrete operations
-that the administration console offers. The diagram shows that the system has a
-single entry point for every privileged action, *Sign in*, which is where the guard
-stack of NFR-03 applies, and that only two use cases depend on external providers:
-the assistant on the language model and retrieval on the embedding model.
+![Global use case diagram — visitor and reader](../diagrams/fig-1-3-use-case-visitor-reader/fig-1-3-use-case-visitor-reader.png){#fig:uc-visitor-reader}
+
+The visitor browses the feed, reads free articles, searches, views profiles and
+shares, and reaches registration from *Sign in*: *Create an account* and *Sign in with
+Google* both extend it. The reader inherits all of this and adds the social use
+cases — liking, commenting and replying, liking a comment, reposting, saving,
+following, blocking, reporting — together with notifications, the profile and the
+upgrade to premium. The premium plan does not make a new actor: *Read a premium
+article* extends *Read an article* under the condition `[plan = premium]`. The
+diagram shows that the reader's use cases are all small, independent interactions
+with one article or one account, which is why each is delivered by a short story of
+the backlog.
+
+**Writer.** @fig:uc-writer gives the use cases of the writer.
+
+![Global use case diagram — writer](../diagrams/fig-1-4-use-case-writer/fig-1-4-use-case-writer.png){#fig:uc-writer}
+
+The writer inherits the reader's use cases and adds three groups: writing (drafting
+with automatic saving, images, publishing with a placement and a visibility,
+withdrawing a listing, deleting), the assistant (asking, inline actions, a write into
+the draft that the writer keeps or discards, dictation, replies read aloud, documents
+uploaded, attached and cited by page), and the writer's own figures (analytics,
+eligibility progress, earnings). Eligibility appears as a condition, not an actor:
+*Publish as premium* and *List on the marketplace* extend *Publish an article* when
+`[writer is eligible]`. Every use of the assistant includes *Consume the AI
+allowance*, which only the premium plan grants. The diagram shows where the
+complexity of the platform lies: the writer has the most use cases, and most of the
+inclusions and extensions sit around *Publish an article* and *Ask the assistant*.
+
+**Magazine and administrator.** @fig:uc-magazine-admin gives the use cases of the two
+actors that specialise nobody.
+
+![Global use case diagram — magazine and administrator](../diagrams/fig-1-5-use-case-magazine-admin/fig-1-5-use-case-magazine-admin.png){#fig:uc-magazine-admin}
+
+A magazine subscribes, tops up credits, cancels and follows its balance; with an
+active subscription it browses writers, reads their evaluation (extended by the
+generation of portfolio insights), browses the marketplace, purchases an article
+(extended by a preview unlock), keeps it in its library and publishes it. The four
+marketplace use cases include *Check the active subscription*: the subscription is
+the gate, not a different actor. The administrator works the report queue — dismissing
+a report, removing an article or banning its author — searches users, changes a plan
+and grants eligibility. Drawing the two actors side by side without a generalisation
+shows the answer to a question the single diagram left open: neither the magazine nor
+the administrator is a kind of reader or writer.
 
 ## Global class diagram {#sec:classes-global}
 
@@ -449,7 +487,7 @@ months instead of one.
 This chapter situated the project, showed that no existing family of solutions
 combines AI writing grounded in the writer's own work, buyer-facing analytics and a
 licensing market, and justified the use of Scrum and its adaptation to a one-person
-project. It then identified the eight actors, specified {{FRS}} functional and 37
+project. It then identified the five actors, specified {{FRS}} functional and 37
 non-functional requirements with the way each is verified, presented the global use
 case and class diagrams, and organised the work into a backlog of {{STORIES}} user
 stories delivered by nine sprints in four releases. The next chapter describes the

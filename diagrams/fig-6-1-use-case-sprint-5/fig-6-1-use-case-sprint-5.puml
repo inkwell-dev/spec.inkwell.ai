@@ -4,16 +4,12 @@
 skinparam nodesep 14
 skinparam ranksep 65
 
-actor "Free reader" as LG
+actor "Reader" as LG
 actor "Writer" as R
-actor "Eligible writer" as RE
-actor "Magazine\n(unsubscribed)" as MN
-actor "Magazine\n(subscribed)" as MA
+actor "Magazine" as MA
 actor "Administrator" as AD
 
 R  --|> LG
-RE --|> R
-MA --|> MN
 
 rectangle {
   usecase "Sign in" as AUTH
@@ -40,9 +36,9 @@ rectangle {
 }
 
 LG --> UPGRADE
-RE --> LIST
+R --> LIST
 R  --> EARN
-MN --> SUBSCRIBE
+MA --> SUBSCRIBE
 MA --> BROWSE
 MA --> BUY
 MA --> TOPUP
@@ -84,4 +80,6 @@ note as N2
   purchase (FR-72). The owner then publishes it under
   its own masthead, public and free (FR-73).
 end note
+note right of LIST : [writer is eligible]
+note "Browsing, purchasing, the library and\npublication need [subscription active]." as NSUB
 @enduml

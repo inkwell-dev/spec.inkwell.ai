@@ -50,7 +50,7 @@ one:
 	@echo "✓ $(F)"
 
 regen:
-	cd tools && python3 gen-fig-2-1.py && python3 gen-architecture.py
+	cd tools && python3 gen-architecture.py
 
 check:
 	$(PRUN) -checkonly $(PUML) && echo "✓ all PlantUML sources parse"

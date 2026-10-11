@@ -1,0 +1,68 @@
+@startuml
+' Global use case diagram, part 3 of 3: the magazine and the administrator.
+' Neither generalises another actor. An active subscription is a state of the
+' magazine, drawn as a condition.
+!include ../_style.puml
+left to right direction
+skinparam nodesep 8
+skinparam ranksep 70
+
+actor "Magazine" as MAG
+actor "Administrator" as ADM
+
+rectangle "Inkwell.ai" {
+  usecase "Subscribe" as SUB
+  usecase "Top up credits" as TOPUP
+  usecase "Cancel the subscription" as CANCEL
+  usecase "View balance and transactions" as BALANCE
+  usecase "Browse writers" as WRITERS
+  usecase "Read a writer evaluation" as EVAL
+  usecase "Generate portfolio insights" as INSIGHTS
+  usecase "Browse the marketplace" as MARKET
+  usecase "Purchase an article" as BUY
+  usecase "Unlock a preview" as PREVIEW
+  usecase "View the library" as LIBRARY
+  usecase "Publish a licensed article" as PUBLISH
+  usecase "Check the active subscription" as ACTIVE
+
+  usecase "Review the report queue" as QUEUE
+  usecase "Dismiss a report" as DISMISS
+  usecase "Remove an article" as REMOVE
+  usecase "Ban an author" as BAN
+  usecase "Search users" as USERS
+  usecase "Change a user's plan" as PLAN
+  usecase "Grant eligibility" as GRANT
+}
+
+MAG -- SUB
+MAG -- TOPUP
+MAG -- CANCEL
+MAG -- BALANCE
+MAG -- WRITERS
+MAG -- EVAL
+MAG -- MARKET
+MAG -- BUY
+MAG -- LIBRARY
+MAG -- PUBLISH
+
+EVAL <.. INSIGHTS : <<extend>>
+BUY <.. PREVIEW : <<extend>>
+WRITERS ..> ACTIVE : <<include>>
+EVAL ..> ACTIVE : <<include>>
+MARKET ..> ACTIVE : <<include>>
+BUY ..> ACTIVE : <<include>>
+
+ADM -- QUEUE
+ADM -- USERS
+ADM -- PLAN
+ADM -- GRANT
+QUEUE <.. DISMISS : <<extend>>
+QUEUE <.. REMOVE : <<extend>>
+QUEUE <.. BAN : <<extend>>
+
+note as N1
+  Every use case includes «Sign in».
+  The administrator role is granted in
+  the database, never through the interface.
+end note
+@enduml

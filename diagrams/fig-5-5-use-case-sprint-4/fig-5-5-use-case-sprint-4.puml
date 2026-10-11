@@ -5,9 +5,8 @@ skinparam nodesep 14
 skinparam ranksep 60
 
 actor "Visitor" as V
-actor "Premium reader" as LP
 actor "Writer" as R
-actor "Magazine\n(subscribed)" as MA
+actor "Magazine" as MA
 
 rectangle {
   usecase "Sign in" as AUTH
@@ -30,7 +29,7 @@ rectangle "Embedding\nprovider" as EXT1
 rectangle "Large language model\nprovider" as EXT2
 
 V  --> SEARCH
-LP --> AI
+R --> AI
 R  --> PUBLISH
 MA --> EVAL
 
@@ -59,4 +58,5 @@ note as N1
   call, so browsing writers must not spend a magazine's
   budget.
 end note
+note right of AI : [plan = premium]
 @enduml

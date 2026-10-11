@@ -44,7 +44,7 @@ marketplace itself.
 | Item | Description |
 |:----------------------|:----------------------------------------------------------|
 | Use case | Publish an article |
-| Actor | Writer (A4) |
+| Actor | Writer (A3) |
 | Pre-condition | The writer is signed in and owns a draft |
 | Post-condition | The article is published with its placement, visibility, slug and reading time |
 | Main scenario | 1. The writer opens the publish dialog. 2. The writer chooses a placement (public or marketplace) and, for a public article, a visibility (free or premium), and sets the cover, tags and excerpt. 3. The system checks the choices. 4. The system publishes the article and computes its word count and reading time. 5. The article appears in the feed (public) or is kept for the marketplace (marketplace). |
@@ -104,14 +104,14 @@ feed reached without an account.
 The feed lists published public articles with their author, reading time, excerpt,
 cover and reaction counts, filtered by topic along the top (FR-01). The header offers
 only *Log in* and *Get started*: a visitor can read and browse but every interaction
-leads to an account, which is the boundary between actor A1 and the others.
+leads to an account, which is the boundary between the visitor and the other actors.
 
 @fig:login shows the sign-in page.
 
 ![Sign-in, with Google sign-in](../figures/screens/guest-02-login.png){#fig:login}
 
 It offers the two authentication methods of FR-05 side by side — e-mail and password,
-and *Continue with Google* — and the link to registration that @fig:uc-global draws as
+and *Continue with Google* — and the link to registration that @fig:uc-visitor-reader draws as
 *Create an account* extending *Sign in*.
 
 Registration differs by account type. @fig:register shows a personal account and

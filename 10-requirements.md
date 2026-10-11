@@ -33,25 +33,23 @@ design system already uses (`9-design.md` §5.3), which in turn mirrors the
 | # | Actor | Data-model representation | One-line definition |
 |---|-------|---------------------------|---------------------|
 | A1 | Visitor | no row | Unauthenticated. Sees the public feed and free article bodies; cannot interact. |
-| A2 | Free reader | `account_type='personal'`, `plan='free'` | Reads free public articles, interacts socially, no AI allowance. |
-| A3 | Premium reader | `account_type='personal'`, `plan='premium'` | Everything A2 has, plus premium articles and the daily AI allowance. |
-| A4 | Writer | `role='writer'` | A2/A3 plus drafting, publishing and editing their own articles. |
-| A5 | Eligible writer | `is_marketplace_eligible=true` | A4 plus the right to publish premium articles and to list on the marketplace. |
-| A6 | Magazine (unsubscribed) | `account_type='magazine'`, `subscription_status<>'active'` | Registered magazine with no active subscription. Blocked at the subscription wall. |
-| A7 | Magazine (subscribed) | `account_type='magazine'`, `subscription_status='active'` | Browses writers, reads evaluation reports, spends credits to preview and purchase. |
-| A8 | Administrator | `role='admin'` | Moderation queue, user management, manual eligibility grants. |
+| A2 | Reader | `account_type='personal'` | Reads and interacts socially. **On the premium plan** (`plan='premium'`) also reads premium articles and has the daily AI allowance. |
+| A3 | Writer | `role='writer'` | A2 plus drafting, publishing and editing their own articles. **When eligible** (`is_marketplace_eligible=true`) also publishes premium articles and lists on the marketplace. |
+| A4 | Magazine | `account_type='magazine'` | Subscribes, browses writers, reads evaluation reports and licenses articles. **With an active subscription** (`subscription_status='active'`) reaches the marketplace; without one, only the subscription wall. |
+| A5 | Administrator | `role='admin'` | Moderation queue, user management, manual eligibility grants. |
 
 **Notes that matter for the use case diagram.**
 
-- A3 generalises A2; A5 generalises A4; A7 generalises A6. Draw them as
-  inheritance, not as separate unrelated actors.
-- A4 is orthogonal to A2/A3: a writer can be on the free plan (they write without
-  AI) or premium. Role and plan are deliberately independent columns.
-- A6 exists as a distinct actor because it has exactly one meaningful capability —
-  subscribing — and every other magazine capability is denied to it. Both example
-  reports model their subscription wall the same way.
-- A8 cannot be created through the UI. Promotion to `admin` is a deliberate act
-  against the database (decided 2026-08-15), and an admin's role is not editable
+- Five actors, decided 2026-10-11 after the supervisor's review (previously eight).
+  The premium plan, marketplace eligibility and an active subscription are
+  **states** of an account, not separate actors: they appear in the use case
+  diagrams as conditions on «extend» relations — *Read a premium article* extends
+  *Read an article* `[plan = premium]`; *List on the marketplace* extends *Publish an
+  article* `[writer is eligible]`; the marketplace use cases need `[subscription
+  active]`.
+- A2 generalises A1 and A3 generalises A2. A4 and A5 generalise nobody: a magazine
+  is a different account type with no role and no plan, and the administrator role
+  is granted in the database, never through the UI. An admin's role is not editable
   in either direction.
 
 ---
@@ -82,7 +80,7 @@ report's sprint numbering (§5), not the calendar sprint.
 > guests, deliberately: gating them would contradict the public feed and the SEO
 > work, and would change the product. The report states this as a decision.
 
-### 2.2 A2 / A3 — Free and premium reader
+### 2.2 A2 — Reader
 
 > **FR ids are append-only.** FR-60 sits between FR-10 and FR-11 because the
 > table groups by persona and by the feature it belongs beside, not by number.
@@ -110,9 +108,9 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-13 | Receive notifications for follows, likes, comment likes, saves, comments and replies, delivered live | Must | 3 |
 | FR-14 | List past notifications and mark them read | Must | 3 |
 | FR-15 | Upgrade to premium, and downgrade (simulated payment) | Must | 5 |
-| FR-16 | *(A3 only)* Read premium-visibility articles | Must | 5 |
-| FR-17 | *(A3 only)* Consume a daily AI token allowance | Must | 2, 5 |
-### 2.3 A4 / A5 — Writer
+| FR-16 | *(premium plan)* Read premium-visibility articles | Must | 5 |
+| FR-17 | *(premium plan)* Consume a daily AI token allowance | Must | 2, 5 |
+### 2.3 A3 — Writer
 
 | ID | Requirement | Priority | Sprint |
 |----|-------------|----------|--------|
@@ -143,8 +141,8 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-32 | View per-article analytics — views, unique readers, average read time, completion, engagement, retention curve | Must | 3 |
 | FR-33 | Rank own articles by views or engagement, server-side across the whole body of work | Should | 3 |
 | FR-34 | See progress toward marketplace eligibility | Must | 5 |
-| FR-35 | *(A5 only)* Publish to the marketplace with a price in credits | Must | 5 |
-| FR-36 | *(A5 only)* Publish premium-visibility articles | Must | 5 |
+| FR-35 | *(eligible writer)* Publish to the marketplace with a price in credits | Must | 5 |
+| FR-36 | *(eligible writer)* Publish premium-visibility articles | Must | 5 |
 | FR-37 | View earnings — lifetime, per article, itemised by preview and purchase | Must | 5 |
 | FR-38 | Be notified when a magazine previews or purchases an article, and when earnings are credited | Must | 5 |
 
@@ -152,12 +150,12 @@ report's sprint numbering (§5), not the calendar sprint.
 > product is the **voice prompt** (FR-82), which dictates a request to the
 > assistant, and it is what writes `voice_transcribe`.
 
-### 2.4 A6 / A7 — Magazine
+### 2.4 A4 — Magazine
 
 | ID | Requirement | Priority | Sprint |
 |----|-------------|----------|--------|
 | FR-39 | Register with magazine fields — name, slug, logo, website, description | Must | 1 |
-| FR-40 | *(A6)* Be stopped at a subscription wall before any marketplace surface | Must | 5 |
+| FR-40 | *(without subscription)* Be stopped at a subscription wall before any marketplace surface | Must | 5 |
 | FR-41 | Subscribe, receiving a monthly credit allowance (simulated payment) | Must | 5 |
 | FR-42 | Top up credits outside the monthly grant | Should | 5 |
 | FR-43 | See the credit balance, the renewal date and the transaction history | Must | 5 |
@@ -185,7 +183,7 @@ report's sprint numbering (§5), not the calendar sprint.
 > worse than none — it invites a reader to distrust the ones that are still true.
 > The deviation count in §6 drops from six to five.
 
-### 2.5 A8 — Administrator
+### 2.5 A5 — Administrator
 
 | ID | Requirement | Priority | Sprint |
 |----|-------------|----------|--------|
@@ -299,39 +297,39 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-01 | Register with an email and a password so that I can have an identity on the platform | A1 | Must | 3 | 1 |
 | US-02 | Sign in with Google so that I do not manage another password | A1 | Should | 3 | 1 |
 | US-03 | Register as a magazine with my branding so that writers recognise my publication | A1 | Must | 5 | 1 |
-| US-04 | Stay signed in across a long writing session so that I do not lose a draft | A4 | Must | 3 | 1 |
+| US-04 | Stay signed in across a long writing session so that I do not lose a draft | A3 | Must | 3 | 1 |
 | US-05 | Edit my profile and avatar so that my public page represents me | A2 | Should | 3 | 1 |
 
 ### E2 — Writing and publishing
 
 | ID | User story | Actor | Pri | Pts | Sprint |
 |----|-----------|-------|-----|-----|--------|
-| US-06 | Write in a rich editor so that structure and emphasis survive publication | A4 | Must | 8 | 2 |
-| US-07 | Have my draft saved as I type so that I never lose work | A4 | Must | 3 | 2 |
-| US-08 | Paste or drag an image into the article so that illustrating is not a detour | A4 | Must | 5 | 2 |
-| US-09 | Set a cover image so that my article looks deliberate in the feed | A4 | Should | 3 | 2 |
-| US-10 | Tag an article so that readers find it by topic | A4 | Should | 2 | 1 |
-| US-11 | Choose at publish time whether an article is public or for sale | A4 | Must | 5 | 1 |
-| US-12 | Restrict an article to premium readers so that my best work is worth a subscription | A5 | Should | 3 | 5 |
-| US-13 | See word count and reading time so that I can judge length as I write | A4 | Could | 1 | 2 |
+| US-06 | Write in a rich editor so that structure and emphasis survive publication | A3 | Must | 8 | 2 |
+| US-07 | Have my draft saved as I type so that I never lose work | A3 | Must | 3 | 2 |
+| US-08 | Paste or drag an image into the article so that illustrating is not a detour | A3 | Must | 5 | 2 |
+| US-09 | Set a cover image so that my article looks deliberate in the feed | A3 | Should | 3 | 2 |
+| US-10 | Tag an article so that readers find it by topic | A3 | Should | 2 | 1 |
+| US-11 | Choose at publish time whether an article is public or for sale | A3 | Must | 5 | 1 |
+| US-12 | Restrict an article to premium readers so that my best work is worth a subscription | A3 | Should | 3 | 5 |
+| US-13 | See word count and reading time so that I can judge length as I write | A3 | Could | 1 | 2 |
 
 ### E3 — AI assistance
 
 | ID | User story | Actor | Pri | Pts | Sprint |
 |----|-----------|-------|-----|-----|--------|
-| US-14 | Ask an assistant that has read my published work so that suggestions sound like me | A4 | Must | 13 | 2, 4 |
-| US-15 | Reformulate, shorten, expand, simplify or improve a selection so that editing is one click | A4 | Must | 8 | 2 |
-| US-16 | Insert an answer into my document so that I do not copy by hand | A4 | Must | 2 | 2 |
-| US-17 | See which of my passages the assistant used so that I can trust the answer | A4 | Should | 5 | 4 |
-| US-18 | See my remaining allowance so that I can pace my usage | A3 | Must | 2 | 2 |
-| US-19 | Have my voice profile extracted from my corpus so that the assistant stays consistent when retrieval finds nothing | A4 | Should | 8 | 4 |
-| US-66 | Tell the assistant what to write and watch it appear in my draft, then keep or discard it, so that generation happens where I write rather than in a chat I copy from | A4 | Must | 8 | 8 |
-| US-67 | See what the assistant is doing while it works — and minimize it without losing sight of that — so that a slow step is not a frozen screen | A4 | Should | 3 | 8 |
-| US-68 | Say my request instead of typing it so that I can brief the assistant while my hands are busy or my thoughts are faster than my typing | A4 | Should | 5 | 8 |
-| US-69 | Hear the assistant's recap read out so that I can keep my eyes on the draft — and mute it when I would rather not | A4 | Could | 3 | 8 |
-| US-70 | Upload the documents I am working from so that the assistant can use their facts without my retyping them | A4 | Must | 8 | 9 |
-| US-71 | Choose which documents apply to an article so that a piece on tides is not fed my notes on fermentation | A4 | Must | 3 | 9 |
-| US-72 | See which document and page a claim came from so that I can check it before it goes out under my name | A4 | Should | 5 | 9 |
+| US-14 | Ask an assistant that has read my published work so that suggestions sound like me | A3 | Must | 13 | 2, 4 |
+| US-15 | Reformulate, shorten, expand, simplify or improve a selection so that editing is one click | A3 | Must | 8 | 2 |
+| US-16 | Insert an answer into my document so that I do not copy by hand | A3 | Must | 2 | 2 |
+| US-17 | See which of my passages the assistant used so that I can trust the answer | A3 | Should | 5 | 4 |
+| US-18 | See my remaining allowance so that I can pace my usage | A2 | Must | 2 | 2 |
+| US-19 | Have my voice profile extracted from my corpus so that the assistant stays consistent when retrieval finds nothing | A3 | Should | 8 | 4 |
+| US-66 | Tell the assistant what to write and watch it appear in my draft, then keep or discard it, so that generation happens where I write rather than in a chat I copy from | A3 | Must | 8 | 8 |
+| US-67 | See what the assistant is doing while it works — and minimize it without losing sight of that — so that a slow step is not a frozen screen | A3 | Should | 3 | 8 |
+| US-68 | Say my request instead of typing it so that I can brief the assistant while my hands are busy or my thoughts are faster than my typing | A3 | Should | 5 | 8 |
+| US-69 | Hear the assistant's recap read out so that I can keep my eyes on the draft — and mute it when I would rather not | A3 | Could | 3 | 8 |
+| US-70 | Upload the documents I am working from so that the assistant can use their facts without my retyping them | A3 | Must | 8 | 9 |
+| US-71 | Choose which documents apply to an article so that a piece on tides is not fed my notes on fermentation | A3 | Must | 3 | 9 |
+| US-72 | See which document and page a claim came from so that I can check it before it goes out under my name | A3 | Should | 5 | 9 |
 
 ### E4 — Discovery and search
 
@@ -350,7 +348,7 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-25 | Comment and reply in a thread so that discussion has structure | A2 | Must | 5 | 3 |
 | US-26 | Follow a writer so that I keep up with them | A2 | Should | 3 | 3 |
 | US-27 | Repost an article so that my followers see it | A2 | Could | 2 | 3 |
-| US-28 | Be told the moment someone reacts to my work, without reloading | A4 | Must | 5 | 3 |
+| US-28 | Be told the moment someone reacts to my work, without reloading | A3 | Must | 5 | 3 |
 | US-29 | Review notifications I missed so that nothing is lost between sessions | A2 | Must | 3 | 3 |
 | US-57 | Save an article to come back to it later, without anyone else seeing what I keep | A2 | Must | 5 | 7 |
 | US-58 | Pass an article on to people outside the platform so that they can read it without signing up | A1 | Should | 3 | 7 |
@@ -366,37 +364,37 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 
 | ID | User story | Actor | Pri | Pts | Sprint |
 |----|-----------|-------|-----|-----|--------|
-| US-30 | See how many people read an article and how far they got so that I can write better | A4 | Must | 8 | 3 |
-| US-31 | Rank my articles by performance so that I learn what works | A4 | Should | 3 | 3 |
-| US-32 | Evaluate a writer on audience, content and quality so that I can commission with evidence | A7 | Must | 13 | 3 |
-| US-33 | Read an AI assessment of a writer's voice and range so that I can shortlist quickly | A7 | Must | 8 | 4 |
+| US-30 | See how many people read an article and how far they got so that I can write better | A3 | Must | 8 | 3 |
+| US-31 | Rank my articles by performance so that I learn what works | A3 | Should | 3 | 3 |
+| US-32 | Evaluate a writer on audience, content and quality so that I can commission with evidence | A4 | Must | 13 | 3 |
+| US-33 | Read an AI assessment of a writer's voice and range so that I can shortlist quickly | A4 | Must | 8 | 4 |
 
 ### E7 — Marketplace and subscriptions
 
 | ID | User story | Actor | Pri | Pts | Sprint |
 |----|-----------|-------|-----|-----|--------|
 | US-34 | Upgrade to premium so that I can read everything and use the assistant | A2 | Must | 5 | 5 |
-| US-35 | Subscribe as a magazine so that I can access the marketplace | A6 | Must | 8 | 5 |
-| US-36 | Receive a monthly credit budget so that spending is predictable | A7 | Must | 5 | 5 |
-| US-37 | Top up credits so that a good month is not capped | A7 | Should | 3 | 5 |
-| US-38 | Pay 10% to read an article in full so that I can judge before buying | A7 | Must | 8 | 5 |
-| US-39 | Pay the remainder to acquire republish rights so that I can publish it | A7 | Must | 8 | 5 |
-| US-40 | Keep purchased articles in a library so that my acquisitions are in one place | A7 | Must | 3 | 5 |
-| US-41 | List an article for sale at my own price so that I am paid for exclusivity | A5 | Must | 5 | 5 |
-| US-42 | See my earnings itemised by preview and purchase so that I trust the accounting | A4 | Must | 5 | 5 |
-| US-43 | See how far I am from eligibility so that the gate feels reachable | A4 | Should | 3 | 5 |
-| US-63 | Publish an article I have bought when I am ready, rather than the purchase publishing it for me, so that my masthead stays mine to decide | A7 | Must | 5 | 5 |
-| US-64 | Have the articles I publish appear on my public profile under my masthead so that licensing buys me a shelf and not just a file | A7 | Must | 5 | 5 |
+| US-35 | Subscribe as a magazine so that I can access the marketplace | A4 | Must | 8 | 5 |
+| US-36 | Receive a monthly credit budget so that spending is predictable | A4 | Must | 5 | 5 |
+| US-37 | Top up credits so that a good month is not capped | A4 | Should | 3 | 5 |
+| US-38 | Pay 10% to read an article in full so that I can judge before buying | A4 | Must | 8 | 5 |
+| US-39 | Pay the remainder to acquire republish rights so that I can publish it | A4 | Must | 8 | 5 |
+| US-40 | Keep purchased articles in a library so that my acquisitions are in one place | A4 | Must | 3 | 5 |
+| US-41 | List an article for sale at my own price so that I am paid for exclusivity | A3 | Must | 5 | 5 |
+| US-42 | See my earnings itemised by preview and purchase so that I trust the accounting | A3 | Must | 5 | 5 |
+| US-43 | See how far I am from eligibility so that the gate feels reachable | A3 | Should | 3 | 5 |
+| US-63 | Publish an article I have bought when I am ready, rather than the purchase publishing it for me, so that my masthead stays mine to decide | A4 | Must | 5 | 5 |
+| US-64 | Have the articles I publish appear on my public profile under my masthead so that licensing buys me a shelf and not just a file | A4 | Must | 5 | 5 |
 
 ### E8 — Moderation and administration
 
 | ID | User story | Actor | Pri | Pts | Sprint |
 |----|-----------|-------|-----|-----|--------|
 | US-44 | Report content so that abuse has a channel | A2 | Must | 3 | 5 |
-| US-45 | Work a queue of reports so that moderation is systematic | A8 | Must | 5 | 5 |
-| US-46 | Remove an article or ban an author so that decisions are enforceable | A8 | Must | 3 | 5 |
-| US-47 | Grant eligibility manually so that a promising writer is not held back by a counter | A8 | Must | 3 | 5 |
-| US-48 | Search and filter users so that I can act on the right account | A8 | Should | 5 | 5 |
+| US-45 | Work a queue of reports so that moderation is systematic | A5 | Must | 5 | 5 |
+| US-46 | Remove an article or ban an author so that decisions are enforceable | A5 | Must | 3 | 5 |
+| US-47 | Grant eligibility manually so that a promising writer is not held back by a counter | A5 | Must | 3 | 5 |
+| US-48 | Search and filter users so that I can act on the right account | A5 | Should | 5 | 5 |
 | US-56 | Block an account so that I stop seeing someone without having to explain myself | A2 | Must | 5 | 7 |
 
 ### E9 — Quality and operations (technical stories)
