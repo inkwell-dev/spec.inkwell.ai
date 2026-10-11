@@ -4,7 +4,7 @@
 skinparam nodesep 18
 skinparam ranksep 45
 hide circle
-hide methods
+hide empty methods
 
 class User {
   - id : UUID
@@ -16,6 +16,10 @@ class User {
   - role : Role
   - plan : Plan
   - deletedAt : Timestamp
+  + register()
+  + signIn()
+  + refresh()
+  + updateProfile()
 }
 class MagazineProfile {
   - displayName : String
@@ -23,6 +27,7 @@ class MagazineProfile {
   - websiteUrl : String
   - description : Text
   - logoUrl : String
+  + updateMagazineProfile()
 }
 class Article {
   - id : UUID
@@ -35,15 +40,20 @@ class Article {
   - visibility : Visibility
   - publishedAt : Timestamp
   - deletedAt : Timestamp
+  + create()
+  + update()
+  + publish(placement : Placement, visibility : Visibility)
+  + softDelete()
 }
 class Tag {
   - name : String
   - slug : String
 }
-class ArticleTag
 class Comment {
   - content : Text
   - deletedAt : Timestamp
+  + reply(content : Text) : Comment
+  + remove()
 }
 
 class AccountType <<Enumeration>> {
@@ -80,8 +90,7 @@ User "1" -- "0..1" MagazineProfile : extends
 User "1" -- "0..*" Article : writes
 User "1" -- "0..*" Comment : posts
 Article "1" -- "0..*" Comment : carries
-Article "1" -- "0..*" ArticleTag
-Tag "1" -- "0..*" ArticleTag
+Article "0..*" -- "0..*" Tag : is tagged with
 Comment "0..1" -- "0..*" Comment : replies to
 
 AccountType -[hidden]down- Provider

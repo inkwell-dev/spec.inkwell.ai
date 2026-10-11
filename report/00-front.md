@@ -1,11 +1,3 @@
----
-title: "Inkwell.ai — An AI-Powered Writing Marketplace Connecting Independent Writers and Magazine Publishers"
-subtitle: "End-of-Studies Project Report (Projet de Fin d'Études)"
-author: "Oussama Bejaoui"
-date: "Academic year 2025–2026"
-lang: en-GB
----
-
 ::: {.titlepage}
 
 **TEK-UP University**
@@ -14,16 +6,16 @@ lang: en-GB
 
 &nbsp;
 
-# End-of-Studies Project Report {.unnumbered .unlisted}
+**End-of-Studies Project Report**
 
 Submitted in partial fulfilment of the requirements for the degree of
 **National Engineering Diploma in Computer Science (GLSI)**
 
 &nbsp;
 
-## Inkwell.ai {.unnumbered .unlisted}
+**Inkwell.ai**
 
-### An AI-powered writing marketplace connecting independent writers and magazine publishers {.unnumbered .unlisted}
+**An AI-powered writing marketplace connecting independent writers and magazine publishers**
 
 &nbsp;
 
@@ -43,8 +35,6 @@ Academic year **2025–2026**
 
 :::
 
-\newpage
-
 # Acknowledgements {.unnumbered}
 
 I would like to express my sincere gratitude to my academic supervisor,
@@ -62,8 +52,6 @@ and support they have given me throughout my studies.
 
 Finally, I thank my family and my friends for their constant encouragement and
 patience, without which this work would not have been possible.
-
-\newpage
 
 # Abstract {.unnumbered}
 
@@ -84,12 +72,14 @@ The platform was built over nine two-week Scrum sprints grouped into four releas
 with a Next.js 16 frontend, a NestJS 11 backend and worker, PostgreSQL 16 with
 pgvector, Redis and BullMQ, MinIO object storage and nginx, all containerised with
 Docker Compose, and with Groq and Gemini models orchestrated through the Vercel AI SDK.
-The backend suite counts 792 passing tests in 51 suites.
+The backend suite counts 796 passing tests. Measured on a labelled set, retrieval
+returns a relevant passage in its top five for 89% of questions, hybrid search keeps
+every relevant article in its top ten even for paraphrased queries that defeat keyword
+search, and the publish-time moderation classifier reaches a precision of 0.93 and a
+recall of 1.00.
 
 **Keywords:** writing marketplace, AI-assisted writing, retrieval-augmented generation,
-pgvector, analytics, article licensing, Scrum, NestJS, Next.js.
-
-\newpage
+hybrid search, pgvector, analytics, article licensing, Scrum, NestJS, Next.js.
 
 # Résumé {.unnumbered}
 
@@ -113,39 +103,57 @@ La plateforme a été réalisée en neuf sprints Scrum de deux semaines, regroup
 quatre releases, avec un frontend Next.js 16, un backend et un worker NestJS 11,
 PostgreSQL 16 avec pgvector, Redis et BullMQ, le stockage objet MinIO et nginx, le tout
 conteneurisé avec Docker Compose, les modèles Groq et Gemini étant orchestrés par le
-Vercel AI SDK. La suite de tests du backend compte 792 tests réussis répartis en 51
-suites.
+Vercel AI SDK. La suite de tests du backend compte 796 tests réussis. Mesurée sur un
+jeu de données annoté, la recherche de passages renvoie un passage pertinent parmi les
+cinq premiers pour 89 % des questions, la recherche hybride conserve tous les articles
+pertinents parmi les dix premiers résultats, y compris pour des requêtes reformulées
+que la recherche par mots-clés ne trouve pas, et le classifieur de modération atteint
+une précision de 0,93 et un rappel de 1,00.
 
 **Mots-clés :** place de marché d'écriture, rédaction assistée par l'IA, génération
-augmentée par la recherche, pgvector, analytique, licence d'articles, Scrum, NestJS,
-Next.js.
+augmentée par la recherche, recherche hybride, pgvector, analytique, licence
+d'articles, Scrum, NestJS, Next.js.
 
-\newpage
+<!-- LISTS -->
 
 # List of acronyms {.unnumbered}
 
 | Acronym | Meaning |
-|---|---|
+|:----------|:----------------------------------------------------------|
 | AI | Artificial Intelligence |
 | API | Application Programming Interface |
 | CI/CD | Continuous Integration / Continuous Deployment |
+| CLS | Cumulative Layout Shift (Lighthouse metric) |
 | CRUD | Create, Read, Update, Delete |
+| DOCX | Office Open XML word-processing document format |
+| DSDM | Dynamic Systems Development Method |
 | DTO | Data Transfer Object |
+| ESN | Entreprise de Services du Numérique (IT services company) |
 | FR / NFR | Functional / Non-Functional Requirement |
 | GHCR | GitHub Container Registry |
 | HNSW | Hierarchical Navigable Small World (approximate nearest-neighbour index) |
+| HTML | HyperText Markup Language |
+| JSON | JavaScript Object Notation |
 | JWT | JSON Web Token |
+| LCP | Largest Contentful Paint (Lighthouse metric) |
 | LLM | Large Language Model |
 | MoSCoW | Must, Should, Could, Won't (prioritisation) |
+| MRR | Mean Reciprocal Rank |
+| nDCG | normalised Discounted Cumulative Gain |
+| OAuth | Open Authorization (delegated authorisation protocol) |
+| OpenAPI | OpenAPI Specification (machine-readable description of a REST API) |
 | ORM | Object-Relational Mapping |
+| PDF | Portable Document Format |
 | PFE | Projet de Fin d'Études (end-of-studies project) |
 | RAG | Retrieval-Augmented Generation |
+| REST | Representational State Transfer |
 | RRF | Reciprocal Rank Fusion |
 | S3 | Simple Storage Service (object storage protocol) |
+| SQL | Structured Query Language |
 | SSE | Server-Sent Events |
 | TLS | Transport Layer Security |
 | TTS | Text-to-Speech |
+| UI | User Interface |
 | UML | Unified Modeling Language |
 | US | User Story |
-
-\newpage
+| WCAG | Web Content Accessibility Guidelines |

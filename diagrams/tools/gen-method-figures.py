@@ -56,7 +56,7 @@ def write(name, title, cells, w, h):
 
 # ── Figure 1.1 — the Scrum framework, as practised here ──────────────────────
 c = [
-    cell("pb", "Product backlog&lt;br&gt;&lt;br&gt;72 user stories in 9 epics,&lt;br&gt;"
+    cell("pb", "Product backlog&lt;br&gt;&lt;br&gt;74 user stories in 9 epics,&lt;br&gt;"
                "ordered by MoSCoW priority,&lt;br&gt;estimated in story points",
          60, 250, 230, 150, BOX + AMBER),
     cell("plan", "Sprint planning&lt;br&gt;&lt;br&gt;pull the next slice,&lt;br&gt;set the sprint goal",
@@ -66,7 +66,7 @@ c = [
     cell("sprint", "Sprint — two weeks", 600, 100, 540, 320, GRP + GREY),
     cell("work", "Daily work&lt;br&gt;&lt;br&gt;build · test · integrate&lt;br&gt;continuously",
          640, 150, 220, 110, BOX + WHITE),
-    cell("inc", "Increment&lt;br&gt;&lt;br&gt;verified against the&lt;br&gt;phase exit criteria",
+    cell("inc", "Increment&lt;br&gt;&lt;br&gt;verified against the&lt;br&gt;definition of done",
          900, 150, 200, 110, BOX + GREEN),
     cell("review", "Sprint review", 640, 300, 220, 60, BOX + BLUE),
     cell("retro", "Retrospective", 900, 300, 200, 60, BOX + BLUE),

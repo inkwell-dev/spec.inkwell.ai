@@ -4,7 +4,7 @@
 skinparam nodesep 18
 skinparam ranksep 45
 hide circle
-hide methods
+hide empty methods
 
 class User {
   - id : UUID
@@ -14,12 +14,18 @@ class User {
   - isMarketplaceEligible : Boolean
   - marketplaceEligibleAt : Timestamp
   - marketplaceEligibleSource : EligibilitySource
+  + setPlan(plan : Plan)
+  + grantEligibility()
+  + ban()
 }
 class MagazineProfile {
   - subscriptionStatus : SubscriptionStatus
   - subscriptionExpiresAt : Timestamp
   - creditBalance : Integer
   - monthlyCreditAllowance : Integer
+  + subscribe()
+  + topUp(credits : Integer)
+  + cancel()
 }
 class Article {
   - id : UUID
@@ -27,6 +33,8 @@ class Article {
   - placement : Placement
   - visibility : Visibility
   - marketplacePrice : Integer
+  + switchToPublic()
+  + publishUnderMasthead(magazine : User)
 }
 class Purchase {
   - id : UUID
@@ -35,6 +43,8 @@ class Purchase {
   - platformFee : Integer
   - writerPayout : Integer
   - purchasedAt : Timestamp
+  + previewUnlock(article : Article)
+  + buy(article : Article)
 }
 class Transaction {
   - id : UUID
@@ -49,6 +59,7 @@ class MagazineSubscription {
   - creditsGranted : Integer
   - startedAt : Timestamp
   - expiresAt : Timestamp
+  + renew()
 }
 class EligibilityAuditLog {
   - source : EligibilitySource
@@ -62,6 +73,7 @@ class Report {
   - reason : Text
   - status : ReportStatus
   - resolvedBy : UUID
+  + resolve(action : String)
 }
 
 class PurchaseStage <<Enumeration>> {

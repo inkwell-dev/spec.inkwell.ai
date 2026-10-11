@@ -1,14 +1,22 @@
 @startuml
 ' Figure 2.2 – Class diagram: core domain
-' 14 of the 30 persisted classes, plus the enumerations they reference.
-' Audit columns (created_at, updated_at) are omitted for legibility.
-' Behaviour is not shown: the model is relational and operations live in
-' the service layer, so the classes carry no methods of their own.
+' The accounts, the articles and their social layer, with the enumerations
+' they reference. Audit columns (created_at, updated_at) are omitted.
+'
+' Operations are the domain operations each class supports, named after the
+' service methods that implement them (articles.service, comments.service,
+' auth.service, subscriptions.service, moderation.service…): the behaviour
+' lives in the service layer, the diagram shows which class it belongs to.
+'
+' Like, Repost, Save, CommentLike, Follow and Block carry nothing but the pair
+' they join and a date, so they are drawn as many-to-many associations rather
+' than classes. Each is a join table in the physical schema, with a unique
+' constraint on its pair.
 !include ../_style.puml
-skinparam nodesep 20
-skinparam ranksep 45
+skinparam nodesep 30
+skinparam ranksep 55
 hide circle
-hide methods
+hide empty methods
 
 class User {
   - id : UUID
@@ -21,6 +29,10 @@ class User {
   - isMarketplaceEligible : Boolean
   - aiTokensRemaining : Integer
   - deletedAt : Timestamp
+  + register()
+  + signIn()
+  + updateProfile()
+  + setPlan(plan : Plan)
 }
 class MagazineProfile {
   - displayName : String
@@ -29,6 +41,9 @@ class MagazineProfile {
   - creditBalance : Integer
   - monthlyCreditAllowance : Integer
   - subscriptionExpiresAt : Timestamp
+  + subscribe()
+  + topUp(credits : Integer)
+  + cancel()
 }
 class Article {
   - id : UUID
@@ -44,32 +59,33 @@ class Article {
   - wordCount : Integer
   - publishedAt : Timestamp
   - deletedAt : Timestamp
+  + update()
+  + publish(placement : Placement, visibility : Visibility)
+  + switchToPublic()
+  + softDelete()
 }
 class Tag {
   - name : String
   - slug : String
 }
-class ArticleTag
 class Comment {
   - content : Text
   - deletedAt : Timestamp
+  + reply(content : Text) : Comment
+  + remove()
 }
-class Like
-class CommentLike
-class Repost
-class Save
-class Follow
-class Block
 class Notification {
   - type : NotificationType
   - data : Json
   - isRead : Boolean
+  + markRead()
 }
 class Report {
   - targetType : ReportTargetType
   - targetId : UUID
   - reason : Text
   - status : ReportStatus
+  + resolve(action : String)
 }
 
 class AccountType <<Enumeration>> {
@@ -125,26 +141,29 @@ class ReportStatus <<Enumeration>> {
 
 User "1" -- "0..1" MagazineProfile : extends
 User "1" -- "0..*" Article : writes
-User "1" -- "0..*" Comment : posts
 User "0..1" -- "0..*" Article : publishes
-User "1" -- "0..*" Like : gives
-User "1" -- "0..*" CommentLike : gives
-User "1" -- "0..*" Repost : shares
-User "1" -- "0..*" Save : keeps
-User "1" -- "0..*" Follow : follows
-User "1" -- "0..*" Block : blocks
+User "1" -- "0..*" Comment : posts
 User "1" -- "0..*" Notification : receives
 User "0..1" -- "0..*" Report : files
 Article "1" -- "0..*" Comment : carries
-Article "1" -- "0..*" Like
-Article "1" -- "0..*" Repost
-Article "1" -- "0..*" Save
-Comment "1" -- "0..*" CommentLike
-Article "1" -- "0..*" ArticleTag
-Tag "1" -- "0..*" ArticleTag
 Comment "0..1" -- "0..*" Comment : replies to
 
+User "0..*" -- "0..*" Article : likes
+User "0..*" -- "0..*" Article : reposts
+User "0..*" -- "0..*" Article : saves
+User "0..*" -- "0..*" Comment : likes
+User "0..*" -- "0..*" User : follows
+User "0..*" -- "0..*" User : blocks
+Article "0..*" -- "0..*" Tag : is tagged with
+
 note as N1
+  likes, reposts, saves, follows, blocks and comment
+  likes are many-to-many associations: each is stored as
+  a join table holding the pair and a date, with a
+  unique constraint on the pair.
+end note
+
+note as N2
   role and plan are NULL for a magazine account,
   enforced by a CHECK constraint. They are
   orthogonal: a writer may stay on the free plan.
@@ -152,8 +171,6 @@ note as N1
   licensed article; it is NULL for everything else.
 end note
 
-' Keep the enumerations in one column to the side, as the example
-' report places them, instead of letting them widen the figure.
 AccountType -[hidden]down- Role
 Role -[hidden]down- Plan
 ArticleStatus -[hidden]down- Placement
