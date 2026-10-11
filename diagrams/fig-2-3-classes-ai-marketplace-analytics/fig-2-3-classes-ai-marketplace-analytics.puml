@@ -2,11 +2,13 @@
 ' Figure 2.3 – Class diagram: AI, marketplace and analytics
 ' The remaining 16 persisted classes and the enumerations they reference.
 ' User and Article appear as references only; they are defined in figure 2.2.
+' Operations name the service methods that implement them. The article–document
+' attachment holds only the pair and a date, so it is a many-to-many association.
 !include ../_style.puml
 skinparam nodesep 20
 skinparam ranksep 45
 hide circle
-hide methods
+hide empty methods
 
 class User
 class Article
@@ -21,12 +23,15 @@ class WriterMemory {
   - styleExamples : Json
   - vocabularyPatterns : Json
   - topics : Json
+  + extract()
 }
 class PortfolioInsight {
   - voiceSummary : Text
   - topicExpertise : Json
   - consistencyScore : Integer
   - expiresAt : Timestamp
+  + generate()
+  + getCached()
 }
 class Document {
   - title : String
@@ -37,6 +42,9 @@ class Document {
   - pageCount : Integer
   - error : Text
   - deletedAt : Timestamp
+  + register()
+  + retry()
+  + remove()
 }
 class DocumentChunk {
   - chunkIndex : Integer
@@ -44,7 +52,6 @@ class DocumentChunk {
   - content : Text
   - embedding : Vector
 }
-class ArticleDocument
 class AiInteraction {
   - actionType : AiActionType
   - tokensUsed : Integer
@@ -55,6 +62,9 @@ class Purchase {
   - creditsPaid : Integer
   - platformFee : Integer
   - writerPayout : Integer
+  + previewUnlock()
+  + buy()
+  + publish()
 }
 class Transaction {
   - type : TransactionType
@@ -66,6 +76,7 @@ class MagazineSubscription {
   - status : SubscriptionStatus
   - creditsGranted : Integer
   - expiresAt : Timestamp
+  + renew()
 }
 class EligibilityAuditLog {
   - source : EligibilitySource
@@ -82,24 +93,28 @@ class ArticleMetrics {
   - completionRate : Float
   - engagementRate : Float
   - paragraphDropoff : Json
+  + aggregate()
 }
 class WriterAudienceMetrics {
   - totalUniqueReaders : Integer
   - returningReaderRate : Float
   - topCountries : Json
   - deviceSplit : Json
+  + aggregate()
 }
 class WriterContentMetrics {
   - totalPublished : Integer
   - postingFrequency : Float
   - postingConsistency : Float
   - topTags : Json
+  + aggregate()
 }
 class WriterQualityMetrics {
   - engagementRate : Float
   - repostRate : Float
   - commentDepth : Float
   - retentionCurve : Json
+  + aggregate()
 }
 
 class PurchaseStage <<Enumeration>> {
@@ -163,8 +178,7 @@ User "1" -- "0..1" PortfolioInsight
 User "1" -- "0..*" AiInteraction
 User "1" -- "0..*" Document : owns
 Document "1" -- "0..*" DocumentChunk : is chunked into
-Document "1" -- "0..*" ArticleDocument
-Article "1" -- "0..*" ArticleDocument : is grounded in
+Article "0..*" -- "0..*" Document : is grounded in
 Article "1" -- "0..*" Purchase
 User "1" -- "0..*" Purchase : buys
 Purchase "0..1" -- "0..1" Purchase : prior preview
@@ -197,7 +211,6 @@ ArticleChunk -[hidden]down- WriterMemory
 WriterMemory -[hidden]down- PortfolioInsight
 PortfolioInsight -[hidden]down- AiInteraction
 Document -[hidden]down- DocumentChunk
-DocumentChunk -[hidden]down- ArticleDocument
 Purchase -[hidden]down- Transaction
 Transaction -[hidden]down- MagazineSubscription
 MagazineSubscription -[hidden]down- EligibilityAuditLog

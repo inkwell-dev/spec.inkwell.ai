@@ -24,67 +24,77 @@ DASH  = ("endArrow=open;endFill=0;dashed=1;html=1;edgeStyle=none;rounded=0;"
          "strokeColor=#000000;fontSize=10;")
 
 # id: (label, x, y, w, h, style)
+#
+# The actors are drawn in three groups that touch nowhere, so that no
+# generalisation is implied where none exists: the personal accounts on the
+# left (Visitor → Free reader → Premium reader, Free reader → Writer → Eligible
+# writer), the magazines at the top right, and the administrator alone at the
+# bottom right. Neither a magazine nor the administrator specialises a reader.
 nodes = {
-    "SYS": ("&lt;&lt; System &gt;&gt;", 200, 30, 1000, 860, BOX),
+    "SYS": ("&lt;&lt; System &gt;&gt;", 210, 30, 890, 900, BOX),
 
-    # actors, one ordered column
-    "A_VIS":  ("Visitor",                    50,  70, 30, 60, ACTOR),
-    "A_FREE": ("Free reader",                50, 190, 30, 60, ACTOR),
-    "A_PREM": ("Premium reader",             50, 310, 30, 60, ACTOR),
-    "A_WRIT": ("Writer",                     50, 430, 30, 60, ACTOR),
-    "A_ELIG": ("Eligible writer",            50, 550, 30, 60, ACTOR),
-    "A_MUN":  ("Magazine\n(unsubscribed)",   50, 670, 30, 60, ACTOR),
-    "A_MSUB": ("Magazine\n(subscribed)",     50, 790, 30, 60, ACTOR),
-    "A_ADM":  ("Administrator",              50, 910, 30, 60, ACTOR),
+    # personal accounts, left
+    "A_VIS":  ("Visitor",                    75, 140, 30, 60, ACTOR),
+    "A_FREE": ("Free reader",                75, 280, 30, 60, ACTOR),
+    "A_PREM": ("Premium reader",             25, 420, 30, 60, ACTOR),
+    "A_WRIT": ("Writer",                    135, 420, 30, 60, ACTOR),
+    "A_ELIG": ("Eligible writer",           135, 600, 30, 60, ACTOR),
+    # magazines, top right
+    "A_MUN":  ("Magazine\n(unsubscribed)",  1190, 90, 30, 60, ACTOR),
+    "A_MSUB": ("Magazine\n(subscribed)",    1190, 290, 30, 60, ACTOR),
+    # administrator, alone at the bottom right
+    "A_ADM":  ("Administrator",              1190, 720, 30, 60, ACTOR),
 
     # left column of use cases
-    "ACCOUNT":  ("Create an account",                        250,  60, 200, 50, UC),
-    "FEED":     ("Browse the feed and read an article",      250, 130, 200, 56, UC),
-    "SEARCH":   ("Search (lexical + semantic)",              250, 205, 200, 50, UC),
-    "INTERACT": ("Interact (like, comment, repost, save, follow, block, report)", 250, 290, 200, 80, UC),
-    "WRITE":    ("Write and publish an article",             250, 400, 200, 50, UC),
-    "LIST":     ("List on the marketplace",                  250, 480, 200, 50, UC),
-    "AI":       ("Use the AI assistant",                     250, 580, 200, 50, UC),
-    "STATS":    ("View analytics and earnings",              250, 680, 200, 50, UC),
+    "FEED":     ("Browse the feed and read an article",      250, 60, 200, 56, UC),
+    "SEARCH":   ("Search (lexical + semantic)",              250, 140, 200, 50, UC),
+    "INTERACT": ("Interact (like, comment, repost, save, follow, block, report)", 250, 255, 180, 84, UC),
+    "WRITE":    ("Write and publish an article",             250, 420, 200, 50, UC),
+    "LIST":     ("List on the marketplace",                  250, 510, 200, 50, UC),
+    "AI":       ("Use the AI assistant",                     250, 640, 200, 50, UC),
+    "STATS":    ("View analytics and earnings",              250, 352, 200, 50, UC),
 
     # centre column
-    "GOOGLE":   ("Sign in with Google",                      530, 300, 170, 50, UC),
-    "SIGNIN":   ("Sign in",                                  530, 400, 170, 50, UC),
-    "RETRIEVE": ("Retrieve passages from the writer's own corpus", 505, 570, 220, 66, UC),
-    "DOCS":     ("Ground answers in uploaded reference documents", 505, 680, 220, 66, UC),
+    "ACCOUNT":  ("Create an account",                        440, 110, 160, 50, UC),
+    "GOOGLE":   ("Sign in with Google",                      625, 110, 160, 50, UC),
+    "SIGNIN":   ("Sign in",                                  565, 260, 170, 50, UC),
+    "RETRIEVE": ("Retrieve passages from the writer's own corpus", 470, 760, 220, 66, UC),
+    "DOCS":     ("Ground answers in uploaded reference documents", 470, 520, 220, 66, UC),
 
     # right column
-    "SUBS":    ("Manage subscription and credits",           830, 300, 200, 56, UC),
-    "EVAL":    ("Evaluate a writer and read AI insights",    830, 395, 200, 60, UC),
-    "ACQUIRE": ("Acquire an article",                        830, 490, 200, 50, UC),
-    "PREVIEW": ("Unlock a preview (10% of the price)",       830, 570, 200, 56, UC),
-    "ADMIN":   ("Administer the platform",                   830, 680, 200, 50, UC),
-    "PUBLISH": ("Publish a licensed article",                830, 790, 200, 50, UC),
+    "SUBS":    ("Manage subscription and credits",           860,  60, 200, 56, UC),
+    "EVAL":    ("Evaluate a writer and read AI insights",    860, 145, 200, 60, UC),
+    "ACQUIRE": ("Acquire an article",                        860, 235, 200, 50, UC),
+    "PREVIEW": ("Unlock a preview (10% of the price)",       860, 315, 200, 56, UC),
+    "PUBLISH": ("Publish a licensed article",                860, 400, 200, 50, UC),
+    "QUEUE":   ("Review the report queue",                   860, 620, 200, 50, UC),
+    "USERS":   ("Manage users (search, plan, ban)",          860, 710, 200, 50, UC),
+    "GRANT":   ("Grant eligibility manually",                860, 800, 200, 50, UC),
 
     # external systems, outside the boundary
-    "EXT_LLM": ("Large language model provider",            1270, 395, 180, 50, EXT),
-    "EXT_EMB": ("Embedding provider",                       1270, 205, 180, 50, EXT),
+    "EXT_EMB": ("Embedding provider",                        490, 990, 180, 50, EXT),
+    "EXT_LLM": ("Large language model provider",             260, 990, 180, 50, EXT),
 
-    "NOTE": ("Placement is chosen at publish time and is one-way: a marketplace "
-             "article may become public, never the reverse.", 980, 60, 200, 110, NOTE),
 }
 
 # (source, target, style, label)
 edges = [
-    # actor generalisation — specific points up to general
+    # actor generalisation — specific points up to general, within a group only
     ("A_FREE", "A_VIS",  GEN, ""), ("A_PREM", "A_FREE", GEN, ""),
     ("A_WRIT", "A_FREE", GEN, ""), ("A_ELIG", "A_WRIT", GEN, ""),
     ("A_MSUB", "A_MUN",  GEN, ""),
 
     # associations
-    ("A_VIS", "ACCOUNT", ASSOC, ""), ("A_VIS", "FEED", ASSOC, ""),
-    ("A_VIS", "SEARCH", ASSOC, ""), ("A_VIS", "SIGNIN", ASSOC, ""),
+    ("A_VIS", "FEED", ASSOC, ""), ("A_VIS", "SEARCH", ASSOC, ""),
+    ("A_VIS", "SIGNIN", ASSOC, ""),
     ("A_FREE", "INTERACT", ASSOC, ""), ("A_PREM", "AI", ASSOC, ""),
     ("A_WRIT", "WRITE", ASSOC, ""), ("A_WRIT", "STATS", ASSOC, ""),
-    ("A_ELIG", "LIST", ASSOC, ""), ("A_MUN", "SUBS", ASSOC, ""),
+    ("A_ELIG", "LIST", ASSOC, ""),
+    ("A_MUN", "SUBS", ASSOC, ""),
     ("A_MSUB", "EVAL", ASSOC, ""), ("A_MSUB", "ACQUIRE", ASSOC, ""),
     ("A_MSUB", "PUBLISH", ASSOC, ""),
-    ("A_ADM", "ADMIN", ASSOC, ""),
+    ("A_ADM", "QUEUE", ASSOC, ""), ("A_ADM", "USERS", ASSOC, ""),
+    ("A_ADM", "GRANT", ASSOC, ""),
 
     # every authenticated use case includes Sign in — drawn, not implied
     ("INTERACT", "SIGNIN", DASH, "\u00abinclude\u00bb"),
@@ -95,9 +105,13 @@ edges = [
     ("EVAL",     "SIGNIN", DASH, "\u00abinclude\u00bb"),
     ("ACQUIRE",  "SIGNIN", DASH, "\u00abinclude\u00bb"),
     ("PUBLISH",  "SIGNIN", DASH, "\u00abinclude\u00bb"),
-    ("ADMIN",    "SIGNIN", DASH, "\u00abinclude\u00bb"),
+    ("QUEUE",    "SIGNIN", DASH, "\u00abinclude\u00bb"),
+    ("USERS",    "SIGNIN", DASH, "\u00abinclude\u00bb"),
+    ("GRANT",    "SIGNIN", DASH, "\u00abinclude\u00bb"),
 
-    # extensions — optional behaviour on a base use case
+    # extensions — optional behaviour on a base use case. A visitor without an
+    # account reaches registration from the sign-in page, as Google sign-in.
+    ("ACCOUNT", "SIGNIN",  DASH, "\u00abextend\u00bb"),
     ("GOOGLE",  "SIGNIN",  DASH, "\u00abextend\u00bb"),
     ("LIST",    "WRITE",   DASH, "\u00abextend\u00bb"),
     ("PREVIEW", "ACQUIRE", DASH, "\u00abextend\u00bb"),
@@ -107,8 +121,8 @@ edges = [
     ("AI", "RETRIEVE", DASH, "\u00abinclude\u00bb"),
 
     # external systems
-    ("EVAL", "EXT_LLM", ASSOC, ""),
-    ("SEARCH", "EXT_EMB", ASSOC, ""),
+    ("RETRIEVE", "EXT_EMB", ASSOC, ""),
+    ("AI", "EXT_LLM", ASSOC, ""),
 ]
 
 cells = []

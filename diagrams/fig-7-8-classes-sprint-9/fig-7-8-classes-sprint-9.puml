@@ -1,12 +1,13 @@
 @startuml
 ' Figure 7.8 – Class diagram, Sprint 9: the document library
-' Three new tables (FR-84, FR-85) and the DocumentStatus enumeration.
+' Three new tables (FR-84, FR-85) and the DocumentStatus enumeration; the
+' article–document attachment is a many-to-many association (a join table).
 ' Source: src/database/schema/documents.ts.
 !include ../_style.puml
 skinparam nodesep 18
 skinparam ranksep 45
 hide circle
-hide methods
+hide empty methods
 
 class User {
   - id : UUID
@@ -28,15 +29,16 @@ class Document {
   - error : Text
   - createdAt : Timestamp
   - deletedAt : Timestamp
+  + register()
+  + retry()
+  + remove()
+  + fileUrl() : String
 }
 class DocumentChunk {
   - chunkIndex : Integer
   - page : Integer
   - content : Text
   - embedding : Vector
-}
-class ArticleDocument {
-  - createdAt : Timestamp
 }
 
 class DocumentStatus <<Enumeration>> {
@@ -48,8 +50,7 @@ class DocumentStatus <<Enumeration>> {
 
 User "1" -- "0..20" Document : owns
 Document "1" -- "0..*" DocumentChunk : is chunked into
-Document "1" -- "0..*" ArticleDocument
-Article "1" -- "0..*" ArticleDocument : is grounded in
+Article "0..*" -- "0..*" Document : is grounded in
 
 note as N1
   pending → extracting → ready, or failed with a

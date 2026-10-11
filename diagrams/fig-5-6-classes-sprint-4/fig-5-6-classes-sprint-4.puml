@@ -4,7 +4,7 @@
 skinparam nodesep 18
 skinparam ranksep 45
 hide circle
-hide methods
+hide empty methods
 
 class User {
   - id : UUID
@@ -17,12 +17,15 @@ class Article {
   - contentSearch : TsVector
   - status : ArticleStatus
   - publishedAt : Timestamp
+  + publish(placement : Placement, visibility : Visibility)
 }
 class ArticleChunk {
   - id : UUID
   - chunkIndex : Integer
   - content : Text
   - embedding : Vector
+  + embedArticle(article : Article)
+  + removeChunks(article : Article)
 }
 class WriterMemory {
   - tonePreferences : Json
@@ -30,6 +33,7 @@ class WriterMemory {
   - vocabularyPatterns : Json
   - topics : Json
   - updatedAt : Timestamp
+  + extract()
 }
 class PortfolioInsight {
   - voiceSummary : Text
@@ -39,6 +43,8 @@ class PortfolioInsight {
   - strengthsGaps : Text
   - generatedAt : Timestamp
   - expiresAt : Timestamp
+  + generate()
+  + getCached()
 }
 class AiInteraction {
   - actionType : AiActionType

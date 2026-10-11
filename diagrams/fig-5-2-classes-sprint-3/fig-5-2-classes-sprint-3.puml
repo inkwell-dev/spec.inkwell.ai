@@ -4,7 +4,7 @@
 skinparam nodesep 18
 skinparam ranksep 45
 hide circle
-hide methods
+hide empty methods
 
 class User {
   - id : UUID
@@ -15,17 +15,17 @@ class Article {
   - title : String
   - publishedAt : Timestamp
 }
-class Like
 class Comment {
   - content : Text
   - deletedAt : Timestamp
+  + reply(content : Text) : Comment
+  + remove()
 }
-class Repost
-class Follow
 class Notification {
   - type : NotificationType
   - data : Json
   - isRead : Boolean
+  + markRead()
 }
 class AnalyticsEvent {
   - eventType : AnalyticsEventType
@@ -38,24 +38,28 @@ class ArticleMetrics {
   - completionRate : Float
   - engagementRate : Float
   - paragraphDropoff : Json
+  + aggregate()
 }
 class WriterAudienceMetrics {
   - totalUniqueReaders : Integer
   - returningReaderRate : Float
   - topCountries : Json
   - deviceSplit : Json
+  + aggregate()
 }
 class WriterContentMetrics {
   - totalPublished : Integer
   - postingFrequency : Float
   - postingConsistency : Float
   - topTags : Json
+  + aggregate()
 }
 class WriterQualityMetrics {
   - engagementRate : Float
   - repostRate : Float
   - commentDepth : Float
   - retentionCurve : Json
+  + aggregate()
 }
 
 class NotificationType <<Enumeration>> {
@@ -74,19 +78,23 @@ class AnalyticsEventType <<Enumeration>> {
   repost
 }
 
-User "1" -- "0..*" Like
-User "1" -- "0..*" Comment
-User "1" -- "0..*" Repost
-User "1" -- "0..*" Follow
+User "0..*" -- "0..*" Article : likes
+User "1" -- "0..*" Comment : posts
+User "0..*" -- "0..*" Article : reposts
+User "0..*" -- "0..*" User : follows
 User "1" -- "0..*" Notification : receives
-Article "1" -- "0..*" Like
-Article "1" -- "0..*" Comment
-Article "1" -- "0..*" Repost
+Article "1" -- "0..*" Comment : carries
 Article "1" -- "0..*" AnalyticsEvent
 Article "1" -- "0..1" ArticleMetrics : is rolled up into
 User "1" -- "0..1" WriterAudienceMetrics
 User "1" -- "0..1" WriterContentMetrics
 User "1" -- "0..1" WriterQualityMetrics
+
+note as N0
+  likes, reposts and follows hold only the pair and a
+  date: many-to-many associations, each stored as a
+  join table with a unique constraint on the pair.
+end note
 
 note as N1
   paragraphDropoff, topCountries and deviceSplit are
