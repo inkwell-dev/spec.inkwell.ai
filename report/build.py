@@ -187,7 +187,7 @@ def images(text: str, flavour: str) -> str:
         if not re.search(r'\bwidth=', attrs):
             attrs += ' width=80%' if 'figures/screens/' in path else ' width=100%'
         if not re.search(r'\bheight=', attrs):
-            attrs += ' height=58%' if 'figures/screens/' in path else ' height=72%'
+            attrs += ' height=54%' if 'figures/screens/' in path else ' height=72%'
         return f'![{caption}]({image_for(path, flavour)}){{{attrs.strip()}}}'
     return re.sub(r'!\[([^\]]*)\]\(([^)]+)\)(?:\{([^}]*)\})?', fig, text)
 
@@ -246,7 +246,7 @@ for flavour in ('latex', 'docx'):
     lists = LISTS_LATEX if flavour == 'latex' else LISTS_DOCX
     f = f.replace('<!-- LISTS -->', lists)
     main = '```{=latex}\n\\mainmatter\n```\n\n' if flavour == 'latex' else ''
-    appendix = '```{=latex}\n\\appendix\n```\n\n' if flavour == 'latex' else ''
+    appendix = '```{=latex}\n\\appendix\n\\AtBeginEnvironment{longtable}{\\footnotesize}\n```\n\n' if flavour == 'latex' else ''
     start = '```{=latex}\n\\frontmatter\n```\n\n' if flavour == 'latex' else ''
     doc = start + f + '\n\n' + main + body + '\n\n' + refs + '\n\n' + appendix + annexes
     doc = images(doc, flavour)
