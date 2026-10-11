@@ -1,23 +1,25 @@
-# Chapter 3 — Working environment and architecture
+# Working environment and architecture {#sec:ch2}
 
-## Introduction
+## Introduction {.unnumbered}
 
 Before the release chapters, this chapter describes the environment the platform was
-built in: the hardware and software used, the technological choices and their
-justification, the work that preceded the feature sprints, and the architecture of the
-system — its logical decomposition on the frontend and the backend, its physical
-deployment and its delivery pipeline.
+built in: the hardware and software used, the work that preceded the feature sprints,
+the technological choices compared with their alternatives, the main parameters of
+the system and their justification, and the architecture of the system — its logical
+decomposition on the frontend and the backend, its physical deployment and its
+delivery pipeline.
 
-## 3.1 Working environment
+## Working environment
 
-### 3.1.1 Hardware environment
+### Hardware environment
 
-The project was developed on a single workstation, described in Table 3.1.
-
-**Table 3.1 – Hardware environment**
+The project was developed and every measurement of Chapter 7 was taken on a single
+workstation, described in @tbl:hardware. A mid-range laptop is a deliberate baseline:
+the whole stack of eight containers runs on it, so the performance figures reported
+later are those of commodity hardware, not of a server.
 
 | Component | Specification |
-|---|---|
+|:--------------------|:----------------------------------|
 | Machine | Lenovo ThinkPad |
 | Processor | Intel Core i7-1355U |
 | Memory | 24 GB RAM |
@@ -25,21 +27,28 @@ The project was developed on a single workstation, described in Table 3.1.
 | Storage | 512 GB NVMe SSD |
 | Operating system | Ubuntu Linux |
 
-### 3.1.2 Software environment
+: Hardware environment {#tbl:hardware}
 
-**Table 3.2 – Software tools**
+### Software environment
+
+@tbl:software lists the tools used outside the application code itself. They share a
+principle: every artefact — code, diagrams, this report — is kept as text under
+version control, and everything that runs, runs in a container.
 
 | Tool | Use |
-|---|---|
+|:----------------------------|:----------------------------------------------------|
 | JetBrains IDE | code editor |
 | Git and GitHub | version control, pull requests, continuous integration (GitHub Actions) and container registry (GHCR) |
-| Docker and Docker Compose | containers for every service, in development and in production |
+| Docker and Docker Compose | containers for every service, in development and in production [@composedocs] |
 | Figma | design system and screen design |
 | PlantUML and draw.io | UML and architecture diagrams, kept as versioned sources |
-| Swagger UI | exploring the REST API through the OpenAPI documentation the backend generates |
-| Playwright | end-to-end tests and the capture of this report's screenshots |
+| Swagger UI | exploring the REST API through the OpenAPI document the backend generates |
+| Playwright | end-to-end tests and the capture of this report's screenshots [@playwrightdocs] |
+| Pandoc and LuaLaTeX | assembling and typesetting this report from its Markdown sources |
 
-### 3.1.3 Foundation and design track
+: Software tools {#tbl:software}
+
+### Foundation and design track
 
 Two blocks of work preceded the feature sprints and are presented here rather than as
 sprints, because neither delivers a user-facing increment.
@@ -54,128 +63,195 @@ sprints, because neither delivers a user-facing increment.
   1280–1440 px for desktop**, 58 screens — then an audit of the screens against the
   specification. The release chapters implement these designs.
 
-### 3.1.4 Repository organisation
+### Repository organisation
 
 The source code lives in four Git repositories. `docker.inkwell.ai` is the
 superproject: it holds the Compose files, the nginx configuration, the deployment
 workflow and the developer Makefile, and it carries the three others as **Git
 submodules** — `backend.inkwell.ai`, `frontend.inkwell.ai`, and `spec.inkwell.ai`, which
-holds the specifications, the diagrams and this report's figures. A commit of the
-superproject therefore identifies one exact, deployable revision of the whole system.
+holds the specifications, the diagrams and this report. A commit of the superproject
+therefore identifies one exact, deployable revision of the whole system.
 
-## 3.2 Technological choices
+## Technological choices {#sec:tech}
 
-### 3.2.1 Frontend
+Each choice below is compared with the alternatives that were considered and the
+criteria that decided between them, with a source for every claim that is not a
+property of the project itself.
 
-**Table 3.3 – Frontend technologies**
+### Frontend
 
-| Technology | Role | Why it was chosen |
-|---|---|---|
-| **Next.js 16** (App Router) with **React 19** | web framework | server rendering for public articles and search engines, file-system routing, a request proxy for route protection |
-| **TypeScript** (strict) | language | one typed language across frontend and backend |
-| **Tailwind CSS 4** and accessible headless primitives | styling and components | implements the Figma design tokens directly; accessible dialogs, menus and tabs |
-| **TipTap 3** | rich-text editor | ProseMirror-based, stores the document as JSON, extensible with the AI write range and inline actions |
-| **TanStack Query 5** and **Zustand 5** | server state and client state | caching, optimistic updates and invalidation for API data; small stores for UI state |
-| **Vercel AI SDK** (React bindings) | assistant client | consumes the typed UI-message stream of the assistant turn |
-| **Axios** | HTTP client | interceptors implement the silent token refresh |
+@tbl:tech-frontend gives the frontend stack. Its central decision is the web framework:
+the platform's public pages — the feed, articles, profiles — must be rendered on the
+server so that search engines and link previews see their content, while the editor
+and the assistant are interactive applications.
 
-### 3.2.2 Backend
+| Choice | Alternatives considered | Deciding criteria |
+|:-------------------------|:----------------------|:------------------------------------------|
+| **Next.js 16** (App Router) with **React 19** | Remix, Nuxt (Vue), a client-only React application | server rendering per route for public pages and a request proxy for protected routes, in the most used React framework [@nextjsdocs; @stateofjs2024]; a client-only application would serve empty HTML to search engines |
+| **TypeScript** (strict) | JavaScript | one typed language from the database schema to the browser; the API client types are generated from the backend (NFR-30) |
+| **Tailwind CSS 4** with accessible headless primitives | CSS modules, a component library such as MUI | the Figma tokens map directly to utility classes; headless primitives give accessible dialogs and menus without imposing a visual style |
+| **TipTap 3** | Lexical, Slate, Quill | built on ProseMirror, stores the document as JSON, and accepts custom extensions — the protected range the assistant writes into needs one [@tiptapdocs] |
+| **TanStack Query 5** and **Zustand 5** | Redux Toolkit | server state (caching, invalidation, optimistic updates) and client state handled separately, with far less code than a single global store |
+| **Vercel AI SDK** (React bindings) | hand-written stream parsing | consumes the assistant's typed stream of text, status and write parts [@aisdkdocs] |
 
-**Table 3.4 – Backend technologies**
+: Frontend technologies compared with their alternatives {#tbl:tech-frontend}
 
-| Technology | Role | Why it was chosen |
-|---|---|---|
-| **NestJS 11** | API and worker framework | modular structure, dependency injection, guards and interceptors, OpenAPI generation |
-| **Drizzle ORM** | data access and migrations | type-safe SQL close to PostgreSQL, explicit migrations, no hidden queries |
-| **PostgreSQL 16 + pgvector** | single data store | relational data, full-text search (`tsvector`) and vector search (HNSW) in one database and one transaction |
-| **Redis 7 + BullMQ** | queues and scheduled jobs | retries with back-off, repeatable jobs, a separate worker process |
-| **MinIO** | object storage (S3 API) | images and private documents, uploaded by the browser through presigned URLs |
-| **Vercel AI SDK** | AI orchestration | one interface over several providers, streaming, tool calls and typed UI streams |
-| **Passport (JWT, Google OAuth 2.0)** and **bcrypt** | authentication | standard strategies; password hashing with cost factor 12 |
+### Backend
 
-### 3.2.3 Artificial-intelligence services
+@tbl:tech-backend gives the backend stack. Its two structuring decisions are the
+framework, which must host both an HTTP API and a background worker, and the data
+store, which must hold relational data, full-text search and vector search.
 
-**Table 3.5 – AI models and their use**
+| Choice | Alternatives considered | Deciding criteria |
+|:-------------------------|:----------------------|:------------------------------------------|
+| **NestJS 11** | Express or Fastify alone | modules, dependency injection, guards and OpenAPI generation built in [@nestjsdocs]; the same modules serve the API and the worker. Fastify is faster in raw benchmarks [@techempower2025], but the API's latency is dominated by the database and the model calls (@sec:eval-perf), not by the HTTP layer |
+| **PostgreSQL 16 + pgvector** | PostgreSQL with a separate vector database (Qdrant, Pinecone) | relational data, full-text search and vector search in one database [@pgvector2026; @postgres16fts]: an article and its embeddings change in one transaction and are never out of sync, and there is one service less to run. HNSW, the index pgvector offers, is among the best recall-per-latency trade-offs in public benchmarks [@aumuller2020annbench] |
+| **Drizzle ORM** | Prisma, TypeORM | SQL-shaped, type-safe queries with explicit migrations [@drizzledocs]; the purchase transaction needs `SELECT … FOR UPDATE` and the search needs `ts_rank` and vector operators, which Drizzle writes directly |
+| **Redis 7 + BullMQ** | RabbitMQ, PostgreSQL-based queues | repeatable jobs, priorities and a separate worker process on one Redis instance [@bullmqdocs]; Redis also carries the notification fan-out |
+| **MinIO** | storing files in PostgreSQL, a cloud bucket | the S3 API, so the same presigned-upload code runs against a cloud bucket in production; files never pass through the API |
+| **Passport** (JWT, Google OAuth 2.0) and **bcrypt** | an external identity provider | standard strategies [@rfc7519; @rfc6749] with the session data kept in the platform's own database |
 
-| Use | Provider and model |
-|---|---|
-| Chat, writing, inline actions, portfolio insights, writer memory | Groq — `gpt-oss-120b`, falling back to `gpt-oss-20b`, then Google `gemini-3.5-flash` |
-| Embeddings (articles, documents, queries) | Google `gemini-embedding-001`, 1,536 dimensions |
-| Speech-to-text (voice prompt) | Groq — `whisper-large-v3-turbo` |
-| Text-to-speech (replies read aloud) | Google `gemini-2.5-flash-preview-tts` |
-| Content moderation at publish time | Groq classifier model |
+: Backend technologies compared with their alternatives {#tbl:tech-backend}
+
+### Artificial-intelligence services
+
+@tbl:tech-ai lists the models and why each was chosen. Two constraints shaped all of
+them: the project runs on providers' free tiers, and a model that is slow to *start*
+answering makes the assistant feel broken, whatever its quality.
+
+| Use | Model | Alternatives considered | Deciding criteria |
+|:--------------------|:-----------------------|:--------------------|:-----------------------------------|
+| Chat, writing, inline actions, insights, writer memory | Groq `gpt-oss-120b`, then `gpt-oss-20b`, then Google `gemini-3.5-flash` | OpenAI API, a single provider | Groq serves open-weight models on dedicated inference hardware with a generous free tier [@groqdocs]; a second provider makes an outage degrade the assistant only (NFR-24) |
+| Embeddings | Google `gemini-embedding-001`, 1,536 dimensions | OpenAI embeddings, a local model | separate task types for queries and documents [@geminiembeddings]; its free tier covered the corpus |
+| Speech-to-text | Groq `whisper-large-v3-turbo` | browser speech recognition | same provider as the chat; multilingual; works in every browser |
+| Text-to-speech | Google `gemini-2.5-flash-preview-tts` | browser speech synthesis | a natural voice, identical in every browser |
+| Moderation at publish | Groq `gpt-oss-20b` | a dedicated safety model (`gpt-oss-safeguard-20b`) | measured: precision 0.93 and recall 1.00 on a labelled set, while the dedicated model exceeded the time budget (@sec:eval-moderation) |
+
+: AI models, their alternatives and the reasons for the choice {#tbl:tech-ai}
 
 The chain of chat models is what makes a provider outage degrade the assistant only:
 the first chunk of a response is pulled before anything is sent to the browser, so a
-refusal from one model can still be answered by the next.
+refusal from one model can still be answered by the next. The moderation classifier is
+the one choice settled by measurement rather than by documentation; Chapter 7 reports
+the measurement.
 
-### 3.2.4 Infrastructure and quality
+### Infrastructure and quality
 
 **Docker Compose** runs eight services — nginx, web, api, worker, a one-shot migration
 service, PostgreSQL, Redis and MinIO. **nginx** terminates TLS and routes traffic.
 **GitHub Actions** runs the quality gates and builds the images; **GHCR** stores them.
 **Jest** tests the backend against a real PostgreSQL database, **Playwright** drives a
 real browser end to end, and **Sentry** captures errors in the four runtimes.
+Kubernetes was considered and rejected: a single host with Compose is enough for the
+expected load, and the containers are already stateless (NFR-26) should the platform
+ever need an orchestrator.
 
-## 3.3 Logical architecture
+## Main parameters and their justification {#sec:parameters}
 
-### 3.3.1 Frontend
+The behaviour of the platform depends on a few numbers. @tbl:parameters gives each,
+with its value and the reason for it — a source, a measurement, or a product decision
+stated as such.
 
-Figure 3.1 shows the logical architecture of the frontend. The **routes** (28 pages)
-compose **feature modules** (18, among them the editor, the assistant, documents,
-saves, reposts, the marketplace and the evaluation report). A **state and data** layer
-holds the query cache, the client stores, the HTTP interceptors that refresh an expired
-access token and retry the request, and the analytics tracker. A **request proxy**
-protects private routes before a page renders. Two channels bypass the REST API: an
-**SSE client** for live notifications, and **direct uploads** from the browser to
-object storage through presigned URLs.
+| Parameter | Value | Justification |
+|:----------------------|:--------------------|:--------------------------------------------|
+| Passages retrieved per question | 5 | enough context for an answer while keeping the prompt near 2,000 tokens (NFR-13) |
+| Similarity floor for retrieval and search | 0.60 | measured: relevant passages score 0.66–0.84 and off-topic ones 0.52–0.66 (@sec:eval-rag) |
+| Chunk length | 120 – 1,200 characters, prefixed by the nearest heading | a paragraph is the unit of meaning; shorter fragments embed poorly, longer ones mix topics |
+| Fusion constant of RRF | k = 60 | the value recommended by the method's authors [@cormack2009rrf]; confirmed in @sec:eval-search |
+| HNSW index | m = 16, ef_construction = 64 | pgvector's defaults, a balanced recall–build-time setting [@pgvector2026; @malkov2018hnsw] |
+| Embedding width | 1,536 | supported output width of the model [@geminiembeddings]; fixed by the schema |
+| Premium AI allowance | 20,000 tokens a day | product decision: about twenty long replies or sixty inline edits, a working day |
+| Voice billing | 200 tokens per started minute, at most 5 minutes | product decision, so that dictation consumes the same allowance as typing |
+| Preview price | 10% of the article's price | product decision, credited towards the purchase |
+| Platform fee | 20% of each stage, rounded down | product decision; computed in integer basis points so that no amount is ever a float |
+| Monthly credits | 500 per subscription | product decision; unspent credits roll over |
+| Eligibility thresholds | 5,000 unique readers and 1,000 reactions | product decision: high enough that eligibility signals a real audience |
+| Token lifetimes | 15 minutes (access), 7 days (refresh) | a short access token bounds how long a ban or a stolen token stays valid (NFR-09) |
+| Rate limits | 60/min, 10/min on sign-in, 5/min on registration | enough for a reader, too few for password guessing |
+| Password hashing | bcrypt, cost 12 | about 250 ms per hash: slow enough to make an offline attack expensive [@owasppasswords] |
+| Presigned upload lifetime | 10 minutes | long enough for a slow mobile upload, short enough that a leaked URL is stale |
+| Document limits | 10 MB, 200 pages, 20 per writer | bound the cost of ingestion and the size of the library |
 
-![Figure 3.1 – Logical frontend architecture](../diagrams/fig-3-1-architecture-frontend/fig-3-1-architecture-frontend.png){width=100%}
+: Main parameters of the system and their justification {#tbl:parameters}
 
-### 3.3.2 Backend
+The table shows three kinds of justification. The retrieval parameters are set by
+measurement or by the literature, and Chapter 7 checks them. The security parameters
+follow published guidance. The economic parameters — prices, fee, credits, thresholds
+— are product decisions: they have no "correct" value, and they are named constants in
+one place in the code precisely so that they can be changed as a decision rather than
+discovered in a calculation.
 
-Figure 3.2 shows the backend. The **API** is a modular NestJS application: a global
-rate-limiting guard runs on every route, then the guards composed once by the `@Auth()`
-decorator — authentication, role, plan, account type, subscription and AI quota. The
-feature modules cover authentication and users, articles, social interactions, AI,
-analytics, the marketplace, search and discovery, moderation and uploads, and
-documents. The **worker** runs from the same image with a second entry point and
-consumes six queues: `embeddings` (chunking and embedding articles, extracting writer
-memory), `analytics` (article and writer rollups), `marketplace` (eligibility and
-subscription renewal), `ai-tokens` (the nightly allowance reset), `documents`
-(extracting, chunking and embedding uploaded documents) and `ai-models` (a daily check
-that every model still answers).
+## Logical architecture
 
-![Figure 3.2 – Logical backend architecture](../diagrams/fig-3-2-architecture-backend/fig-3-2-architecture-backend.png){width=100%}
+### Frontend
 
-## 3.4 Physical architecture
+@fig:arch-frontend shows the logical architecture of the frontend, organised in layers
+from the routes down to the network.
 
-Figure 3.3 shows the deployment. All eight services run under Docker Compose on one
-host. **nginx is the only service published**, on ports 80 and 443: it terminates TLS,
+![Logical frontend architecture](../diagrams/fig-3-1-architecture-frontend/fig-3-1-architecture-frontend.png){#fig:arch-frontend}
+
+The **routes** (28 pages) compose **feature modules** (18, among them the editor, the
+assistant, documents, the marketplace and the evaluation report). A **state and data**
+layer holds the query cache, the client stores, the HTTP interceptors that refresh an
+expired access token and retry the request, and the analytics tracker. A **request
+proxy** protects private routes before a page renders. Two channels bypass the REST
+API: an **SSE client** for live notifications, and **direct uploads** from the browser
+to object storage. The figure shows that no feature module talks to the network
+directly: they go through the data layer, which is why token refresh and error
+handling are written once.
+
+### Backend
+
+@fig:arch-backend shows the backend, which runs as two processes from the same image.
+
+![Logical backend architecture](../diagrams/fig-3-2-architecture-backend/fig-3-2-architecture-backend.png){#fig:arch-backend}
+
+The **API** is a modular NestJS application: a global rate-limiting guard runs on every
+route, then the guards composed once by the `@Auth()` decorator — authentication, role,
+plan, account type, subscription and AI quota. The feature modules cover
+authentication and users, articles, social interactions, AI, analytics, the
+marketplace, search, moderation and uploads, and documents. The **worker** consumes six
+queues: `embeddings` (chunking and embedding articles, extracting writer memory),
+`analytics` (article and writer rollups), `marketplace` (eligibility and subscription
+renewal), `ai-tokens` (the nightly allowance reset), `documents` (ingesting uploaded
+documents) and `ai-models` (a daily check that every model still answers). The figure
+makes the split visible: everything slow or scheduled lives in the worker, so the API's
+response time never includes a model call made on behalf of a background task
+(NFR-27).
+
+## Physical architecture
+
+@fig:arch-physical shows the deployment of the eight services on one host.
+
+![Physical architecture](../diagrams/fig-3-3-architecture-physical/fig-3-3-architecture-physical.png){#fig:arch-physical}
+
+**nginx is the only service published**, on ports 80 and 443: it terminates TLS,
 proxies `/` to the Next.js server and `/api` to the NestJS API, keeps server-sent
-events unbuffered, and proxies the public image bucket at `/storage`. Private
-documents are never served through that path; they are read through the API, which
-checks ownership. The datastores are reachable only from inside the Compose network.
+events unbuffered, and serves the public image bucket at `/storage`. Private documents
+never take that path; they are read through the API, which checks ownership. The
+datastores are reachable only from inside the Compose network. The figure therefore
+shows a single attack surface — one proxy — and a single place where TLS, buffering
+and timeouts are configured.
 
-![Figure 3.3 – Physical architecture](../diagrams/fig-3-3-architecture-physical/fig-3-3-architecture-physical.png){width=100%}
+## Continuous integration and delivery
 
-## 3.5 Continuous integration and delivery
+@fig:arch-cicd shows the pipeline from a push to a running service.
 
-Figure 3.4 shows the pipeline. A push to `main` on either application repository runs
-the quality gates — install, lint with zero warnings, type-check, the 792 backend
-tests, a schema-drift check — then builds a multi-stage image and pushes it to GHCR,
-tagged both `latest` and with the commit hash. A repository dispatch then triggers the
-deployment workflow of the superproject, which pulls the images on the server, runs
-the migrations (which must succeed before the API and worker start), restarts the
-services, verifies the health and readiness endpoints and reloads nginx.
+![CI/CD pipeline](../diagrams/fig-3-4-architecture-cicd/fig-3-4-architecture-cicd.png){#fig:arch-cicd}
 
-![Figure 3.4 – CI/CD pipeline](../diagrams/fig-3-4-architecture-cicd/fig-3-4-architecture-cicd.png){width=100%}
+A push to `main` on either application repository runs the quality gates — install,
+lint with zero warnings, type-check, the backend tests, a schema-drift check — then
+builds a multi-stage image and pushes it to GHCR, tagged both `latest` and with the
+commit hash. A repository dispatch then triggers the deployment workflow of the
+superproject, which pulls the images on the server, runs the migrations (which must
+succeed before the API and worker start), restarts the services, verifies the health
+and readiness endpoints and reloads nginx. The pipeline guarantees that no image
+reaches the registry without passing the gates, and the commit-hash tag means any
+deployed version can be traced to its source and redeployed.
 
-## Conclusion
+## Conclusion {.unnumbered}
 
-This chapter presented the working environment, justified the technological choices
-and described the logical and physical architecture of Inkwell.ai and its delivery
-pipeline. The following chapters present the four releases, starting with the
-functional foundation.
-
-\newpage
+This chapter presented the working environment, compared the technological choices
+with their alternatives, justified the main parameters of the system, and described
+its logical and physical architecture and its delivery pipeline. The following
+chapters present the four releases, starting with the functional foundation.

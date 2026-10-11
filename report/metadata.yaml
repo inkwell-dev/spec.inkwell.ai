@@ -1,0 +1,31 @@
+title-meta: "Inkwell.ai — An AI-Powered Writing Marketplace Connecting Independent Writers and Magazine Publishers"
+author-meta: "Oussama Bejaoui"
+lang: en-GB
+documentclass: book
+classoption:
+  - oneside
+  - a4paper
+  - 11pt
+  - openany
+geometry:
+  - top=22mm
+  - bottom=22mm
+  - left=25mm
+  - right=20mm
+  - headheight=14pt
+fontsize: 11pt
+link-citations: true
+# pandoc-crossref
+chapters: true
+chaptersDepth: 1
+figPrefix: [Figure, Figures]
+tblPrefix: [Table, Tables]
+secPrefix: [Section, Sections]
+figureTitle: Figure
+tableTitle: Table
+titleDelim: " – "
+lofTitle: List of figures
+lotTitle: List of tables
+linkReferences: true
+nameInLink: true
+autoSectionLabels: false
