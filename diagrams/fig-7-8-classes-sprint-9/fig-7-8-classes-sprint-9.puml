@@ -57,17 +57,6 @@ User "1" -- "0..20" Document : owns
 Document "1" -- "0..*" DocumentChunk : is chunked into
 Article "0..*" -- "0..*" Document : is grounded in
 
-note as N1
-  pending → extracting → ready, or failed with a
-  writer-readable reason in error. Nothing moves
-  backwards except a retry, which puts a failed
-  document back to pending.
-end note
-
-note as N2
-  Each chunk keeps the page it came from, which is
-  what a citation [Title, p. N] points at. Deleting
-  a document removes its chunks and attachments
-  with it (ON DELETE CASCADE).
-end note
+' Enumerations underneath; the notes are in the report's text.
+DocumentChunk -[hidden]-- DocumentStatus
 @enduml

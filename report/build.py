@@ -187,7 +187,7 @@ def images(text: str, flavour: str) -> str:
         if not re.search(r'\bwidth=', attrs):
             attrs += ' width=80%' if 'figures/screens/' in path else ' width=100%'
         if not re.search(r'\bheight=', attrs):
-            attrs += ' height=54%' if 'figures/screens/' in path else ' height=72%'
+            attrs += ' height=50%' if 'figures/screens/' in path else ' height=72%'
         return f'![{caption}]({image_for(path, flavour)}){{{attrs.strip()}}}'
     return re.sub(r'!\[([^\]]*)\]\(([^)]+)\)(?:\{([^}]*)\})?', fig, text)
 
@@ -227,7 +227,7 @@ Host organisation: & \textbf{Intuitiv Group} \\
 \end{titlepage}
 ```'''
 
-LISTS_LATEX = '```{=latex}\n\\tableofcontents\n\\listoffigures\n\\listoftables\n```\n'
+LISTS_LATEX = '```{=latex}\n{\\setstretch{1.0}\\tableofcontents\\listoffigures\\listoftables}\n```\n'
 LISTS_DOCX = ('# Table of contents {.unnumbered}\n\n```{=openxml}\n'
               '<w:p><w:r><w:fldChar w:fldCharType="begin" w:dirty="true"/>'
               '<w:instrText xml:space="preserve"> TOC \\o "1-3" \\h \\z \\u </w:instrText>'

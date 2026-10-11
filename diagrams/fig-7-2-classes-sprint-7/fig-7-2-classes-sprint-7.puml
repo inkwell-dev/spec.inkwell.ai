@@ -53,18 +53,6 @@ User "0..*" -- "0..*" Article : saves
 User "1" -- "0..*" Notification : receives
 Article "1" -- "0..*" Comment : carries
 
-note as N1
-  Each association is stored as a join table holding the
-  pair and a date, with a unique constraint on the pair —
-  (user, comment), (blocker, blocked), (user, article) —
-  so a repeated request is a no-op, and a notification is
-  emitted only when a row was actually inserted.
-  blocks also has a CHECK: no one can block themselves.
-end note
-
-note as N2
-  A block row is directional, but every read treats it
-  both ways: a block in either direction hides the two
-  accounts from each other.
-end note
+' Enumerations underneath; the notes are in the report's text.
+Comment -[hidden]-- NotificationType
 @enduml

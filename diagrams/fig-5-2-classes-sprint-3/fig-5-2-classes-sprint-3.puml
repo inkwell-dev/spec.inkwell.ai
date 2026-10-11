@@ -98,21 +98,10 @@ User "1" -- "0..1" WriterAudienceMetrics
 User "1" -- "0..1" WriterContentMetrics
 User "1" -- "0..1" WriterQualityMetrics
 
-note as N0
-  likes, reposts and follows hold only the pair and a
-  date: many-to-many associations, each stored as a
-  join table with a unique constraint on the pair.
-end note
-
-note as N1
-  paragraphDropoff, topCountries and deviceSplit are
-  written NULL: no client-side capture source exists.
-  NULL rather than zero, so "not measured" stays
-  distinguishable from "measured, and none".
-end note
-
-ArticleMetrics -[hidden]down- WriterAudienceMetrics
+' Layout: the four rollups stacked, enumerations underneath. The note on
+' NULL metrics is in the report's text.
 WriterAudienceMetrics -[hidden]down- WriterContentMetrics
 WriterContentMetrics -[hidden]down- WriterQualityMetrics
-NotificationType -[hidden]down- AnalyticsEventType
+Notification -[hidden]-- NotificationType
+NotificationType -[hidden]right- AnalyticsEventType
 @enduml

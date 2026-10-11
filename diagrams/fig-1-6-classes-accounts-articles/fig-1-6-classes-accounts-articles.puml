@@ -1,0 +1,101 @@
+@startuml
+' Global class diagram, part 1 of 5: accounts and articles.
+' Operations are named after the service methods that implement them.
+!include ../_style.puml
+skinparam nodesep 22
+skinparam ranksep 45
+hide circle
+hide empty methods
+
+class User {
+  - id : UUID
+  - accountType : AccountType
+  - email : String
+  - username : String
+  - role : Role
+  - plan : Plan
+  - earningsBalance : Integer
+  - isMarketplaceEligible : Boolean
+  - aiTokensRemaining : Integer
+  - deletedAt : Timestamp
+  + register()
+  + signIn()
+  + updateProfile()
+  + setPlan(plan : Plan)
+}
+class MagazineProfile {
+  - displayName : String
+  - slug : String
+  - subscriptionStatus : SubscriptionStatus
+  - creditBalance : Integer
+  - monthlyCreditAllowance : Integer
+  - subscriptionExpiresAt : Timestamp
+  + subscribe()
+  + topUp(credits : Integer)
+  + cancel()
+}
+class Article {
+  - id : UUID
+  - publisherId : UUID
+  - title : String
+  - slug : String
+  - content : Json
+  - contentSearch : TsVector
+  - status : ArticleStatus
+  - placement : Placement
+  - visibility : Visibility
+  - marketplacePrice : Integer
+  - wordCount : Integer
+  - publishedAt : Timestamp
+  - deletedAt : Timestamp
+  + update()
+  + publish(placement : Placement, visibility : Visibility)
+  + switchToPublic()
+  + softDelete()
+}
+class Tag {
+  - name : String
+  - slug : String
+  + findAll() : Tag[]
+  + create(name : String)
+}
+
+class AccountType <<Enumeration>> {
+  personal
+  magazine
+}
+class Role <<Enumeration>> {
+  reader
+  writer
+  admin
+}
+class Plan <<Enumeration>> {
+  free
+  premium
+}
+class ArticleStatus <<Enumeration>> {
+  draft
+  published
+}
+class Placement <<Enumeration>> {
+  public
+  marketplace
+}
+class Visibility <<Enumeration>> {
+  free
+  premium
+}
+
+User "1" -- "0..1" MagazineProfile : extends
+User "1" -- "0..*" Article : writes
+User "0..1" -- "0..*" Article : publishes
+Article "0..*" -- "0..*" Tag : is tagged with
+
+' Enumerations in two rows under the classes.
+MagazineProfile -[hidden]-- AccountType
+AccountType -[hidden]right- Role
+Role -[hidden]right- Plan
+AccountType -[hidden]down- ArticleStatus
+ArticleStatus -[hidden]right- Placement
+Placement -[hidden]right- Visibility
+@enduml

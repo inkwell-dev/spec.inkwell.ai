@@ -379,44 +379,76 @@ the administrator is a kind of reader or writer.
 
 The data model counts thirty persisted tables. Drawn in a single diagram they form an
 unreadable strip, because `User` is related to most of the others, so the global class
-diagram is split by domain into two figures. Attributes are shown with domain types
-(`Json`, `Vector`, `Timestamp`); audit columns are omitted. Each class shows the main
-**operations** it supports; they are implemented by the service of the same domain
-(for instance `Article.publish()` by the articles service), because the classes are
-persisted records and the behaviour lives in the service layer. Relationships that
-carry nothing but a pair and a date — likes, comment likes, reposts, saves, follows,
-blocks, tags — are drawn as many-to-many associations; each is stored as a join table
-with a unique constraint on its pair. The operations that create them — `like()`, `repost()`, `save()`,
-`follow()`, `block()`, `likeComment()` — belong to `User`, the class that acts.
+diagram is split by domain into five figures, each small enough to be read at page
+width. Attributes are shown with domain types (`Json`, `Vector`, `Timestamp`); audit
+columns are omitted; the enumerations each figure uses are drawn underneath it. Each
+class shows the main **operations** it supports; they are implemented by the service of
+the same domain (for instance `Article.publish()` by the articles service), because the
+classes are persisted records and the behaviour lives in the service layer. `User` and
+`Article` are defined in the first figure and appear in the others as references,
+with only the attributes and operations that figure needs.
 
-**Core domain.** @fig:classes-core shows accounts, articles and their social layer: the
-`User` and its optional `MagazineProfile`, the `Article` with its placement,
-visibility and price, tags, threaded comments, notifications and reports.
+**Accounts and articles.** @fig:classes-accounts shows the `User` and its optional
+`MagazineProfile`, the `Article` with its placement, visibility and price, and its
+tags.
 
-![Class diagram: core domain](../diagrams/fig-2-2-classes-core-domain/fig-2-2-classes-core-domain.png){#fig:classes-core}
+![Class diagram: accounts and articles](../diagrams/fig-1-6-classes-accounts-articles/fig-1-6-classes-accounts-articles.png){#fig:classes-accounts}
 
-The diagram shows that the social layer adds no entity of its own: every interaction
-is an association between a user and an article, a comment or another user. That is
-what makes interactions cheap to count for analytics and impossible to duplicate,
-since the unique pair constraint turns a repeated like into a no-op.
-`Article.publisherId` names the magazine that published a licensed article and is
-empty for every other article; it is the single attribute through which the
-marketplace changes the core model.
+One `User` class serves every kind of account. Its account type, role and plan are
+attributes, and a database constraint keeps role and plan empty for a magazine account,
+which is the data-model reason the magazine inherits nothing from the reader
+(@sec:actors). `Article.publisherId` names the magazine that published a licensed
+article and is empty for every other article; it is the single attribute through which
+the marketplace changes the core model.
 
-**AI, marketplace and analytics.** @fig:classes-ai shows the remaining tables: the
-article chunks embedded for retrieval, the writer memory, the cached portfolio
-insights and the AI interaction log; the private document library and its chunks;
-purchases, ledger transactions, magazine subscriptions and the eligibility audit log;
-and the raw analytics events with the four metric rollups.
+**Social layer and moderation.** @fig:classes-social shows comments, notifications,
+reports and the social associations.
 
-![Class diagram: AI, marketplace and analytics](../diagrams/fig-2-3-classes-ai-marketplace-analytics/fig-2-3-classes-ai-marketplace-analytics.png){#fig:classes-ai}
+![Class diagram: social layer and moderation](../diagrams/fig-1-7-classes-social/fig-1-7-classes-social.png){#fig:classes-social}
 
-Two properties follow from this diagram. Money is never a single number: a
-`Purchase` records two to three `Transaction` rows, and every balance can be
-recomputed from them, which is what the ledger invariants of NFR-19 check. And the
-analytics are layered: raw `AnalyticsEvent` rows are written once and never read by a
-dashboard, which reads only the rollups, so a dashboard's cost does not grow with the
-event log (NFR-15).
+Relationships that carry nothing but a pair and a date — likes, comment likes,
+reposts, saves, follows, blocks — are drawn as many-to-many associations; each is
+stored as a join table with a unique constraint on its pair. The operations that create
+them — `like()`, `repost()`, `save()`, `follow()`, `block()`, `likeComment()` — belong to
+`User`, the class that acts. The diagram shows that the social layer adds almost no
+entity of its own: every interaction is an association between a user and an article,
+a comment or another user, which makes interactions cheap to count for analytics and
+impossible to duplicate, since the unique pair constraint turns a repeated like into a
+no-op.
+
+**AI and documents.** @fig:classes-ai shows the article chunks embedded for retrieval,
+the writer memory, the cached portfolio insights, the AI interaction log, and the
+private document library with its chunks.
+
+![Class diagram: AI and documents](../diagrams/fig-1-8-classes-ai-documents/fig-1-8-classes-ai-documents.png){#fig:classes-ai}
+
+Everything in this diagram is derived from articles and documents and can be rebuilt
+from them: chunks are deleted and re-embedded on every publication, and the insights
+are a cache. A `DocumentChunk` keeps the page it came from, which is what a citation
+points to. A document is private to its owner: its chunks are retrieved only for the
+articles it is attached to, never for writer memory, insights or search (FR-87).
+
+**Marketplace.** @fig:classes-marketplace shows purchases, the ledger transactions,
+magazine subscriptions and the eligibility audit log.
+
+![Class diagram: marketplace](../diagrams/fig-1-9-classes-marketplace/fig-1-9-classes-marketplace.png){#fig:classes-marketplace}
+
+Money is never a single number: a `Purchase` records two or three `Transaction` rows —
+the magazine's debit, the writer's payout and the platform fee — and every balance can
+be recomputed from them, which is what the ledger invariants of NFR-19 check. Amounts
+are always positive; their direction comes from the transaction type, enforced by a
+constraint.
+
+**Analytics.** @fig:classes-analytics shows the raw analytics events and the four
+metric rollups.
+
+![Class diagram: analytics](../diagrams/fig-1-10-classes-analytics/fig-1-10-classes-analytics.png){#fig:classes-analytics}
+
+The analytics are layered: raw `AnalyticsEvent` rows are written once and never read by
+a dashboard, which reads only the rollups, so a dashboard's cost does not grow with the
+event log (NFR-15). Fields that the browser cannot measure — country, device, the
+drop-off per paragraph — are stored as empty rather than zero, so that "not measured"
+stays distinguishable from "measured, and none".
 
 ## Product backlog {#sec:backlog}
 

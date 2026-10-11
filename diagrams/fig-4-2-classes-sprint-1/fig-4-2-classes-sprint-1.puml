@@ -95,10 +95,12 @@ Article "1" -- "0..*" Comment : carries
 Article "0..*" -- "0..*" Tag : is tagged with
 Comment "0..1" -- "0..*" Comment : replies to
 
-AccountType -[hidden]down- Provider
-Provider -[hidden]down- Role
-Role -[hidden]down- Plan
-ArticleStatus -[hidden]down- Placement
-Placement -[hidden]down- Visibility
-AccountType -[hidden]right- ArticleStatus
+' Enumerations underneath; the notes are in the report's text.
+MagazineProfile -[hidden]--- AccountType
+AccountType -[hidden]right- Provider
+Provider -[hidden]right- Role
+Role -[hidden]right- Plan
+AccountType -[hidden]down- ArticleStatus
+ArticleStatus -[hidden]right- Placement
+Placement -[hidden]right- Visibility
 @enduml
