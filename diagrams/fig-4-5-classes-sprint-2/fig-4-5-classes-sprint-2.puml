@@ -30,6 +30,9 @@ class AiInteraction {
   - outputText : Text
   - tokensUsed : Integer
   - model : String
+  + chat(messages : Message[])
+  + inline(action : AiActionType, text : Text)
+  + billAction(tokens : Integer)
 }
 class AnalyticsEvent {
   - id : UUID

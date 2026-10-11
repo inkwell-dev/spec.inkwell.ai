@@ -386,7 +386,8 @@ diagram is split by domain into two figures. Attributes are shown with domain ty
 persisted records and the behaviour lives in the service layer. Relationships that
 carry nothing but a pair and a date — likes, comment likes, reposts, saves, follows,
 blocks, tags — are drawn as many-to-many associations; each is stored as a join table
-with a unique constraint on its pair.
+with a unique constraint on its pair. The operations that create them — `like()`, `repost()`, `save()`,
+`follow()`, `block()`, `likeComment()` — belong to `User`, the class that acts.
 
 **Core domain.** @fig:classes-core shows accounts, articles and their social layer: the
 `User` and its optional `MagazineProfile`, the `Article` with its placement,

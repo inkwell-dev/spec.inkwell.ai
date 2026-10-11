@@ -48,6 +48,8 @@ class Article {
 class Tag {
   - name : String
   - slug : String
+  + findAll() : Tag[]
+  + create(name : String)
 }
 class Comment {
   - content : Text

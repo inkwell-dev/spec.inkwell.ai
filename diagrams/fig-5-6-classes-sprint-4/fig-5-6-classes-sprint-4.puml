@@ -9,6 +9,7 @@ hide empty methods
 class User {
   - id : UUID
   - username : String
+  + getRepresentativeChunks() : ArticleChunk[]
 }
 class Article {
   - id : UUID
@@ -50,6 +51,8 @@ class AiInteraction {
   - actionType : AiActionType
   - tokensUsed : Integer
   - model : String
+  + chat(messages : Message[])
+  + billAction(tokens : Integer)
 }
 
 class ArticleStatus <<Enumeration>> {

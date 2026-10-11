@@ -11,10 +11,13 @@ hide empty methods
 
 class User {
   - id : UUID
+  + listDocuments() : Document[]
 }
 class Article {
   - id : UUID
   - authorId : UUID
+  + setDocuments(documents : Document[])
+  + listDocuments() : Document[]
 }
 class Document {
   - id : UUID
@@ -39,6 +42,8 @@ class DocumentChunk {
   - page : Integer
   - content : Text
   - embedding : Vector
+  + ingest(document : Document)
+  + findSimilarDocumentChunks(query : String) : DocumentChunk[]
 }
 
 class DocumentStatus <<Enumeration>> {

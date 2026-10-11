@@ -33,6 +33,13 @@ class User {
   + signIn()
   + updateProfile()
   + setPlan(plan : Plan)
+  + like(article : Article)
+  + unlike(article : Article)
+  + repost(article : Article)
+  + save(article : Article)
+  + follow(user : User)
+  + block(user : User)
+  + likeComment(comment : Comment)
 }
 class MagazineProfile {
   - displayName : String
@@ -67,6 +74,8 @@ class Article {
 class Tag {
   - name : String
   - slug : String
+  + findAll() : Tag[]
+  + create(name : String)
 }
 class Comment {
   - content : Text

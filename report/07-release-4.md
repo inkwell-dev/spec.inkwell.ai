@@ -45,8 +45,9 @@ while saving and blocking are private choices that only their author can see.
 
 ![Class diagram, Sprint 7](../diagrams/fig-7-2-classes-sprint-7/fig-7-2-classes-sprint-7.png){#fig:classes-s7}
 
-Comment likes, blocks and saves are many-to-many associations, each stored as a join
-table with a unique constraint on its pair, so a repeated request is a no-op, and a
+Comment likes, blocks and saves are many-to-many associations, created and removed
+by the operations the sprint adds to `User` (`likeComment()`, `block()`, `save()` and
+their inverses), each stored as a join table with a unique constraint on its pair, so a repeated request is a no-op, and a
 notification is emitted only when a row was actually inserted; a check constraint
 forbids blocking oneself. A block row is directional, but every read treats it both
 ways. Comment likes are kept apart from article likes, so that by construction they can

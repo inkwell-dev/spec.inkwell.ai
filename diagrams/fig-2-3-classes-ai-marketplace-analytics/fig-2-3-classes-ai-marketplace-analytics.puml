@@ -10,13 +10,19 @@ skinparam ranksep 45
 hide circle
 hide empty methods
 
-class User
-class Article
+class User {
+  + countProgress() : Progress
+}
+class Article {
+  + publish()
+}
 
 class ArticleChunk {
   - chunkIndex : Integer
   - content : Text
   - embedding : Vector
+  + embedArticle(article : Article)
+  + findSimilarChunks(query : String) : ArticleChunk[]
 }
 class WriterMemory {
   - tonePreferences : Json
@@ -51,11 +57,14 @@ class DocumentChunk {
   - page : Integer
   - content : Text
   - embedding : Vector
+  + ingest(document : Document)
+  + findSimilarDocumentChunks(query : String) : DocumentChunk[]
 }
 class AiInteraction {
   - actionType : AiActionType
   - tokensUsed : Integer
   - model : String
+  + billAction(tokens : Integer)
 }
 class Purchase {
   - stage : PurchaseStage
@@ -71,6 +80,7 @@ class Transaction {
   - amount : Integer
   - idempotencyKey : String
   - status : TransactionStatus
+  + checkLedgerInvariants() : Violation[]
 }
 class MagazineSubscription {
   - status : SubscriptionStatus
@@ -82,10 +92,12 @@ class EligibilityAuditLog {
   - source : EligibilitySource
   - readersAt : Integer
   - reactionsAt : Integer
+  + record(source : EligibilitySource)
 }
 class AnalyticsEvent {
   - eventType : AnalyticsEventType
   - metadata : Json
+  + createEvents(batch : AnalyticsEvent[])
 }
 class ArticleMetrics {
   - totalViews : Integer

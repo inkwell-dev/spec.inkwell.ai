@@ -53,6 +53,7 @@ class Transaction {
   - idempotencyKey : String
   - status : TransactionStatus
   - metadata : Json
+  + checkLedgerInvariants() : Violation[]
 }
 class MagazineSubscription {
   - status : SubscriptionStatus
@@ -66,6 +67,7 @@ class EligibilityAuditLog {
   - grantedBy : UUID
   - readersAt : Integer
   - reactionsAt : Integer
+  + record(source : EligibilitySource)
 }
 class Report {
   - targetType : ReportTargetType

@@ -9,11 +9,18 @@ hide empty methods
 class User {
   - id : UUID
   - username : String
+  + like(article : Article)
+  + unlike(article : Article)
+  + repost(article : Article)
+  + follow(user : User)
+  + unfollow(user : User)
+  + listReposted() : Article[]
 }
 class Article {
   - id : UUID
   - title : String
   - publishedAt : Timestamp
+  + getArticleAnalytics() : ArticleMetrics
 }
 class Comment {
   - content : Text
@@ -30,6 +37,7 @@ class Notification {
 class AnalyticsEvent {
   - eventType : AnalyticsEventType
   - metadata : Json
+  + createEvents(batch : AnalyticsEvent[])
 }
 class ArticleMetrics {
   - totalViews : Integer

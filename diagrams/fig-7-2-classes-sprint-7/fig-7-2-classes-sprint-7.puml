@@ -12,15 +12,27 @@ hide empty methods
 class User {
   - id : UUID
   - username : String
+  + likeComment(comment : Comment)
+  + unlikeComment(comment : Comment)
+  + block(user : User)
+  + unblock(user : User)
+  + save(article : Article)
+  + unsave(article : Article)
+  + listFollowers() : User[]
+  + listFollowing() : User[]
+  + listBlocked() : User[]
+  + listSaved() : Article[]
 }
 class Article {
   - id : UUID
   - title : String
   - slug : String
+  + share() : Url
 }
 class Comment {
   - id : UUID
   - content : Text
+  + reply(content : Text) : Comment
 }
 class Notification {
   - type : NotificationType
