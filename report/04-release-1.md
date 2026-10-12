@@ -9,7 +9,7 @@ of reading events that the analytics of Release 2 will aggregate. Each sprint is
 presented in the same four steps: its backlog, the analysis, the design and the
 realisation.
 
-## Sprint 1 — Schema, authentication and article core {#sec:sprint1}
+## Sprint 1: Schema, authentication and article core {#sec:sprint1}
 
 ### Sprint backlog
 
@@ -22,8 +22,8 @@ articles; and that the ledger invariant harness exists before any feature moves 
 <!-- INCLUDE:sprint-1 -->
 
 The sprint commits {{S1PTS}} points, close to the average of the project. Almost a
-fifth of them (US-49, US-50, US-51) produce nothing a user sees — the invariant harness,
-the one-command stack and the quality gates — and were placed first on purpose: every
+fifth of them (US-49, US-50, US-51) produce nothing a user sees (the invariant harness,
+the one-command stack and the quality gates) and were placed first on purpose: every
 later sprint is built and verified with them.
 
 ### Analysis
@@ -34,8 +34,8 @@ later sprint is built and verified with them.
 
 Registering specialises into a personal or a magazine account; managing one's
 articles into drafting, editing, publishing and deleting, with publishing including a
-placement and a visibility. From the first sprint, account type and placement — the
-two properties the marketplace rests on — are already in place.
+placement and a visibility. From the first sprint, account type and placement, the
+two properties the marketplace rests on, are already in place.
 
 **Textual description.** @tbl:uc-publish details the central use case of the sprint.
 
@@ -68,7 +68,7 @@ placement, visibility and search vector. One `User` class serves every kind of
 account, the differences held in attributes, which is what lets one authentication
 path serve every actor.
 
-**Sequence diagram — sign in.** @fig:seq-auth shows signing in and the silent refresh
+**Sequence diagram: sign in.** @fig:seq-auth shows signing in and the silent refresh
 that keeps a session alive.
 
 ![Sequence diagram: sign in and silent refresh](../diagrams/fig-4-3-sequence-authentication/fig-4-3-sequence-authentication.png){#fig:seq-auth}
@@ -80,7 +80,7 @@ yet a revoked token lasts fifteen minutes at most (NFR-09).
 
 **The ledger invariant harness.** Money appears in Sprint 5, but its rule is set
 here: every balance must equal the sum of its ledger rows. Three invariants check it
-after every test that moves credits, and the harness is itself tested by sabotage —
+after every test that moves credits, and the harness is itself tested by sabotage:
 corrupting one column must fail the right invariant. No purchase code was ever
 written without this check.
 
@@ -100,8 +100,8 @@ leads to an account, which is the boundary between the visitor and the other act
 
 ![Sign-in, with Google sign-in](../figures/screens/guest-02-login.png){#fig:login}
 
-It offers the two authentication methods of FR-05 side by side — e-mail and password,
-and *Continue with Google* — and the link to registration that @fig:uc-visitor-reader draws as
+It offers the two authentication methods of FR-05 side by side (e-mail and password,
+and *Continue with Google*) and the link to registration that @fig:uc-visitor-reader draws as
 *Create an account* extending *Sign in*.
 
 Registration differs by account type. @fig:register shows a personal account and
@@ -111,8 +111,8 @@ Registration differs by account type. @fig:register shows a personal account and
 
 ![Registering a magazine account](../figures/screens/guest-04-register-magazine.png){#fig:register-magazine}
 
-The magazine form asks for what writers will see of the buyer — slug, name, website,
-description and logo — and no personal fields. FR-04 and FR-39 give two kinds of
+The magazine form asks for what writers will see of the buyer (slug, name, website,
+description and logo) and no personal fields. FR-04 and FR-39 give two kinds of
 account from the first screen, which is why a magazine never inherits a reader's
 capabilities.
 
@@ -134,7 +134,7 @@ A signed-in user edits the display name, bio, location, website and profile pict
 (NFR-07). *Save changes* stays disabled until something changes, so a click never sends
 an empty update.
 
-## Sprint 2 — Editor, AI assistance and event capture {#sec:sprint2}
+## Sprint 2: Editor, AI assistance and event capture {#sec:sprint2}
 
 ### Sprint backlog
 
@@ -174,7 +174,7 @@ reading is recorded as `AnalyticsEvent` rows; the user carries the remaining dai
 allowance. Cost and reading are both append-only, so the allowance can be audited and
 every metric of Release 2 is computed from events recorded from this sprint on.
 
-**Sequence diagram — inline AI action.** @fig:seq-inline shows an inline action on a
+**Sequence diagram: inline AI action.** @fig:seq-inline shows an inline action on a
 selection.
 
 ![Sequence diagram: inline AI action](../diagrams/fig-4-6-sequence-inline-ai-edit/fig-4-6-sequence-inline-ai-edit.png){#fig:seq-inline}
@@ -184,8 +184,8 @@ allowance is checked once (403 when exhausted), then the suggestion is streamed 
 its cost recorded. A writer is therefore never cut off mid-reply, at the price of a
 small overrun on the day's last call.
 
-**Event capture.** The article page sends batched reading events — scroll depth and
-engaged time — to `POST /analytics/events`. The server, not the browser, attaches the
+**Event capture.** The article page sends batched reading events (scroll depth and
+engaged time) to `POST /analytics/events`. The server, not the browser, attaches the
 reader's identity from the access token, so no one can forge another reader's events.
 Capture starts here so that real data accumulates before the dashboards of Release 2.
 
@@ -195,8 +195,8 @@ Capture starts here so that real data accumulates before the dashboards of Relea
 
 ![The rich-text editor with the assistant panel](../figures/screens/writer-03-editor.png){#fig:editor}
 
-The draft is edited as rich text — emphasis, headings, lists, quotes, code, images
-(FR-18, FR-20) — and saved automatically, as the *Saved* label shows (FR-19). The
+The draft is edited as rich text (emphasis, headings, lists, quotes, code, images;
+FR-18, FR-20) and saved automatically, as the *Saved* label shows (FR-19). The
 assistant sits beside the text, not on another page: help arrives where the writing
 happens.
 
@@ -204,8 +204,8 @@ happens.
 
 ![The publish dialog: placement, visibility, tags and excerpt](../figures/screens/writer-04-publish-dialog.png){#fig:publish-dialog}
 
-Every choice of @tbl:uc-publish is on one screen — placement, visibility, cover, tags
-and excerpt (FR-21, FR-23, FR-24) — so publishing is a single confirmed act and not a
+Every choice of @tbl:uc-publish is on one screen (placement, visibility, cover, tags
+and excerpt; FR-21, FR-23, FR-24), so publishing is a single confirmed act and not a
 sequence of settings pages.
 
 The assistant is shown in two states. @fig:ai-panel shows the panel before a question
@@ -215,7 +215,7 @@ and @fig:ai-answer an answer.
 
 ![An answer from the assistant](../figures/screens/writer-06-ai-answer.png){#fig:ai-answer}
 
-The panel shows the remaining allowance — 20,000 tokens at the start of the day —
+The panel shows the remaining allowance (20,000 tokens at the start of the day)
 before any question (FR-31), so a question's cost is never a surprise. The answer is
 streamed and can be inserted at the cursor (FR-27, FR-30), a manual step Sprint 8
 replaces.
@@ -227,7 +227,7 @@ menu on a selection and @fig:inline-suggestion its result.
 
 ![An inline suggestion, ready to replace the selection](../figures/screens/writer-08-inline-suggestion.png){#fig:inline-suggestion}
 
-Selecting text opens the five actions of FR-28 — reformulate, shorten, expand,
+Selecting text opens the five actions of FR-28: reformulate, shorten, expand,
 simplify, improve. The suggestion appears in a popover over the highlighted original
 rather than replacing it, with three choices: *Replace*, *Insert below* or *Cancel*.
 The allowance in the panel has dropped accordingly. The assistant proposes and the

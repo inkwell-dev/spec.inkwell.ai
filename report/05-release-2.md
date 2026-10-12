@@ -3,14 +3,14 @@
 ## Introduction {.unnumbered}
 
 The second release turns a publishing tool into a platform. Sprint 3 adds the social
-layer — likes, threaded comments, reposts, follows, reports — with live notifications,
+layer (likes, threaded comments, reposts, follows, reports) with live notifications,
 and aggregates the reading events captured since Release 1 into the metrics behind the
 writer's dashboards and the magazine's evaluation report. Sprint 4 adds the platform's
 retrieval layer: published articles are embedded, the assistant answers from the
 writer's own passages and voice profile, magazines can request AI portfolio insights,
 and search combines keywords with meaning.
 
-## Sprint 3 — Social interactions, notifications and analytics {#sec:sprint3}
+## Sprint 3: Social interactions, notifications and analytics {#sec:sprint3}
 
 ### Sprint backlog
 
@@ -45,12 +45,12 @@ interactions produce events, and the aggregation turns them into numbers.
 ![Class diagram, Sprint 3](../diagrams/fig-5-2-classes-sprint-3/fig-5-2-classes-sprint-3.png){#fig:classes-s3}
 
 Likes, reposts and follows are many-to-many associations; comments and notifications
-are classes, because they carry content and state. The four rollups —
-`ArticleMetrics` and the three writer metrics — hold one row per article or writer,
+are classes, because they carry content and state. The four rollups
+(`ArticleMetrics` and the three writer metrics) hold one row per article or writer,
 rewritten by the aggregation, so reading a dashboard costs the same whatever the
 number of events behind it.
 
-**Sequence diagram — from reading events to metrics.** @fig:seq-aggregation follows a
+**Sequence diagram: from reading events to metrics.** @fig:seq-aggregation follows a
 reading event to the dashboard.
 
 ![Sequence diagram: analytics aggregation](../diagrams/fig-5-3-sequence-analytics-aggregation/fig-5-3-sequence-analytics-aggregation.png){#fig:seq-aggregation}
@@ -83,7 +83,7 @@ with a large and indifferent one. It also shows the limit of the capture: the re
 curve has four points because the browser records the deepest scroll, not the
 paragraph being read.
 
-**Sequence diagram — live notifications.** @fig:seq-notify shows how a notification
+**Sequence diagram: live notifications.** @fig:seq-notify shows how a notification
 reaches its recipient.
 
 ![Sequence diagram: live notification delivery](../diagrams/fig-5-9-sequence-notification-delivery/fig-5-9-sequence-notification-delivery.png){#fig:seq-notify}
@@ -109,8 +109,8 @@ Sprint 8.
 
 ![Notifications, filtered and grouped by day](../figures/screens/writer-12-notifications.png){#fig:notifications}
 
-Notifications are grouped by day, filtered by kind — unread, comments, purchases,
-followers — and unread ones are marked by a bar and a dot until *Mark all as read*
+Notifications are grouped by day, filtered by kind (unread, comments, purchases,
+followers), and unread ones are marked by a bar and a dot until *Mark all as read*
 (FR-13, FR-14). The list mixes social events with marketplace ones, so a writer follows
 both the conversation around their work and its sales in one place.
 
@@ -123,8 +123,8 @@ analytics.
 The dashboard summarises articles, readers, reactions and earnings, lists the recent
 articles with their status and views, and shows the eligibility panel: 182 of 5,000
 readers and 318 of 1,000 reactions, with the marketplace already unlocked by an
-administrator's grant (FR-34, FR-55). It answers the writer's first question — how am I
-doing — on one screen.
+administrator's grant (FR-34, FR-55). It answers the writer's first question (how am I
+doing?) on one screen.
 
 ![“My articles”: every article, sortable by performance](../figures/screens/writer-13-my-articles.png){#fig:my-articles}
 
@@ -156,7 +156,7 @@ each card gives readers, engagement and articles, and *View evaluation* opens th
 report. Any magazine reaches this page in Sprint 3; Sprint 5 puts it behind the
 subscription wall, hence two sprints for FR-44.
 
-## Sprint 4 — Retrieval, portfolio insights and hybrid search {#sec:sprint4}
+## Sprint 4: Retrieval, portfolio insights and hybrid search {#sec:sprint4}
 
 ### Sprint backlog
 
@@ -169,7 +169,7 @@ insights; and that search finds articles by meaning as well as by keyword.
 <!-- INCLUDE:sprint-4 -->
 
 The sprint commits {{S4PTS}} points, the second heaviest load of the project. Its
-stories share one new component — the embedding of published articles — and could only
+stories share one new component, the embedding of published articles, and could only
 be estimated once it existed, which is why the sprint begins with it.
 
 ### Analysis
@@ -196,18 +196,18 @@ the AI assessment; `AiInteraction` logs every call. The AI layer only adds data 
 from articles: every chunk, profile and insight can be rebuilt from them, which the
 re-embedding on each publication does.
 
-**Sequence diagram — what publishing sets in motion.** @fig:seq-publish shows the
+**Sequence diagram: what publishing sets in motion.** @fig:seq-publish shows the
 background pipeline a publication starts.
 
 ![Sequence diagram: the publishing pipeline](../diagrams/fig-5-8-sequence-publish-pipeline/fig-5-8-sequence-publish-pipeline.png){#fig:seq-publish}
 
 The API saves the article and queues an embedding job. The worker replaces the
-article's chunks — passages of 120 to 1,200 characters, each prefixed with its nearest
-heading — embeds them, clears the cached insights, then extracts the voice profile.
+article's chunks (passages of 120 to 1,200 characters, each prefixed with its nearest
+heading), embeds them, clears the cached insights, then extracts the voice profile.
 Publishing returns immediately: the writer never waits for an embedding, and a
 provider failure delays retrieval without blocking publication.
 
-**Sequence diagram — a chat turn grounded in the writer's corpus.** @fig:seq-rag shows
+**Sequence diagram: a chat turn grounded in the writer's corpus.** @fig:seq-rag shows
 retrieval-augmented generation, the technique of conditioning a language model on
 passages retrieved for the question [@lewis2020rag; @gao2023ragsurvey], as delivered
 in this sprint.
@@ -220,7 +220,7 @@ is streamed with its sources. The floor lets retrieval return *nothing* rather t
 five irrelevant passages, and the profile keeps the style even then. @sec:eval-rag
 measures both.
 
-**Sequence diagram — hybrid search.** @fig:seq-search shows search.
+**Sequence diagram: hybrid search.** @fig:seq-search shows search.
 
 ![Sequence diagram: hybrid search with reciprocal rank fusion](../diagrams/fig-5-7-sequence-hybrid-search/fig-5-7-sequence-hybrid-search.png){#fig:seq-search}
 
@@ -236,7 +236,7 @@ search falls back to keywords. @sec:eval-search compares the three.
 
 ![Search results](../figures/screens/guest-09-search-results.png){#fig:search}
 
-The page says how it works — articles are matched on wording and on meaning (FR-06).
+The page says how it works: articles are matched on wording and on meaning (FR-06).
 For "fishing", the first results are articles whose titles contain the word: they rank
 high in both the lexical and the semantic list, and reciprocal rank fusion rewards
 agreement between the two. Search is available without an account, like the feed.

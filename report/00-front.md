@@ -2,7 +2,7 @@
 
 **TEK-UP University**
 
-**GLSI — Software Engineering and Information Systems**
+**GLSI (Software Engineering and Information Systems)**
 
 &nbsp;
 

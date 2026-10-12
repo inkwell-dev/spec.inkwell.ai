@@ -45,7 +45,7 @@ note over V, D
   Fusion is by position, not by score: ts_rank and cosine
   similarity are unrelated scales, so ranks are the only common
   currency. Measured: the query "how do I stop my ferments going
-  bad" returns 0 lexical and 2 semantic hits, fused to 2 — no
+  bad" returns 0 lexical and 2 semantic hits, fused to 2: no
   article contains the searcher's words.
 end note
 @enduml

@@ -5,7 +5,7 @@
 Before the release chapters, this chapter describes the environment the platform was
 built in: the hardware and software used, the work that preceded the feature sprints,
 the technological choices compared with their alternatives, the main parameters of
-the system and their justification, and the architecture of the system — its logical
+the system and their justification, and the architecture of the system: its logical
 decomposition on the frontend and the backend, its physical deployment and its
 delivery pipeline.
 
@@ -32,7 +32,7 @@ later are those of commodity hardware, not of a server.
 ### Software environment
 
 @tbl:software lists the tools used outside the application code itself. They share a
-principle: every artefact — code, diagrams, this report — is kept as text under
+principle: every artefact (code, diagrams, this report) is kept as text under
 version control, and everything that runs, runs in a container.
 
 | Tool | Use |
@@ -59,8 +59,8 @@ sprints, because neither delivers a user-facing increment.
   command.
 - **Design track (three sprints).** The user interface was designed in Figma before the
   editor and the social features were built: a design system of **39 tokens and 87
-  components**, then the full screen set at two widths — **375 px for mobile and
-  1280–1440 px for desktop**, 58 screens — then an audit of the screens against the
+  components**, then the full screen set at two widths (**375 px for mobile and
+  1280–1440 px for desktop**, 58 screens), then an audit of the screens against the
   specification. The release chapters implement these designs.
 
 ### Repository organisation
@@ -68,7 +68,7 @@ sprints, because neither delivers a user-facing increment.
 The source code lives in four Git repositories. `docker.inkwell.ai` is the
 superproject: it holds the Compose files, the nginx configuration, the deployment
 workflow and the developer Makefile, and it carries the three others as **Git
-submodules** — `backend.inkwell.ai`, `frontend.inkwell.ai`, and `spec.inkwell.ai`, which
+submodules**: `backend.inkwell.ai`, `frontend.inkwell.ai`, and `spec.inkwell.ai`, which
 holds the specifications, the diagrams and this report. A commit of the superproject
 therefore identifies one exact, deployable revision of the whole system.
 
@@ -81,7 +81,7 @@ property of the project itself.
 ### Frontend
 
 @tbl:tech-frontend gives the frontend stack. Its central decision is the web framework:
-the platform's public pages — the feed, articles, profiles — must be rendered on the
+the platform's public pages (the feed, articles, profiles) must be rendered on the
 server so that search engines and link previews see their content, while the editor
 and the assistant are interactive applications.
 
@@ -90,7 +90,7 @@ and the assistant are interactive applications.
 | **Next.js 16** (App Router) with **React 19** | Remix, Nuxt (Vue), a client-only React application | server rendering per route for public pages and a request proxy for protected routes, in the most used React framework [@nextjsdocs; @stateofjs2024]; a client-only application would serve empty HTML to search engines |
 | **TypeScript** (strict) | JavaScript | one typed language from the database schema to the browser; the API client types are generated from the backend (NFR-30) |
 | **Tailwind CSS 4** with accessible headless primitives | CSS modules, a component library such as MUI | the Figma tokens map directly to utility classes; headless primitives give accessible dialogs and menus without imposing a visual style |
-| **TipTap 3** | Lexical, Slate, Quill | built on ProseMirror, stores the document as JSON, and accepts custom extensions — the protected range the assistant writes into needs one [@tiptapdocs] |
+| **TipTap 3** | Lexical, Slate, Quill | built on ProseMirror, stores the document as JSON, and accepts custom extensions, which the protected range the assistant writes into needs [@tiptapdocs] |
 | **TanStack Query 5** and **Zustand 5** | Redux Toolkit | server state (caching, invalidation, optimistic updates) and client state handled separately, with far less code than a single global store |
 | **Vercel AI SDK** (React bindings) | hand-written stream parsing | consumes the assistant's typed stream of text, status and write parts [@aisdkdocs] |
 
@@ -137,7 +137,7 @@ the measurement.
 
 ### Infrastructure and quality
 
-**Docker Compose** runs eight services — nginx, web, api, worker, a one-shot migration
+**Docker Compose** runs eight services: nginx, web, api, worker, a one-shot migration
 service, PostgreSQL, Redis and MinIO. **nginx** terminates TLS and routes traffic.
 **GitHub Actions** runs the quality gates and builds the images; **GHCR** stores them.
 **Jest** tests the backend against a real PostgreSQL database, **Playwright** drives a
@@ -149,7 +149,7 @@ ever need an orchestrator.
 ## Main parameters and their justification {#sec:parameters}
 
 The behaviour of the platform depends on a few numbers. @tbl:parameters gives each,
-with its value and the reason for it — a source, a measurement, or a product decision
+with its value and the reason for it: a source, a measurement, or a product decision
 stated as such.
 
 | Parameter | Value | Justification |
@@ -176,8 +176,8 @@ stated as such.
 
 The table shows three kinds of justification. The retrieval parameters are set by
 measurement or by the literature, and Chapter 7 checks them. The security parameters
-follow published guidance. The economic parameters — prices, fee, credits, thresholds
-— are product decisions: they have no "correct" value, and they are named constants in
+follow published guidance. The economic parameters (prices, fee, credits, thresholds)
+are product decisions: they have no "correct" value, and they are named constants in
 one place in the code precisely so that they can be changed as a decision rather than
 discovered in a calculation.
 
@@ -191,7 +191,7 @@ from the routes down to the network.
 ![Logical frontend architecture](../diagrams/fig-3-1-architecture-frontend/fig-3-1-architecture-frontend.png){#fig:arch-frontend}
 
 The **routes** (28 pages) compose **feature modules** (18) over a **state and data**
-layer — query cache, stores, token-refresh interceptors, analytics tracker — and a
+layer (query cache, stores, token-refresh interceptors, analytics tracker), and a
 **request proxy** guards private routes. Only live notifications and direct uploads
 bypass the API, so token refresh and error handling are written once.
 
@@ -203,7 +203,7 @@ bypass the API, so token refresh and error handling are written once.
 
 The **API** passes every request through a rate limiter, then the guards composed by
 `@Auth()`, into feature modules by domain. The **worker** runs from the same image and
-consumes six queues — embeddings, analytics, marketplace, AI tokens, documents and
+consumes six queues: embeddings, analytics, marketplace, AI tokens, documents and
 model checks. Everything slow or scheduled lives in the worker, so no API response
 waits for background work (NFR-27).
 

@@ -19,7 +19,7 @@ once an IT services company (*Entreprise de Services du Numérique*, ESN) and an
 interactive agency. It works with large national and international groups while
 keeping a human-scale structure, and positions itself on reactivity, reliability and
 quality of service. That dual culture suits Inkwell.ai, which is as much a software
-engineering effort — architecture, data, security, delivery — as a product and
+engineering effort (architecture, data, security, delivery) as a product and
 interface design effort.
 
 ### Context and motivation {#sec:motivation}
@@ -34,8 +34,8 @@ transactions. Three observations motivated it.
   @notionai2026; @beehiiv2026]; none of those cited learns from what the writer has
   already published, so they write *for* the writer rather than *like* the writer.
 - **Engagement data is collected, but not offered as evidence.** Platforms measure
-  reading in detail — Medium pays its writers according to members' reading time,
-  read ratio and engagement [@medium2026partner] — yet these signals are shown to the
+  reading in detail: Medium pays its writers according to members' reading time,
+  read ratio and engagement [@medium2026partner]. Yet these signals are shown to the
   writer or used to rank content, never presented to a buyer judging the writer.
 - **Paid writing is a narrow market.** About four percent of creators earn more than
   a hundred thousand dollars a year, and most creator income comes from brand deals
@@ -46,15 +46,15 @@ transactions. Three observations motivated it.
 
 The solutions close to the project fall into five families. **Publishing platforms**
 such as Medium pay writers from a pool of reader subscriptions
-[@medium2026partner]. **Newsletter platforms** — Substack, Ghost and beehiiv — let a
+[@medium2026partner]. **Newsletter platforms** (Substack, Ghost and beehiiv) let a
 writer charge readers directly [@substack2026; @ghost2026], and beehiiv adds an AI
 writing assistant to its editor [@beehiiv2026]. **Freelance marketplaces** such as
 Contently and Upwork connect clients with writers for *commissioned* work: the article
 does not yet exist when it is bought, and the platform holds no engagement data on
 the writer's published pieces [@contently2026; @upwork2026]. **AI writing
 assistants** such as Grammarly and Notion AI improve or generate text inside a
-document [@grammarly2026; @notionai2026]. Finally, **source-grounded assistants** —
-NotebookLM, ChatGPT with uploaded files, Perplexity Spaces — answer from documents the
+document [@grammarly2026; @notionai2026]. Finally, **source-grounded assistants**
+(NotebookLM, ChatGPT with uploaded files, Perplexity Spaces) answer from documents the
 user uploads and cite the passages they used [@notebooklm2024; @chatgptfiles2026;
 @perplexity2026].
 
@@ -64,14 +64,14 @@ exists in a restricted form, explained below the table.
 
 | Criterion | Medium | Newsletter platforms¹ | Freelance markets² | Writing assistants³ | Grounded assistants⁴ | **Inkwell.ai** |
 |:------------------------------------|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|
-| Publishing and public reading | ✓ | ✓ | — | — | — | ✓ |
-| AI assistance in the editor | — | partial | — | ✓ | — | ✓ |
-| Assistant grounded in the writer's published work | — | — | — | — | partial | ✓ |
-| Answers citing uploaded documents | — | — | — | — | ✓ | ✓ |
-| Engagement analytics for the writer | ✓ | ✓ | — | — | — | ✓ |
-| Analytics exposed to a buyer as evidence | — | — | — | — | — | ✓ |
-| Licensing of existing articles to publications | — | — | — | — | — | ✓ |
-| Traceable payments | ✓ | ✓ | ✓ | — | — | ✓ |
+| Publishing and public reading | ✓ | ✓ | ✗ | ✗ | ✗ | ✓ |
+| AI assistance in the editor | ✗ | partial | ✗ | ✓ | ✗ | ✓ |
+| Assistant grounded in the writer's published work | ✗ | ✗ | ✗ | ✗ | partial | ✓ |
+| Answers citing uploaded documents | ✗ | ✗ | ✗ | ✗ | ✓ | ✓ |
+| Engagement analytics for the writer | ✓ | ✓ | ✗ | ✗ | ✗ | ✓ |
+| Analytics exposed to a buyer as evidence | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ |
+| Licensing of existing articles to publications | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ |
+| Traceable payments | ✓ | ✓ | ✓ | ✗ | ✗ | ✓ |
 
 : Comparison of existing solutions, from each product's public documentation {#tbl:existing}
 
@@ -84,7 +84,7 @@ uploaded it by hand, and they are separate from any editor or publishing workflo
 
 The decisive cells are the last three rows. Citing uploaded documents, taken alone, is
 **not** distinctive: the source-grounded assistants already do it, and Inkwell.ai
-borrows the idea. What no family offers is the *combination* — an assistant grounded
+borrows the idea. What no family offers is the *combination*: an assistant grounded
 in the writer's own published corpus inside the editor where the writing happens,
 analytics presented to a buyer as evidence, and a market in which a publication
 licenses an existing article. Each family covers one or two of these needs; the
@@ -124,8 +124,8 @@ the two.
 ![Classic and agile approaches compared](../diagrams/fig-1-2-waterfall-vs-agile/fig-1-2-waterfall-vs-agile.png){#fig:waterfall-agile height=45%}
 
 Working software appears only in the last phase of the sequential process, but at
-the end of every agile iteration. Inkwell.ai is built in layers — accounts, articles,
-analytics, marketplace — each depending on the one below, so each must work before
+the end of every agile iteration. Inkwell.ai is built in layers (accounts, articles,
+analytics, marketplace), each depending on the one below, so each must work before
 the next is built on it.
 
 ### Scrum, and its adaptation to a one-person project {#sec:scrum}
@@ -142,8 +142,8 @@ against the definition of done, a review and a retrospective whose actions retur
 the next planning. For this project the unit of progress is therefore the increment:
 every sprint leaves the platform runnable and tested.
 
-Scrum is designed for a team of ten or fewer people holding three accountabilities —
-Product Owner, Scrum Master and Developers [@scrumguide2020] — and this project has one
+Scrum is designed for a team of ten or fewer people holding three accountabilities
+(Product Owner, Scrum Master and Developers) [@scrumguide2020], and this project has one
 person. The adaptation, and its limits, were the following.
 
 - **Roles.** The author held the Developer and Scrum Master accountabilities. The
@@ -162,14 +162,14 @@ person. The adaptation, and its limits, were the following.
   passing with no warning, the backend tests passing in the container, and the
   feature demonstrated in a browser.
 
-With one person, the value of Scrum lies in the discipline it imposes — a fixed
-cadence, a written goal per sprint, an increment that must work — rather than in
+With one person, the value of Scrum lies in the discipline it imposes (a fixed
+cadence, a written goal per sprint, an increment that must work) rather than in
 coordination.
 
 ### Prioritisation and estimation {#sec:estimation}
 
-Requirements and user stories are prioritised with **MoSCoW** — Must, Should, Could,
-Won't — the prioritisation technique of the DSDM agile framework, in which the Must
+Requirements and user stories are prioritised with **MoSCoW** (Must, Should, Could,
+Won't), the prioritisation technique of the DSDM agile framework, in which the Must
 items form the minimum usable subset that the delivery guarantees [@dsdm2014]. Stories
 are estimated in **story points** on a Fibonacci-like scale (1, 2, 3, 5, 8, 13),
 relative to the simplest story: the gaps between values grow with size because
@@ -190,7 +190,7 @@ describe.
 
 The platform has five actors. @tbl:actors lists them with the way each is represented
 in the data model, because the actors are not invented for the analysis: they follow
-from two properties every account carries — its **account type** (personal or
+from two properties every account carries: its **account type** (personal or
 magazine) and its **role** (reader, writer or administrator).
 
 | # | Actor | Data-model representation | Definition |
@@ -205,8 +205,8 @@ magazine) and its **role** (reader, writer or administrator).
 
 Three further properties change what an actor may do without making it a different
 actor: a reader's **plan** (free or premium), a writer's **marketplace eligibility**,
-and a magazine's **subscription** (active or not). They are states of an account —
-the same person moves between them by upgrading, by being read, or by subscribing — so
+and a magazine's **subscription** (active or not). They are states of an account:
+the same person moves between them by upgrading, by being read, or by subscribing. So
 they are drawn in the use case diagrams as **conditions** on the use cases they unlock,
 not as separate actors: *Read a premium article* extends *Read an article* when
 `[plan = premium]`, *List on the marketplace* extends *Publish an article* when
@@ -215,7 +215,7 @@ subscription.
 
 Two generalisations hold: the reader specialises the visitor, and the writer
 specialises the reader. The other two actors specialise nobody. A **magazine** is a
-different account type with no role and no plan — a database constraint enforces it —
+different account type with no role and no plan (a database constraint enforces it),
 so it inherits nothing from the readers or writers; a person who runs a magazine and
 also writes uses two accounts. The **administrator** holds a role that cannot be
 obtained through the interface and is granted in the database; its capabilities are
@@ -234,7 +234,7 @@ given in Annex A.
 
 The platform counts {{FRS}} functional requirements, of which {{FR_MUST}} are Must:
 four in five requirements belong to the minimum the delivery guarantees, which is
-expected for a platform whose three pillars depend on one another — dropping a Must
+expected for a platform whose three pillars depend on one another: dropping a Must
 from one pillar would break another. The Should and Could requirements are the
 comforts that make each feature pleasant rather than possible: search and browsing
 by tag, live comment previews, voice, sharing. The writers carry the most
@@ -269,7 +269,7 @@ attribute. Identifiers are stable, as for the functional requirements.
 | NFR-11 | Semantic retrieval stays sub-linear as the corpus grows | HNSW index (m = 16, ef_construction = 64) [@malkov2018hnsw] | measurement |
 | NFR-12 | Full-text search is index-backed with weighted ranking | weighted `tsvector` column and GIN index [@postgres16fts] | measurement |
 | NFR-13 | Prompt context is bounded | at most 5 passages, a memory block under 200 tokens | inspection |
-| NFR-14 | Feed pagination is cursor-based, stable under insertion | — | **not met**: pagination is by offset |
+| NFR-14 | Feed pagination is cursor-based, stable under insertion | none | **not met**: pagination is by offset |
 | NFR-15 | Dashboard totals and rates read pre-aggregated rows | four rollup tables refreshed by the worker | measurement |
 | NFR-16 | Analytics aggregation is incremental and idempotent | each run reads only the events since the last one | inspection |
 | NFR-17 | Expensive AI output is cached and invalidated by what changes it | insights cached 24 h, dropped when the writer publishes | inspection |
@@ -279,7 +279,7 @@ attribute. Identifiers are stable, as for the functional requirements.
 | NFR-20 | Concurrent purchases cannot double-spend | `SELECT … FOR UPDATE` on the balance-owning row | test |
 | NFR-21 | Schema changes are versioned and applied before the application starts | a one-shot migration service | inspection |
 | NFR-22 | The vector extension exists before any migration that needs it | the migration runner creates it first | inspection |
-| NFR-23 | Failed background jobs retry with exponential back-off | — | **not met**: jobs run once |
+| NFR-23 | Failed background jobs retry with exponential back-off | none | **not met**: jobs run once |
 | NFR-24 | An AI provider outage degrades AI only | a model chain falling back from Groq to Gemini | test |
 | NFR-25 | Every service reports liveness and readiness | `GET /health` and `GET /ready` | partly met: readiness checks PostgreSQL only |
 | | **Scalability** | | |
@@ -302,13 +302,13 @@ attribute. Identifiers are stable, as for the functional requirements.
 
 Of the 37 requirements, seven are verified by an automated test and six by a
 measurement in Chapter 7; two are enforced by the continuous-integration pipeline.
-The others rest on inspection — they are properties of configuration (port bindings,
+The others rest on inspection: they are properties of configuration (port bindings,
 nginx buffering, Compose dependencies) rather than of behaviour, and a test would only
 restate the configuration. Five are not fully met and are stated as such: NFR-14
 (offset pagination), NFR-23 (no queue is configured with retries, so a failed job is
 not attempted again), NFR-25 (readiness ignores Redis), NFR-28 (horizontal scaling is
 designed for but was never exercised) and NFR-37 (met on desktop and for critical
-violations, not on mobile — see @sec:eval-perf). They return as limitations in the
+violations, not on mobile; see @sec:eval-perf). They return as limitations in the
 general conclusion.
 
 ## Global use case diagrams {#sec:uc-global}
@@ -323,7 +323,7 @@ drawn twenty times.
 **Visitor and reader.** @fig:uc-visitor-reader gives the use cases of the two actors
 who read.
 
-![Global use case diagram — visitor and reader](../diagrams/fig-1-3-use-case-visitor-reader/fig-1-3-use-case-visitor-reader.png){#fig:uc-visitor-reader}
+![Global use case diagram: visitor and reader](../diagrams/fig-1-3-use-case-visitor-reader/fig-1-3-use-case-visitor-reader.png){#fig:uc-visitor-reader}
 
 The visitor browses, reads free articles, searches, views profiles and shares;
 *Create an account* and *Sign in with Google* extend *Sign in*. The reader inherits
@@ -333,7 +333,7 @@ upgrade. Premium is a condition, not an actor: *Read a premium article* extends
 
 **Writer.** @fig:uc-writer gives the use cases of the writer.
 
-![Global use case diagram — writer](../diagrams/fig-1-4-use-case-writer/fig-1-4-use-case-writer.png){#fig:uc-writer}
+![Global use case diagram: writer](../diagrams/fig-1-4-use-case-writer/fig-1-4-use-case-writer.png){#fig:uc-writer}
 
 The writer inherits the reader's use cases and adds writing, the assistant and their
 own figures. *Publish as premium* and *List on the marketplace* extend *Publish an
@@ -343,10 +343,10 @@ allowance. Most of the complexity sits around publishing and the assistant.
 **Magazine and administrator.** @fig:uc-magazine-admin gives the use cases of the two
 actors that specialise nobody.
 
-![Global use case diagram — magazine and administrator](../diagrams/fig-1-5-use-case-magazine-admin/fig-1-5-use-case-magazine-admin.png){#fig:uc-magazine-admin}
+![Global use case diagram: magazine and administrator](../diagrams/fig-1-5-use-case-magazine-admin/fig-1-5-use-case-magazine-admin.png){#fig:uc-magazine-admin}
 
 The magazine manages its subscription and credits; with an active subscription it
-evaluates writers, previews, buys and publishes articles — the four marketplace use
+evaluates writers, previews, buys and publishes articles, and the four marketplace use
 cases include *Check the active subscription*. The administrator works the report
 queue, manages users and grants eligibility. No generalisation links the two: neither
 is a kind of reader or writer.
@@ -371,7 +371,7 @@ tags.
 ![Class diagram: accounts and articles](../diagrams/fig-1-6-classes-accounts-articles/fig-1-6-classes-accounts-articles.png){#fig:classes-accounts}
 
 One `User` class serves every account; type, role and plan are attributes, and a
-constraint keeps role and plan empty for a magazine — the data-model reason it
+constraint keeps role and plan empty for a magazine, which is the data-model reason it
 inherits nothing from the reader. `Article.publisherId`, set only on a licensed
 article, is the single attribute through which the marketplace changes the core.
 
@@ -394,15 +394,15 @@ private document library with its chunks.
 Everything here can be rebuilt from articles and documents: chunks are re-embedded on
 every publication and the insights are a cache. A `DocumentChunk` keeps its page,
 which a citation points to, and a document's chunks serve only the articles it is
-attached to — never memory, insights or search (FR-87).
+attached to, never memory, insights or search (FR-87).
 
 **Marketplace.** @fig:classes-marketplace shows purchases, the ledger transactions,
 magazine subscriptions and the eligibility audit log.
 
 ![Class diagram: marketplace](../diagrams/fig-1-9-classes-marketplace/fig-1-9-classes-marketplace.png){#fig:classes-marketplace}
 
-Money is never a single number: a `Purchase` records two or three `Transaction` rows —
-the magazine's debit, the writer's payout and the platform fee — and every balance can
+Money is never a single number: a `Purchase` records two or three `Transaction` rows
+(the magazine's debit, the writer's payout and the platform fee), and every balance can
 be recomputed from them, which is what the ledger invariants of NFR-19 check. Amounts
 are always positive; their direction comes from the transaction type, enforced by a
 constraint.
@@ -414,7 +414,7 @@ metric rollups.
 
 Raw `AnalyticsEvent` rows are written once and never read by a dashboard, which
 reads only the rollups, so its cost does not grow with the events (NFR-15). Fields
-the browser cannot measure — country, device, paragraph drop-off — are stored empty,
+the browser cannot measure (country, device, paragraph drop-off) are stored empty,
 not zero, so "not measured" stays distinct from "none".
 
 ## Product backlog {#sec:backlog}
@@ -428,9 +428,9 @@ summarises it by epic; the full backlog is given in Annex B.
 <!-- INCLUDE:backlog-summary -->
 
 The distribution of points shows where the effort lies. The AI assistance epic is the
-heaviest (21% of the points) although it is not the largest in stories: its stories —
-retrieval grounded in the writer's corpus, writing into the document, voice, the
-document library — are few but each is large, because each joins a model call to the
+heaviest (21% of the points) although it is not the largest in stories: its stories
+(retrieval grounded in the writer's corpus, writing into the document, voice, the
+document library) are few but each is large, because each joins a model call to the
 editor and to the data model. The marketplace comes next (18%), for the same reason
 applied to money: a small number of stories, each guarded by transactions, locks and
 ledger checks. The social epic has the most stories but small ones, and the technical
@@ -448,13 +448,13 @@ environment in Chapter 2.
 
 | Release | Sprint | Dates | Goal | Points |
 |:----------------------------|:---|:----------|:--------------------------------------|:-:|
-| **R1 — Functional foundation** | Sprint 1 | 09/02 – 20/02 | Schema, authentication, article core, ledger invariant harness | {{S1PTS}} |
+| **R1: Functional foundation** | Sprint 1 | 09/02 – 20/02 | Schema, authentication, article core, ledger invariant harness | {{S1PTS}} |
 | | Sprint 2 | 06/04 – 17/04 | Editor, AI chat and inline actions, analytics event capture | {{S2PTS}} |
-| **R2 — Social, analytics and AI** | Sprint 3 | 20/04 – 01/05 | Social interactions, notifications, aggregation, dashboards | {{S3PTS}} |
+| **R2: Social, analytics and AI** | Sprint 3 | 20/04 – 01/05 | Social interactions, notifications, aggregation, dashboards | {{S3PTS}} |
 | | Sprint 4 | 04/05 – 15/05 | Retrieval-augmented generation, portfolio insights, hybrid search, writer memory | {{S4PTS}} |
-| **R3 — Marketplace, testing and deployment** | Sprint 5 | 18/05 – 29/05 | Marketplace, subscriptions, premium, moderation, administration | {{S5PTS}} |
+| **R3: Marketplace, testing and deployment** | Sprint 5 | 18/05 – 29/05 | Marketplace, subscriptions, premium, moderation, administration | {{S5PTS}} |
 | | Sprint 6 | 01/06 – 12/06 | Tests, demonstration corpus, deployment, CI/CD | {{S6PTS}} |
-| **R4 — Social depth, assistant and documents** | Sprint 7 | 15/06 – 26/06 | Comment likes, follower lists, block, save, share | {{S7PTS}} |
+| **R4: Social depth, assistant and documents** | Sprint 7 | 15/06 – 26/06 | Comment likes, follower lists, block, save, share | {{S7PTS}} |
 | | Sprint 8 | 29/06 – 10/07 | Live card controls, reposts, byline preview, assistant writing into the document, voice | {{S8PTS}} |
 | | Sprint 9 | 13/07 – 24/07 | Document library, ingestion, attachment, citations | {{S9PTS}} |
 
@@ -462,8 +462,8 @@ environment in Chapter 2.
 
 The order of the releases follows the layering argued in @sec:method: each release
 needs the data the previous one produces. The loads are uneven. Sprint 5 commits 85
-points against an average near 40, because the marketplace stories — subscription,
-credits, preview, purchase, publication, earnings — share one transaction model and
+points against an average near 40, because the marketplace stories (subscription,
+credits, preview, purchase, publication, earnings) share one transaction model and
 were planned together rather than split across two sprints. Sprints 6, 7 and 9 are
 light, for two different reasons: Sprint 6's real work, the test suite that proves
 the business rules, is not expressed as user stories, and Release 4 runs alongside
@@ -477,8 +477,8 @@ the writing of this report alongside the last sprints.
 ![Gantt chart of the project](../diagrams/fig-2-4-gantt/fig-2-4-gantt.png){#fig:gantt}
 
 The chart shows one break in the rhythm: the six-week design track between Sprints 1
-and 2. It was deliberate — later features were built from finished screens rather
-than designed while coded — and it is why the first release spans two months.
+and 2. It was deliberate, since later features were built from finished screens rather
+than designed while coded, and it is why the first release spans two months.
 
 ## Conclusion {.unnumbered}
 

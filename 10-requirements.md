@@ -67,10 +67,10 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-69 | Continue any article list as the reader scrolls, with a "Load more" control that remains available and a failed page that neither discards loaded rows nor retries itself | Must | 8 |
 | FR-02 | Read the full body of a **free public** article without an account | Must | 1 |
 | FR-03 | Be blocked from premium and marketplace articles, with an explicit prompt to sign up | Must | 1 |
-| FR-71 | Not see a marketplace listing on the writer's public profile at all — the exceptions being the article's own author and an administrator | Must | 5 |
+| FR-71 | Not see a marketplace listing on the writer's public profile at all, the exceptions being the article's own author and an administrator | Must | 5 |
 | FR-75 | Read a magazine's published articles on its public profile, paginated, without an account | Must | 5 |
 | FR-76 | See both the writer and the publishing magazine named on a licensed article, each linking to its own profile | Must | 5 |
-| FR-77 | Preview a writer or magazine from any byline by hovering it — name, bio, counts and a follow control for a writer; logo, description and founding date for a magazine — without leaving the page | Should | 8 |
+| FR-77 | Preview a writer or magazine from any byline by hovering it (name, bio, counts and a follow control for a writer; logo, description and founding date for a magazine) without leaving the page | Should | 8 |
 | FR-04 | Register as a personal account, or as a magazine account | Must | 1 |
 | FR-05 | Authenticate by email/password or Google OAuth | Must | 1 |
 | FR-06 | Search articles and writers, and browse by tag | Should | 4 |
@@ -89,7 +89,7 @@ report's sprint numbering (§5), not the calendar sprint.
 
 | ID | Requirement | Priority | Sprint |
 |----|-------------|----------|--------|
-| FR-07 | Manage a profile — display name, bio, avatar upload | Must | 1 |
+| FR-07 | Manage a profile: display name, bio, avatar upload | Must | 1 |
 | FR-08 | Like an article, and un-like it | Must | 3 |
 | FR-09 | Comment on an article, and reply to a comment (threaded) | Must | 3 |
 | FR-10 | Delete one's own comment | Must | 3 |
@@ -124,7 +124,7 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-25 | Update or soft-delete an own article | Must | 1 |
 | FR-26 | Switch an article from marketplace to public (one-way; the reverse is refused) | Should | 5 |
 | FR-27 | Converse with an AI assistant grounded in the writer's **own** published corpus | Must | 2, 4 |
-| FR-28 | Apply an inline AI action to a text selection — reformulate, shorten, expand, simplify, improve | Must | 2 |
+| FR-28 | Apply an inline AI action to a text selection: reformulate, shorten, expand, simplify, improve | Must | 2 |
 | FR-29 | See which passages the assistant retrieved, grouped by source article | Should | 4 |
 | FR-30 | Insert an AI response into the document at the cursor | Must | 2 |
 | FR-78 | The assistant decides, per message, whether to answer in the panel or write into the document — *superseding the manual insert of FR-30 (2026-09-14)* | Must | 8 |
@@ -138,12 +138,12 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-86 | The assistant draws on attached documents for both answers and writes, cites passages inline as [Title, p. N], and shows the passages used with a link opening the file at the page | Must | 9 |
 | FR-87 | A document is the writer's alone: it never feeds writer memory, Portfolio Insights or search, and another account cannot read, attach or discover it | Must | 9 |
 | FR-31 | See the remaining AI token balance, updated after each action | Must | 2 |
-| FR-32 | View per-article analytics — views, unique readers, average read time, completion, engagement, retention curve | Must | 3 |
+| FR-32 | View per-article analytics: views, unique readers, average read time, completion, engagement, retention curve | Must | 3 |
 | FR-33 | Rank own articles by views or engagement, server-side across the whole body of work | Should | 3 |
 | FR-34 | See progress toward marketplace eligibility | Must | 5 |
 | FR-35 | *(eligible writer)* Publish to the marketplace with a price in credits | Must | 5 |
 | FR-36 | *(eligible writer)* Publish premium-visibility articles | Must | 5 |
-| FR-37 | View earnings — lifetime, per article, itemised by preview and purchase | Must | 5 |
+| FR-37 | View earnings: lifetime, per article, itemised by preview and purchase | Must | 5 |
 | FR-38 | Be notified when a magazine previews or purchases an article, and when earnings are credited | Must | 5 |
 
 > **Out of scope:** voice-to-article — dictating a whole article. Voice in this
@@ -154,20 +154,20 @@ report's sprint numbering (§5), not the calendar sprint.
 
 | ID | Requirement | Priority | Sprint |
 |----|-------------|----------|--------|
-| FR-39 | Register with magazine fields — name, slug, logo, website, description | Must | 1 |
+| FR-39 | Register with magazine fields: name, slug, logo, website, description | Must | 1 |
 | FR-40 | *(without subscription)* Be stopped at a subscription wall before any marketplace surface | Must | 5 |
 | FR-41 | Subscribe, receiving a monthly credit allowance (simulated payment) | Must | 5 |
 | FR-42 | Top up credits outside the monthly grant | Should | 5 |
 | FR-43 | See the credit balance, the renewal date and the transaction history | Must | 5 |
 | FR-44 | Browse eligible writers, filtered by topic, searchable, with four sort orders | Must | 3, 5 |
-| FR-45 | Read a writer evaluation report — audience, content, quality panels | Must | 3 |
+| FR-45 | Read a writer evaluation report: audience, content, quality panels | Must | 3 |
 | FR-46 | Request AI Portfolio Insights for a writer, as an explicit action | Must | 4 |
 | FR-47 | Browse a writer's marketplace-listed articles with prices | Must | 5 |
 | FR-48 | Unlock a preview for 10% of the price, and read the full article | Must | 5 |
 | FR-49 | Purchase the remainder (90%) and gain republish rights | Must | 5 |
 | FR-50 | See the curated library of fully purchased articles | Must | 5 |
 | FR-72 | Be refused when previewing, buying, switching to public, or deleting an article another magazine has already purchased exclusively | Must | 5 |
-| FR-73 | Publish an article it has purchased, under its own masthead — making it public and free, clearing the price, and recording the publisher | Must | 5 |
+| FR-73 | Publish an article it has purchased, under its own masthead, making it public and free, clearing the price, and recording the publisher | Must | 5 |
 | FR-74 | See the library split into what has been published and what is still waiting, and act only on the second | Must | 5 |
 
 > **Deviations recorded.** Portfolio Insights generation is an explicit click,
@@ -290,7 +290,7 @@ evidence that supports it, so the report can cite code rather than assert.
 The form is *"As a … I want … so that …"*. IDs are stable.
 Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 
-### E1 — Accounts and authentication
+### E1: Accounts and authentication
 
 | ID | User story | Actor | Pri | Pts | Sprint |
 |----|-----------|-------|-----|-----|--------|
@@ -300,7 +300,7 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-04 | Stay signed in across a long writing session so that I do not lose a draft | A3 | Must | 3 | 1 |
 | US-05 | Edit my profile and avatar so that my public page represents me | A2 | Should | 3 | 1 |
 
-### E2 — Writing and publishing
+### E2: Writing and publishing
 
 | ID | User story | Actor | Pri | Pts | Sprint |
 |----|-----------|-------|-----|-----|--------|
@@ -313,7 +313,7 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-12 | Restrict an article to premium readers so that my best work is worth a subscription | A3 | Should | 3 | 5 |
 | US-13 | See word count and reading time so that I can judge length as I write | A3 | Could | 1 | 2 |
 
-### E3 — AI assistance
+### E3: AI assistance
 
 | ID | User story | Actor | Pri | Pts | Sprint |
 |----|-----------|-------|-----|-----|--------|
@@ -324,14 +324,14 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-18 | See my remaining allowance so that I can pace my usage | A2 | Must | 2 | 2 |
 | US-19 | Have my voice profile extracted from my corpus so that the assistant stays consistent when retrieval finds nothing | A3 | Should | 8 | 4 |
 | US-66 | Tell the assistant what to write and watch it appear in my draft, then keep or discard it, so that generation happens where I write rather than in a chat I copy from | A3 | Must | 8 | 8 |
-| US-67 | See what the assistant is doing while it works — and minimize it without losing sight of that — so that a slow step is not a frozen screen | A3 | Should | 3 | 8 |
+| US-67 | See what the assistant is doing while it works, and minimize it without losing sight of that, so that a slow step is not a frozen screen | A3 | Should | 3 | 8 |
 | US-68 | Say my request instead of typing it so that I can brief the assistant while my hands are busy or my thoughts are faster than my typing | A3 | Should | 5 | 8 |
-| US-69 | Hear the assistant's recap read out so that I can keep my eyes on the draft — and mute it when I would rather not | A3 | Could | 3 | 8 |
+| US-69 | Hear the assistant's recap read out so that I can keep my eyes on the draft, and mute it when I would rather not | A3 | Could | 3 | 8 |
 | US-70 | Upload the documents I am working from so that the assistant can use their facts without my retyping them | A3 | Must | 8 | 9 |
 | US-71 | Choose which documents apply to an article so that a piece on tides is not fed my notes on fermentation | A3 | Must | 3 | 9 |
 | US-72 | See which document and page a claim came from so that I can check it before it goes out under my name | A3 | Should | 5 | 9 |
 
-### E4 — Discovery and search
+### E4: Discovery and search
 
 | ID | User story | Actor | Pri | Pts | Sprint |
 |----|-----------|-------|-----|-----|--------|
@@ -340,7 +340,7 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-22 | Browse by tag so that I can follow a topic | A1 | Should | 2 | 4 |
 | US-23 | Find writers, not only articles, so that I can follow a person | A1 | Should | 3 | 4 |
 
-### E5 — Social interactions and notifications
+### E5: Social interactions and notifications
 
 | ID | User story | Actor | Pri | Pts | Sprint |
 |----|-----------|-------|-----|-----|--------|
@@ -360,7 +360,7 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-73 | Like a comment so that I can credit a good reply without writing one | A2 | Must | 2 | 7 |
 | US-74 | Browse who follows an account and whom it follows, and follow from the list, so that I find people through people | A1 | Must | 3 | 7 |
 
-### E6 — Analytics
+### E6: Analytics
 
 | ID | User story | Actor | Pri | Pts | Sprint |
 |----|-----------|-------|-----|-----|--------|
@@ -369,7 +369,7 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-32 | Evaluate a writer on audience, content and quality so that I can commission with evidence | A4 | Must | 13 | 3 |
 | US-33 | Read an AI assessment of a writer's voice and range so that I can shortlist quickly | A4 | Must | 8 | 4 |
 
-### E7 — Marketplace and subscriptions
+### E7: Marketplace and subscriptions
 
 | ID | User story | Actor | Pri | Pts | Sprint |
 |----|-----------|-------|-----|-----|--------|
@@ -386,7 +386,7 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-63 | Publish an article I have bought when I am ready, rather than the purchase publishing it for me, so that my masthead stays mine to decide | A4 | Must | 5 | 5 |
 | US-64 | Have the articles I publish appear on my public profile under my masthead so that licensing buys me a shelf and not just a file | A4 | Must | 5 | 5 |
 
-### E8 — Moderation and administration
+### E8: Moderation and administration
 
 | ID | User story | Actor | Pri | Pts | Sprint |
 |----|-----------|-------|-----|-----|--------|
@@ -397,7 +397,7 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-48 | Search and filter users so that I can act on the right account | A5 | Should | 5 | 5 |
 | US-56 | Block an account so that I stop seeing someone without having to explain myself | A2 | Must | 5 | 7 |
 
-### E9 — Quality and operations (technical stories)
+### E9: Quality and operations (technical stories)
 
 | ID | Story | Pri | Pts | Sprint |
 |----|-------|-----|-----|--------|

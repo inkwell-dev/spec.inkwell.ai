@@ -3,8 +3,8 @@
 ## Introduction {.unnumbered}
 
 The release chapters showed what the platform does; this chapter measures how well it
-does it. It evaluates the three components whose quality cannot be read off a screen —
-the retrieval behind the assistant, the hybrid search and the moderation classifier —
+does it. It evaluates the three components whose quality cannot be read off a screen
+(the retrieval behind the assistant, the hybrid search and the moderation classifier),
 then the performance and accessibility of the platform, and finally the delivery
 itself: the velocity of the sprints against the plan, and a retrospective of each
 release. Every measurement was taken on the workstation of @tbl:hardware, with the
@@ -21,7 +21,7 @@ restriction is imposed by the embedding provider's free tier, which allows about
 thousand embeddings a day; it keeps the evaluation within one day's quota.
 
 **Questions.** The evaluation set is a *known-item* set: 30 target passages chosen from
-the corpus, five per subject, each asked twice — once with the passage's own
+the corpus, five per subject, each asked twice: once with the passage's own
 distinctive words (the *keyword* query) and once as a paraphrase that avoids them (the
 *paraphrase* query). A passage or an article is relevant when it contains the target
 passage. Three targets turned out to appear in none of their writer's embedded
@@ -32,14 +32,14 @@ articles. The queries were written before any result was seen.
 **Metrics.** The standard measures of ranked retrieval were used
 [@manning2008ir; @voorhees1999trec; @jarvelin2002ndcg]:
 
-- **hit@k** — the share of queries for which at least one relevant item is among the
+- **hit@k**: the share of queries for which at least one relevant item is among the
   first *k* results;
-- **MRR** (mean reciprocal rank) — the mean of 1/*r*, where *r* is the rank of the first
+- **MRR** (mean reciprocal rank): the mean of 1/*r*, where *r* is the rank of the first
   relevant result (0 when there is none); 1.00 means the first result is always
   relevant;
-- **precision@5** — the share of relevant items among the passages returned;
-- **recall@10** — the share of the relevant articles found in the first ten results;
-- **nDCG@10** — a rank-weighted score that rewards relevant results placed higher.
+- **precision@5**: the share of relevant items among the passages returned;
+- **recall@10**: the share of the relevant articles found in the first ten results;
+- **nDCG@10**: a rank-weighted score that rewards relevant results placed higher.
 
 The evaluation reuses the production code: queries are embedded by the platform's own
 embedding service, and the rankings are the SQL of the retrieval and search services.
@@ -66,8 +66,8 @@ writer of *another* subject, for whom the correct answer is no passage at all.
 : Retrieval of the writer's own passages, by similarity floor (54 queries) {#tbl:eval-rag}
 
 At the floor used in production (0.60), a relevant passage is among the five returned
-for 89% of the questions — 96% when the question uses the passage's words, 81% when it
-paraphrases them — and it is usually the first one (MRR 0.79). The floor is the reason
+for 89% of the questions (96% when the question uses the passage's words, 81% when it
+paraphrases them), and it is usually the first one (MRR 0.79). The floor is the reason
 off-topic questions are refused: at 0.60, 69% of the questions asked to the wrong
 writer retrieve nothing, where a floor of 0.50 would have fed five irrelevant passages
 to the model every time.
@@ -119,8 +119,8 @@ corpus, not how they would score on a public benchmark.
 ranking: about 0.3 s in total, dominated by the call to the embedding provider. One
 behaviour was also measured that the design did not intend. When the provider's daily
 quota is exhausted, each search spends about **6.3 s** retrying the embedding three
-times before falling back to keyword search. The fallback works — the results are still
-returned — but the retries make it slow; failing fast once the quota is known to be
+times before falling back to keyword search. The fallback works, since the results are still
+returned, but the retries make it slow; failing fast once the quota is known to be
 exhausted, and caching the embeddings of frequent queries, are listed among the
 perspectives.
 
@@ -129,9 +129,9 @@ perspectives.
 The classifier reviews every public article after publication and files a report when
 it judges the content to violate one of six categories (@sec:sprint5). It was evaluated
 on a labelled set of 33 texts written for the purpose: **13 violating texts** across the
-six categories, and **20 safe texts**, of which twelve are *hard negatives* — war
+six categories, and **20 safe texts**, of which twelve are *hard negatives* (war
 reporting, crime news, an addiction memoir, thriller fiction, a suicide-prevention
-message, instructions on overdose treatment — that a naive classifier would flag
+message, instructions on overdose treatment) that a naive classifier would flag
 because of their subject. The production service was called on each text three times.
 
 | | Classified violating | Classified safe |
@@ -144,7 +144,7 @@ because of their subject. The production service was called on each text three t
 The classifier reaches a **precision of 0.93** and a **recall of 1.00** (F1 0.96), and
 named the right category for all 13 violating texts; the three runs gave identical
 results. Its single false positive is instructive: instructions for killing a landed
-fish quickly, classified as violence — a hard negative about hunting, the kind of text
+fish quickly, classified as violence. It is a hard negative about hunting, the kind of text
 the instruction to judge content rather than subject is meant to pass. The policy
 chosen in @sec:sprint5 absorbs exactly this kind of error: a false positive files a
 report that an administrator dismisses, and never blocks the article.
@@ -152,7 +152,7 @@ report that an administrator dismisses, and never blocks the article.
 The median classification took 2.2 s, which is acceptable because it runs after the
 publication has been answered. The evaluation also had a second outcome. Its first run
 showed that the model initially configured for the classifier had been withdrawn by
-the provider, so that every call failed and the service — which fails open by design —
+the provider, so that every call failed and the service, which fails open by design,
 passed every article without a word in the logs. The classifier was moved to
 `gpt-oss-20b`, with an output budget large enough for a reasoning model, and the
 results above are those of the corrected service. The lesson is that a fail-open
@@ -172,13 +172,13 @@ applied as it would to distinct readers.
 | Article page (`GET /articles/:slug`) | 15 ms | 19 ms | 652 req/s |
 | Writer evaluation (`GET /writers/:username/evaluation`) | 16 ms | 20 ms | 620 req/s |
 | Writer dashboard (`GET /me/analytics`) | 12 ms | 17 ms | 774 req/s |
-| Search (stages, one query at a time) | ≈ 0.3 s | — | bound by the provider quota |
+| Search (stages, one query at a time) | ≈ 0.3 s | n/a | bound by the provider quota |
 
 : Latency of the main API routes under concurrent load {#tbl:eval-latency}
 
 Every route that reads the database answers in under 50 ms at the 95th percentile on
-a laptop, and the two routes backed by the rollups — the evaluation report and the
-dashboard — are among the fastest, which is the effect NFR-15 was written for. Search
+a laptop, and the two routes backed by the rollups (the evaluation report and the
+dashboard) are among the fastest, which is the effect NFR-15 was written for. Search
 is the exception, for the reason given in @sec:eval-search: its cost is the call to the
 embedding provider, not the database. The rate limit of NFR-05 was verified on the
 same occasion: sixty requests from one address within a minute were served, and the
@@ -204,7 +204,7 @@ width; every page scores above 90 for accessibility, and between 93 and 98 for
 performance on desktop. On the mobile preset, which simulates a slow device and
 network, the pages score 63 to 75: their largest element is painted after about six
 seconds, because the page loads its fonts, cover image and interactive controls before
-the text settles. The serious violations are of two kinds only — text whose contrast
+the text settles. The serious violations are of two kinds only: text whose contrast
 with its background is too low, and icon-only links without an accessible name (the
 reaction and share buttons of the cards, which explains the higher count on the feed).
 Both are fixes of the design tokens and of a few components, and they are listed with
@@ -233,15 +233,15 @@ points delivered under that definition.
 
 | Sprint | Committed | Delivered | Gap |
 |:--|:-:|:-:|:-------------------------------------|
-| Sprint 1 | {{S1PTS}} | {{S1PTS}} | — |
-| Sprint 2 | {{S2PTS}} | {{S2PTS}} | — |
-| Sprint 3 | {{S3PTS}} | {{S3PTS}} | — |
-| Sprint 4 | {{S4PTS}} | {{S4PTS}} | — |
-| Sprint 5 | {{S5PTS}} | {{S5PTS}} | — |
+| Sprint 1 | {{S1PTS}} | {{S1PTS}} |  |
+| Sprint 2 | {{S2PTS}} | {{S2PTS}} |  |
+| Sprint 3 | {{S3PTS}} | {{S3PTS}} |  |
+| Sprint 4 | {{S4PTS}} | {{S4PTS}} |  |
+| Sprint 5 | {{S5PTS}} | {{S5PTS}} |  |
 | Sprint 6 | {{S6PTS}} | 12 | US-55 (8 points): configuration ready, server not provisioned |
-| Sprint 7 | {{S7PTS}} | {{S7PTS}} | — |
-| Sprint 8 | {{S8PTS}} | {{S8PTS}} | — |
-| Sprint 9 | {{S9PTS}} | {{S9PTS}} | — |
+| Sprint 7 | {{S7PTS}} | {{S7PTS}} |  |
+| Sprint 8 | {{S8PTS}} | {{S8PTS}} |  |
+| Sprint 9 | {{S9PTS}} | {{S9PTS}} |  |
 | **Total** | **{{POINTS}}** | **342** | 98% of the committed points |
 
 : Committed and delivered points per sprint {#tbl:velocity}
@@ -267,8 +267,8 @@ split Sprint 5 in two.
 
 : Retrospective by release {#tbl:retro}
 
-The retrospective shows a pattern. The rules written down early — the ledger
-invariants, the access decision, the definition of done — held for the whole project;
+The retrospective shows a pattern. The rules written down early (the ledger
+invariants, the access decision, the definition of done) held for the whole project;
 what went wrong came from outside the code: the quotas and model changes of the AI
 providers, and the time an individual project leaves for hosting. Those are the points
 the perspectives address.

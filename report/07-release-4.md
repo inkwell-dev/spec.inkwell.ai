@@ -9,7 +9,7 @@ into the document, shows its real pipeline as it runs, and accepts and speaks vo
 the feed card becomes interactive. Sprint 9 gives the writer a private library of
 reference documents that the assistant can draw on and cite by page.
 
-## Sprint 7 — Comment likes, lists, block, save and share {#sec:sprint7}
+## Sprint 7: Comment likes, lists, block, save and share {#sec:sprint7}
 
 ### Sprint backlog
 
@@ -20,8 +20,8 @@ block accounts, keep articles for later and share them outside the platform.
 <!-- INCLUDE:sprint-7 -->
 
 The sprint commits {{S7PTS}} points, a light load: its five stories reuse the
-interaction model of Sprint 3 — each is a new many-to-many association with a
-notification — so they were small to estimate and to build. The sprint was kept light
+interaction model of Sprint 3 (each is a new many-to-many association with a
+notification), so they were small to estimate and to build. The sprint was kept light
 deliberately, as the start of the release that runs alongside the writing of this
 report.
 
@@ -77,10 +77,10 @@ reviewed privately.
 ![A follower list, searched](../figures/screens/reader-08-followers-search.png){#fig:followers-search}
 
 The following feed shows only the writers a reader follows, and the follower lists can
-be browsed, searched and acted on — following back from the list itself (FR-61). Both
+be browsed, searched and acted on, including following back from the list itself (FR-61). Both
 turn the follow relationship of Sprint 3 into a way to discover people through people.
 
-## Sprint 8 — Live cards, the assistant that writes, and voice {#sec:sprint8}
+## Sprint 8: Live cards, the assistant that writes, and voice {#sec:sprint8}
 
 ### Sprint backlog
 
@@ -110,7 +110,7 @@ it. The assistant chooses per message, replacing the manual insert of Sprint 2
 
 ### Design
 
-**Sequence diagram — one assistant turn.** @fig:seq-turn shows a turn.
+**Sequence diagram: one assistant turn.** @fig:seq-turn shows a turn.
 
 ![Sequence diagram: one assistant turn](../diagrams/fig-7-4-sequence-assistant-turn/fig-7-4-sequence-assistant-turn.png){#fig:seq-turn}
 
@@ -119,16 +119,16 @@ stage. One routing call answers in the panel or calls `write_to_article`, then a
 recap; tokens are settled at the end. The panel shows real steps because each stage
 is part of the response stream (FR-80).
 
-**Sequence diagram — writing into the document.** @fig:seq-write shows the write.
+**Sequence diagram: writing into the document.** @fig:seq-write shows the write.
 
 ![Sequence diagram: writing into the document](../diagrams/fig-7-5-sequence-in-document-write/fig-7-5-sequence-in-document-write.png){#fig:seq-write}
 
 The text streams into a protected range opened at a block boundary, block by block.
 The writer then keeps it, as one undo step, or discards it, restoring exactly what
-was there — exact because the range starts at a block boundary and touches no node
+was there. It is exact because the range starts at a block boundary and touches no node
 the writer owns.
 
-**Sequence diagram — voice.** @fig:seq-voice shows the voice round trip.
+**Sequence diagram: voice.** @fig:seq-voice shows the voice round trip.
 
 ![Sequence diagram: the voice round trip](../diagrams/fig-7-6-sequence-voice-round-trip/fig-7-6-sequence-voice-round-trip.png){#fig:seq-voice}
 
@@ -172,7 +172,7 @@ and controls to confirm or cancel; the transcript then fills the composer, edita
 (FR-82). Dictation uses the same allowance as typing: voice is a way to write a
 prompt.
 
-## Sprint 9 — Document library and citations {#sec:sprint9}
+## Sprint 9: Document library and citations {#sec:sprint9}
 
 ### Sprint backlog
 
@@ -210,7 +210,7 @@ keeps its page, and documents attach to articles many-to-many. The status only m
 forward, except a retry. A citation is a property of the data: the page travels with
 the chunk to the prompt.
 
-**Sequence diagram — ingestion.** @fig:seq-ingest shows a document's path, the
+**Sequence diagram: ingestion.** @fig:seq-ingest shows a document's path, the
 companion of the publishing pipeline of @fig:seq-publish.
 
 ![Sequence diagram: document upload and ingestion](../diagrams/fig-7-9-sequence-document-ingestion/fig-7-9-sequence-document-ingestion.png){#fig:seq-ingest}
@@ -227,8 +227,8 @@ with a reason. No document is half usable.
 ![The document library, one document refused with its reason](../figures/screens/writer-16-document-library.png){#fig:documents}
 
 The library lists each document's type, pages, status, size and upload time against
-the limit of 20 (FR-84). One document is extracting; the other is refused — "This
-document has no text to read" — with a retry: failures are stated in words the writer
+the limit of 20 (FR-84). One document is extracting; the other is refused ("This
+document has no text to read") with a retry: failures are stated in words the writer
 can act on.
 
 @fig:sources shows the attachment of a document from the Sources tab of the assistant.

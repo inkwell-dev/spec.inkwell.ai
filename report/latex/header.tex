@@ -88,8 +88,10 @@
 
 % ── Lists of figures and tables: "Figure 1.1 – Title" lines ──────────────────
 \usepackage{tocbasic}
-\DeclareTOCStyleEntry[entrynumberformat=\figureentry, numwidth=0pt]{tocline}{figure}
-\DeclareTOCStyleEntry[entrynumberformat=\tableentry, numwidth=0pt]{tocline}{table}
+% numwidth is the box the "Figure 1.10 – " prefix sits in; the title starts
+% after it. At 0pt the title was printed on top of the prefix.
+\DeclareTOCStyleEntry[entrynumberformat=\figureentry, indent=0pt, numwidth=6.4em]{tocline}{figure}
+\DeclareTOCStyleEntry[entrynumberformat=\tableentry, indent=0pt, numwidth=5.6em]{tocline}{table}
 \newcommand{\figureentry}[1]{Figure~#1~–~}
 \newcommand{\tableentry}[1]{Table~#1~–~}
 

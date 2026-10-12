@@ -63,7 +63,7 @@ c = [
          340, 120, 200, 110, BOX + BLUE),
     cell("sb", "Sprint backlog&lt;br&gt;&lt;br&gt;the stories committed&lt;br&gt;for this sprint",
          340, 280, 200, 120, BOX + AMBER),
-    cell("sprint", "Sprint — two weeks", 600, 100, 540, 320, GRP + GREY),
+    cell("sprint", "Sprint: two weeks", 600, 100, 540, 320, GRP + GREY),
     cell("work", "Daily work&lt;br&gt;&lt;br&gt;build · test · integrate&lt;br&gt;continuously",
          640, 150, 220, 110, BOX + WHITE),
     cell("inc", "Increment&lt;br&gt;&lt;br&gt;verified against the&lt;br&gt;definition of done",
@@ -71,7 +71,7 @@ c = [
     cell("review", "Sprint review", 640, 300, 220, 60, BOX + BLUE),
     cell("retro", "Retrospective", 900, 300, 200, 60, BOX + BLUE),
     cell("roles", "The three Scrum roles, and how they collapse here&lt;br&gt;&lt;br&gt;"
-                  "Product Owner · Scrum Master · Development Team — on this project all three "
+                  "Product Owner · Scrum Master · Development Team: on this project all three "
                   "are the same person. The academic supervisor acts as Product Owner at sprint "
                   "boundaries, reviewing each increment against the backlog. Stated in §1.4.2 "
                   "rather than left implied, because it is the first thing an examiner asks about "
@@ -90,23 +90,23 @@ write("fig-1-1-scrum-framework", "Figure 1.1 - The Scrum framework as practised"
 
 # ── Figure 1.2 — waterfall against agile ─────────────────────────────────────
 c = [
-    cell("wf", "Classic — sequential phases", 60, 70, 470, 430, GRP + GREY),
+    cell("wf", "Classic: sequential phases", 60, 70, 470, 430, GRP + GREY),
     cell("w1", "Requirements", 110, 120, 370, 50, BOX + BLUE),
     cell("w2", "Design", 110, 190, 370, 50, BOX + BLUE),
     cell("w3", "Implementation", 110, 260, 370, 50, BOX + BLUE),
     cell("w4", "Testing", 110, 330, 370, 50, BOX + BLUE),
-    cell("w5", "Delivery — once, at the end", 110, 400, 370, 50, BOX + RED),
-    cell("ag", "Agile — Scrum, iterative", 610, 70, 530, 430, GRP + GREEN),
-    cell("s1", "Sprint 1 — plan · build · verify → increment", 650, 120, 450, 50, BOX + WHITE),
-    cell("s2", "Sprint 2 — plan · build · verify → increment", 650, 190, 450, 50, BOX + WHITE),
-    cell("s3", "Sprint n — plan · build · verify → increment", 650, 260, 450, 50, BOX + WHITE),
+    cell("w5", "Delivery: once, at the end", 110, 400, 370, 50, BOX + RED),
+    cell("ag", "Agile: Scrum, iterative", 610, 70, 530, 430, GRP + GREEN),
+    cell("s1", "Sprint 1: plan · build · verify → increment", 650, 120, 450, 50, BOX + WHITE),
+    cell("s2", "Sprint 2: plan · build · verify → increment", 650, 190, 450, 50, BOX + WHITE),
+    cell("s3", "Sprint n: plan · build · verify → increment", 650, 260, 450, 50, BOX + WHITE),
     cell("s4", "Working software every two weeks", 650, 330, 450, 50, BOX + GREEN),
     cell("s5", "Each increment reviewed before the next is planned", 650, 400, 450, 50, BOX + AMBER),
     cell("why", "Why Scrum was chosen for this project&lt;br&gt;&lt;br&gt;"
                 "The product is built in layers that each need the one before: the marketplace "
                 "evaluates writers on analytics, and analytics need published articles. Fixed "
                 "two-week sprints deliver those layers in order, each one a working increment the "
-                "next builds on, and each with written exit criteria — which is what lets every "
+                "next builds on, and each with written exit criteria, which is what lets every "
                 "release chapter show evidence rather than assert completion.",
          60, 540, 1080, 130, NOTE + AMBER),
     edge("b1", "w1", "w2", "", EV), edge("b2", "w2", "w3", "", EV),
@@ -131,7 +131,7 @@ c = [
     cell("sweep", "Price sweep&lt;br&gt;&lt;br&gt;every value from 1 to 300,&lt;br&gt;"
                   "both stages and both splits,&lt;br&gt;reconciled exactly",
          400, 500, 280, 170, BOX + PURPLE),
-    cell("gates", "CI gates — a red build blocks the image", 1000, 120, 200, 330, GRP + GREY),
+    cell("gates", "CI gates: a red build blocks the image", 1000, 120, 200, 330, GRP + GREY),
     cell("g1", "eslint, 0 warnings", 1020, 170, 160, 40, BOX + WHITE),
     cell("g2", "tsc --noEmit", 1020, 220, 160, 40, BOX + WHITE),
     cell("g3", "the test suites", 1020, 270, 160, 40, BOX + WHITE),
@@ -140,7 +140,7 @@ c = [
     cell("note", "Validated by sabotage, not by passing: removing the completed-status filter "
                  "from the earnings query fails exactly the pending-payout test, and dropping "
                  "preview_unlock from the debit list fails seven. That exercise found a real "
-                 "coverage gap — nothing pinned the grant type filter — which was then closed.",
+                 "coverage gap (nothing pinned the grant type filter), which was then closed.",
          720, 500, 480, 170, NOTE + AMBER),
     edge("c1", "unit", "int", "", EU),
     edge("c2", "int", "e2e", "", EU),

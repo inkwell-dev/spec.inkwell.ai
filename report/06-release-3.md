@@ -9,7 +9,7 @@ moderation console. Sprint 6 is a technical sprint: it delivers no new screen, b
 test strategy that proves the business rules of Sprint 5, a demonstration corpus, and a
 deployable production stack. Both sprints follow the same four steps as the others.
 
-## Sprint 5 — Marketplace, subscriptions, premium and moderation {#sec:sprint5}
+## Sprint 5: Marketplace, subscriptions, premium and moderation {#sec:sprint5}
 
 ### Sprint backlog
 
@@ -57,7 +57,7 @@ part of the analysis because every screen and every test of the sprint applies t
 
 The rules have one property in common: each is an integer computation with a single
 rounding, so the sum of what the writer, the platform and the magazine see always
-reconciles to the credit. The values themselves — 10%, 20%, 500, 5,000 and 1,000 — are
+reconciles to the credit. The values themselves (10%, 20%, 500, 5,000 and 1,000) are
 product decisions, kept as named constants (@sec:parameters).
 
 ### Design
@@ -66,13 +66,13 @@ product decisions, kept as named constants (@sec:parameters).
 
 ![Class diagram, Sprint 5](../diagrams/fig-6-2-classes-sprint-5/fig-6-2-classes-sprint-5.png){#fig:classes-s5}
 
-A `Purchase` records a stage — preview or full purchase — with the credits paid, the
+A `Purchase` records a stage (preview or full purchase) with the credits paid, the
 fee and the payout, and writes three `Transaction` rows: the magazine's debit, the
 writer's payout and the platform fee. No balance is stored without its explanation:
 credit balances and earnings are caches of these rows, which the ledger invariants
 check (NFR-19).
 
-**Sequence diagram — the purchase.** @fig:seq-purchase shows the three calls of a
+**Sequence diagram: the purchase.** @fig:seq-purchase shows the three calls of a
 licence.
 
 ![Sequence diagram: preview, purchase and publication](../diagrams/fig-6-3-sequence-two-stage-purchase/fig-6-3-sequence-two-stage-purchase.png){#fig:seq-purchase}
@@ -82,7 +82,7 @@ credit balance (402 if too low), moves the credits and writes the ledger rows. T
 row lock rules out a double purchase or double spend (NFR-20); the idempotency key, a
 retried request charging twice (NFR-06).
 
-**Activity diagram — the eligibility gate.** @fig:act-eligibility shows how a writer
+**Activity diagram: the eligibility gate.** @fig:act-eligibility shows how a writer
 becomes eligible.
 
 ![Activity diagram: the marketplace eligibility gate](../diagrams/fig-6-4-activity-eligibility-gate/fig-6-4-activity-eligibility-gate.png){#fig:act-eligibility}
@@ -93,7 +93,7 @@ same audit entry. Comment likes and reposts do not count, so other people's acti
 cannot move a threshold. Every eligible writer can be traced to the numbers or the
 person that made them eligible.
 
-**Sequence diagram — moderation.** @fig:seq-moderation shows the two sources of
+**Sequence diagram: moderation.** @fig:seq-moderation shows the two sources of
 reports.
 
 ![Sequence diagram: reporting and moderation](../diagrams/fig-6-5-sequence-moderation/fig-6-5-sequence-moderation.png){#fig:seq-moderation}
@@ -104,7 +104,7 @@ comments. The administrator dismisses, removes the article or bans the author (i
 effect within fifteen minutes, NFR-09). A false positive costs a dismissed report,
 never a refused article; @sec:eval-moderation measures the classifier.
 
-**Activity diagram — the article access decision.** @fig:act-access shows the decision
+**Activity diagram: the article access decision.** @fig:act-access shows the decision
 taken server-side for every article body.
 
 ![Activity diagram: the article access decision](../diagrams/fig-6-6-activity-article-access/fig-6-6-activity-article-access.png){#fig:act-access}
@@ -114,13 +114,13 @@ subscribed magazine that previewed or bought it, a premium body only the premium
 or a subscribed magazine; otherwise the content is `null`. The server decides, so a
 modified client cannot read what it has not paid for.
 
-**State diagram — the article lifecycle.** @fig:state-article shows the states an
+**State diagram: the article lifecycle.** @fig:state-article shows the states an
 article goes through.
 
 ![State diagram: the article lifecycle](../diagrams/fig-6-8-state-article-lifecycle/fig-6-8-state-article-lifecycle.png){#fig:state-article}
 
-A draft is published as free, premium or listed. A listing can become public — never
-the reverse — or be deleted while unsold; a purchase makes it *owned*, and the
+A draft is published as free, premium or listed. A listing can become public (never
+the reverse) or be deleted while unsold; a purchase makes it *owned*, and the
 magazine's publication public. No transition can destroy what a magazine paid for,
 which enforces the exclusivity of @tbl:rules.
 
@@ -139,8 +139,8 @@ inspecting the page cannot reveal it.
 
 ![The plans: free and premium](../figures/screens/reader-03-subscription-plans.png){#fig:plans}
 
-The comparison states the difference between the plans — premium articles and the AI
-assistant with 20,000 tokens a day — and the banner states that payments are simulated
+The comparison states the difference between the plans (premium articles and the AI
+assistant with 20,000 tokens a day), and the banner states that payments are simulated
 in this release (FR-15). The page also says that listing on the marketplace is not part
 of premium: eligibility is earned, not bought, which is the rule of @tbl:rules.
 
@@ -162,7 +162,7 @@ decides.
 ![A listing before preview](../figures/screens/magazine-02-listing-detail.png){#fig:listing}
 
 Each listing shows its writer, topics and price, and two buttons: *Preview* at 10% of
-the price — 14 credits for an article at 140 — and *Buy* at the full price (FR-47). The
+the price (14 credits for an article at 140) and *Buy* at the full price (FR-47). The
 listing page shows the excerpt only; the body stays locked, as @fig:act-access
 requires, until the magazine pays.
 
@@ -171,7 +171,7 @@ requires, until the magazine pays.
 ![Confirming a preview unlock: price and balance after](../figures/screens/magazine-03-purchase-confirm.png){#fig:preview-confirm}
 
 Before any credit moves, the dialog states what is bought, what is paid now and the
-balance after — 238 → 224 — and requires an explicit *Confirm* (FR-48). It is the
+balance after (238 → 224), and requires an explicit *Confirm* (FR-48). It is the
 screen of the first call of @fig:seq-purchase: the figures it shows are the ones the
 transaction will write, so the magazine never discovers a charge after the fact.
 
@@ -223,10 +223,10 @@ The administrator closes the sprint. @fig:admin-grant shows a manual eligibility
 The grant records who made a writer eligible (FR-55); the user table searches accounts
 and edits a plan (FR-53, FR-54); the report queue offers the four actions of
 @fig:seq-moderation (FR-51, FR-52). Its second report has no reporter: the classifier
-filed it (FR-57), and the administrator's note explains why the article stayed — the
+filed it (FR-57), and the administrator's note explains why the article stayed: the
 decision the design reserves for a person.
 
-## Sprint 6 — Tests, demonstration and deployment {#sec:sprint6}
+## Sprint 6: Tests, demonstration and deployment {#sec:sprint6}
 
 ### Sprint backlog
 
@@ -252,7 +252,7 @@ verified and what must be deployable. Three needs follow from the previous sprin
   when it is right (NFR-06, NFR-19, NFR-20, NFR-31).
 - **A demonstrable product.** A demonstration needs readers, writers above and below
   the eligibility thresholds, magazines with and without a subscription, purchases and
-  history — none of which an empty database has (US-53, US-54).
+  history, none of which an empty database has (US-53, US-54).
 - **A deployable stack.** The services must start in the right order, the schema must
   be migrated before the application, and the product must be reachable over TLS
   (NFR-21, US-52, US-55).
@@ -282,7 +282,7 @@ project.
 
 | Suite | Scope | Result |
 |:----------------------|:----------------------------------------|:----------------------|
-| Backend (Jest) | 52 suites — services, controllers, ledger, purchases, documents, voice, AI pipeline | **796 tests, all passing** |
+| Backend (Jest) | 52 suites: services, controllers, ledger, purchases, documents, voice, AI pipeline | **796 tests, all passing** |
 | Ledger invariant harness | balance and ledger invariants, seed ledger | 34 tests, included above |
 | Price sweep | prices 1–300, both stages, both splits | included above |
 | Backend line coverage | statements executed by the suite | 48.5% of lines, 40.6% of branches |
@@ -293,7 +293,7 @@ project.
 
 The 796 tests are not spread evenly, and the coverage per module shows where they
 are. The moderation module is covered at 92% of its lines, the purchases at 77%, the
-shared utilities at 73% and the data layer — where the ledger checks live — at 67%:
+shared utilities at 73% and the data layer, where the ledger checks live, at 67%:
 the code that moves money or removes content is the most tested, as the strategy
 intended. The AI module (21%), authentication (28%) and the analytics aggregation (0%)
 are the least covered: their logic is largely SQL and provider calls, verified by the
@@ -318,16 +318,16 @@ the one evaluated in Chapter 7.
 **Deployment.** The production stack builds, migrates and starts with one command, and
 its pipeline runs from a push to a running service (US-52). The domain `inkwell-ai.me`
 is registered, but no server was provisioned during the project, so the product is not
-yet reachable at a public address: **US-55 is only partly delivered** — its
-configuration, TLS setup and pipeline are done, its hosting is not — and its 8 points
+yet reachable at a public address: **US-55 is only partly delivered**: its
+configuration, TLS setup and pipeline are done, its hosting is not, and its 8 points
 are not counted as delivered in the velocity of @sec:velocity.
 
 ## Conclusion {.unnumbered}
 
-Release 3 delivered the marketplace end to end — subscriptions and credits, the
+Release 3 delivered the marketplace end to end: subscriptions and credits, the
 eligibility gate, the exclusive two-stage purchase, the magazine's own publication and
 the writer's itemised earnings, all on a ledger whose invariants are tested after every
-operation — together with moderation, a test suite of 796 backend tests concentrated on
-the rules that move money, a demonstration corpus and a production-ready stack whose
+operation. It also delivered moderation, a test suite of 796 backend tests concentrated
+on the rules that move money, a demonstration corpus and a production-ready stack whose
 public hosting remains to be done. The last release deepens the social layer and
 reworks the assistant.

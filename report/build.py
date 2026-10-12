@@ -42,7 +42,7 @@ spec = SPEC.read_text()
 
 def clean(text: str) -> str:
     text = re.sub(r'\s*—\s*\*superseding the manual insert of FR-30 \([^)]*\)\*',
-                  ' — superseding the manual insert of FR-30', text)
+                  ', superseding the manual insert of FR-30', text)
     text = re.sub(r'\s*\*\((?:amended|added|corrected|updated)[^)]*\)\*', '', text)
     text = re.sub(r'\s*\([^()]*\b20\d\d-\d\d-\d\d[^()]*\)', '', text)
     text = text.replace('**', '')
@@ -96,7 +96,7 @@ for n, actor, slug in ACTOR_SECTIONS:
                    f'{", ".join(map(str, sprints))} |')
     table = ['| ID | Requirement | Priority | Sprint |', '|:----|:------------------------------------------|:---|:--|']
     table += [f'| {r[0]} | {r[1]} | {r[2]} | {r[3]} |' for r in rs]
-    includes[f'fr-{slug}'] = '\n'.join(table) + f'\n\n: Functional requirements — {actor.split(" (")[0].lower()} {{#tbl:fr-{slug}}}'
+    includes[f'fr-{slug}'] = '\n'.join(table) + f'\n\n: Functional requirements: {actor.split(" (")[0].lower()} {{#tbl:fr-{slug}}}'
 pri = Counter(r[2] for r in fr_all)
 summary.append(f'| **Total** | **{len(fr_all)}** | **{pri["Must"]}** | **{pri["Should"]}** | **{pri["Could"]}** | |')
 includes['fr-summary'] = '\n'.join(summary) + '\n\n: Functional requirements by actor and priority {#tbl:fr-summary}'
@@ -112,7 +112,7 @@ for e in re.split(r'\n### ', backlog)[1:]:
     rs = []
     for r in rows(e):
         if len(r) == 5:            # E9 has no actor column
-            r = [r[0], r[1], '—', r[2], r[3], r[4]]
+            r = [r[0], r[1], 'none', r[2], r[3], r[4]]
         rs.append(dict(epic=name, id=r[0], story=r[1], actor=r[2], pri=r[3], pts=int(r[4]),
                        sprints=[s.strip() for s in r[5].split(',')]))
     rs.sort(key=lambda s: num(s['id']))
@@ -202,7 +202,7 @@ TITLE_LATEX = r'''```{=latex}
 \centering\sffamily
 {\large\bfseries TEK-UP University\par}
 \vspace{2pt}
-{\normalsize GLSI — Software Engineering and Information Systems\par}
+{\normalsize GLSI (Software Engineering and Information Systems)\par}
 \vspace{3.2cm}
 {\Large\bfseries End-of-Studies Project Report\par}
 \vspace{6pt}
