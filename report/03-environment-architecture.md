@@ -190,15 +190,10 @@ from the routes down to the network.
 
 ![Logical frontend architecture](../diagrams/fig-3-1-architecture-frontend/fig-3-1-architecture-frontend.png){#fig:arch-frontend}
 
-The **routes** (28 pages) compose **feature modules** (18, among them the editor, the
-assistant, documents, the marketplace and the evaluation report). A **state and data**
-layer holds the query cache, the client stores, the HTTP interceptors that refresh an
-expired access token and retry the request, and the analytics tracker. A **request
-proxy** protects private routes before a page renders. Two channels bypass the REST
-API: an **SSE client** for live notifications, and **direct uploads** from the browser
-to object storage. The figure shows that no feature module talks to the network
-directly: they go through the data layer, which is why token refresh and error
-handling are written once.
+The **routes** (28 pages) compose **feature modules** (18) over a **state and data**
+layer — query cache, stores, token-refresh interceptors, analytics tracker — and a
+**request proxy** guards private routes. Only live notifications and direct uploads
+bypass the API, so token refresh and error handling are written once.
 
 ### Backend
 
@@ -206,18 +201,11 @@ handling are written once.
 
 ![Logical backend architecture](../diagrams/fig-3-2-architecture-backend/fig-3-2-architecture-backend.png){#fig:arch-backend}
 
-The **API** is a modular NestJS application: a global rate-limiting guard runs on every
-route, then the guards composed once by the `@Auth()` decorator — authentication, role,
-plan, account type, subscription and AI quota. The feature modules cover
-authentication and users, articles, social interactions, AI, analytics, the
-marketplace, search, moderation and uploads, and documents. The **worker** consumes six
-queues: `embeddings` (chunking and embedding articles, extracting writer memory),
-`analytics` (article and writer rollups), `marketplace` (eligibility and subscription
-renewal), `ai-tokens` (the nightly allowance reset), `documents` (ingesting uploaded
-documents) and `ai-models` (a daily check that every model still answers). The figure
-makes the split visible: everything slow or scheduled lives in the worker, so the API's
-response time never includes a model call made on behalf of a background task
-(NFR-27).
+The **API** passes every request through a rate limiter, then the guards composed by
+`@Auth()`, into feature modules by domain. The **worker** runs from the same image and
+consumes six queues — embeddings, analytics, marketplace, AI tokens, documents and
+model checks. Everything slow or scheduled lives in the worker, so no API response
+waits for background work (NFR-27).
 
 ## Physical architecture
 
@@ -225,13 +213,10 @@ response time never includes a model call made on behalf of a background task
 
 ![Physical architecture](../diagrams/fig-3-3-architecture-physical/fig-3-3-architecture-physical.png){#fig:arch-physical}
 
-**nginx is the only service published**, on ports 80 and 443: it terminates TLS,
-proxies `/` to the Next.js server and `/api` to the NestJS API, keeps server-sent
-events unbuffered, and serves the public image bucket at `/storage`. Private documents
-never take that path; they are read through the API, which checks ownership. The
-datastores are reachable only from inside the Compose network. The figure therefore
-shows a single attack surface — one proxy — and a single place where TLS, buffering
-and timeouts are configured.
+**nginx is the only service published** (ports 80 and 443): it terminates TLS and
+routes to Next.js, the API and the public image bucket. Private documents go through
+the API, which checks ownership, and the datastores stay inside the Compose network:
+one attack surface and one place to configure TLS and timeouts.
 
 ## Continuous integration and delivery
 
@@ -239,15 +224,10 @@ and timeouts are configured.
 
 ![CI/CD pipeline](../diagrams/fig-3-4-architecture-cicd/fig-3-4-architecture-cicd.png){#fig:arch-cicd}
 
-A push to `main` on either application repository runs the quality gates — install,
-lint with zero warnings, type-check, the backend tests, a schema-drift check — then
-builds a multi-stage image and pushes it to GHCR, tagged both `latest` and with the
-commit hash. A repository dispatch then triggers the deployment workflow of the
-superproject, which pulls the images on the server, runs the migrations (which must
-succeed before the API and worker start), restarts the services, verifies the health
-and readiness endpoints and reloads nginx. The pipeline guarantees that no image
-reaches the registry without passing the gates, and the commit-hash tag means any
-deployed version can be traced to its source and redeployed.
+A push to `main` runs the quality gates, then builds an image tagged `latest` and with
+the commit hash; the deployment workflow pulls it, migrates, restarts the services
+and checks their health. No image skips the gates, and every deployed version can be
+traced to its commit.
 
 ## Conclusion {.unnumbered}
 

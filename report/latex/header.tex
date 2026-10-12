@@ -61,14 +61,19 @@
 \captionsetup[table]{position=above, skip=4pt}
 \captionsetup[figure]{position=below, skip=6pt}
 
-% Figures float to the nearest place that fits, top or bottom of a page, so
-% that no half page is left empty; the text always cites them by number.
+% Every figure is placed where the text introduces it (H): the paragraphs that
+% introduce and interpret a figure are short, so a floating figure would end
+% up pages away from them. \restylefloat lets an [H] figure that does not fit
+% move to the next page instead of running into the footer.
 \usepackage{float}
-\floatplacement{figure}{htbp}
-\renewcommand{\topfraction}{0.85}
+% Let float manage figures, so that a pinned [H] figure that does not fit moves to
+% the next page instead of running into the footer.
+\restylefloat{figure}
+\floatplacement{figure}{H}
+\renewcommand{\topfraction}{0.9}
 \renewcommand{\bottomfraction}{0.7}
 \renewcommand{\textfraction}{0.12}
-\renewcommand{\floatpagefraction}{0.75}
+\renewcommand{\floatpagefraction}{0.6}
 \setcounter{topnumber}{3}
 \setcounter{totalnumber}{4}
 
@@ -92,5 +97,5 @@
 % else floats.
 \makeatletter
 \newcommand{\pinfigures}{\def\fps@figure{H}}
-\newcommand{\floatfigures}{\def\fps@figure{htbp}}
+\newcommand{\floatfigures}{\def\fps@figure{H}}
 \makeatother

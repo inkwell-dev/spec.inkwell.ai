@@ -31,13 +31,11 @@ report.
 
 ![Use case diagram, Sprint 7](../diagrams/fig-7-1-use-case-sprint-7/fig-7-1-use-case-sprint-7.png){#fig:uc-s7}
 
-Sharing and the follower lists need no account; following from a list extends viewing
-it. Liking a comment and saving an article include notifying the recipient. A block
-hides the two accounts from each other — profiles, articles and comments — and the only
-place to lift it is the blocker's settings. Saves are private: the author is notified,
-but nobody else can see what a reader keeps. The diagram shows the difference between
-the two new kinds of relationship: liking, following and sharing are public signals,
-while saving and blocking are private choices that only their author can see.
+Sharing and the follower lists need no account; following from a list extends
+viewing it; liking a comment and saving include a notification. A block hides two
+accounts from each other and is lifted only in the blocker's settings, and saves are
+private. Liking, following and sharing are public signals; saving and blocking are
+private choices only their author sees.
 
 ### Design
 
@@ -45,15 +43,11 @@ while saving and blocking are private choices that only their author can see.
 
 ![Class diagram, Sprint 7](../diagrams/fig-7-2-classes-sprint-7/fig-7-2-classes-sprint-7.png){#fig:classes-s7}
 
-Comment likes, blocks and saves are many-to-many associations, created and removed
-by the operations the sprint adds to `User` (`likeComment()`, `block()`, `save()` and
-their inverses), each stored as a join table with a unique constraint on its pair, so a repeated request is a no-op, and a
-notification is emitted only when a row was actually inserted; a check constraint
-forbids blocking oneself. A block row is directional, but every read treats it both
-ways. Comment likes are kept apart from article likes, so that by construction they can
-never count towards a writer's eligibility. The diagram shows that the sprint changed no
-existing class: the social layer grew by association only, which is why it could be
-added at the end without reopening the marketplace rules.
+Comment likes, blocks and saves are many-to-many associations created by the
+operations this sprint adds to `User`, each a join table with a unique pair, so a
+repeated request is a no-op; a block works both ways, and comment likes never count
+towards eligibility. No existing class changed: the social layer grew by association
+only, without reopening the marketplace rules.
 
 ### Realisation
 
@@ -109,15 +103,10 @@ editor extension as well as a new kind of model call.
 
 ![Use case diagram, Sprint 8](../diagrams/fig-7-3-use-case-sprint-8/fig-7-3-use-case-sprint-8.png){#fig:uc-s8}
 
-Briefing the assistant specialises into receiving an answer in the panel and having
-text written into the document, and includes following the live pipeline steps and
-consuming the allowance; keeping or discarding the written text includes the write.
-Dictating extends the brief and is billed; hearing the reply extends the answer. The
-choice between answering and writing is the assistant's, made per message; it
-supersedes the manual "insert the answer into the document" of Sprint 2 (FR-30,
-superseded by FR-78). The diagram shows the change of role: in Sprint 2 the writer
-copied text from a chat, in Sprint 8 the assistant writes where the writer works and
-the writer keeps or discards it.
+Briefing the assistant specialises into an answer or a write into the document, and
+includes the live steps and the allowance; dictation and replies read aloud extend
+it. The assistant chooses per message, replacing the manual insert of Sprint 2
+(FR-78 supersedes FR-30).
 
 ### Design
 
@@ -125,42 +114,28 @@ the writer keeps or discards it.
 
 ![Sequence diagram: one assistant turn](../diagrams/fig-7-4-sequence-assistant-turn/fig-7-4-sequence-assistant-turn.png){#fig:seq-turn}
 
-The request carries the conversation, the article and any selection. The system reads
-the draft, the writer's voice profile and — when documents are attached — passages from
-them, reporting each stage to the panel as it completes. A single routing call to the
-model then either answers in the panel, streamed as Markdown, or calls the
-`write_to_article` tool with a placement (at the cursor or over the selection) and a
-one-line brief; the model then adds a one-line recap. The tokens of both calls are
-settled once, at the end; a stopped turn still bills an estimate of what was produced.
-The diagram shows why the panel can show real steps rather than a spinner: each stage
-is a part of the response stream, sent as soon as it is done (FR-80).
+The system reads the draft, the voice profile and any documents, reporting each
+stage. One routing call answers in the panel or calls `write_to_article`, then adds a
+recap; tokens are settled at the end. The panel shows real steps because each stage
+is part of the response stream (FR-80).
 
 **Sequence diagram — writing into the document.** @fig:seq-write shows the write.
 
 ![Sequence diagram: writing into the document](../diagrams/fig-7-5-sequence-in-document-write/fig-7-5-sequence-in-document-write.png){#fig:seq-write}
 
-The system retrieves passages from the writer's other published articles and streams
-the article text from a second model call. The panel opens a range in the editor at a
-block boundary — after the block holding the cursor, or over the selected blocks — tints
-it and refuses the writer's own edits inside it; each Markdown block is inserted as
-soon as it is complete, outside the undo history. When the stream ends, the writer
-keeps the text, which becomes one undo step, or discards it, which restores exactly
-what was there. The diagram shows the guarantee behind the design: opening the range at
-a block boundary is what makes the restoration exact, because every node the writer
-owns stays untouched.
+The text streams into a protected range opened at a block boundary, block by block.
+The writer then keeps it, as one undo step, or discards it, restoring exactly what
+was there — exact because the range starts at a block boundary and touches no node
+the writer owns.
 
 **Sequence diagram — voice.** @fig:seq-voice shows the voice round trip.
 
 ![Sequence diagram: the voice round trip](../diagrams/fig-7-6-sequence-voice-round-trip/fig-7-6-sequence-voice-round-trip.png){#fig:seq-voice}
 
-A recording of at most five minutes is sent with its length; the system checks the
-allowance, the format and the size, transcribes it with Whisper, settles the
-duration — the provider's when it reports one, otherwise the larger of the client's
-figure and a floor derived from the file size — and bills 200 tokens per started
-minute. The transcript lands in the composer, editable. Reading a reply aloud is free
-to the writer and limited per account instead, to 20 replies a minute and 300 a day.
-The diagram shows that the client's claim about duration is never trusted alone: the
-billing uses the larger of what the client says and what the file size proves.
+A recording of up to five minutes is transcribed with Whisper and billed 200 tokens
+per started minute, the transcript landing in the composer. The duration billed is
+the provider's, or the larger of the client's figure and a floor from the file size:
+the client's claim is never trusted alone.
 
 ### Realisation
 
@@ -175,13 +150,9 @@ person passes on is part of how others judge their taste.
 
 ![A write awaiting Keep or Discard](../figures/screens/writer-14-ai-keep-discard.png){#fig:keep-discard}
 
-Asked for a closing paragraph "in my voice", the assistant chose to write rather than
-answer (FR-78). The panel lists the real steps — words read, profile, thinking, five
-passages from four articles, the size of the write — and a one-line recap; in the
-editor, the new paragraph is tinted at the end of the draft with *Keep*, *Discard* and
-the reminder that Ctrl+Z undoes after keeping (FR-79, FR-80). While the decision is
-pending, the composer is disabled: the writer cannot start a second write over an
-undecided one.
+Asked for a closing paragraph "in my voice", the assistant chose to write (FR-78):
+the panel lists its steps and a recap, and the tinted paragraph offers *Keep* and
+*Discard* (FR-79, FR-80). The composer stays disabled until the writer decides.
 
 @fig:rail shows the live step on the collapsed panel.
 
@@ -196,11 +167,10 @@ mistaken for a frozen screen, as US-67 requires.
 
 ![Recording a prompt](../figures/screens/writer-19-voice-recording.png){#fig:voice}
 
-While recording, the composer says *Listening… speak your prompt* and shows the
-elapsed time with a control to confirm and one to cancel; on confirmation the
-transcript fills the composer, where it can be edited before sending (FR-82).
-Dictation is billed against the same daily allowance as typed prompts, so voice is a
-way of writing a prompt, not a separate service.
+While recording, the composer shows *Listening… speak your prompt*, the elapsed time
+and controls to confirm or cancel; the transcript then fills the composer, editable
+(FR-82). Dictation uses the same allowance as typing: voice is a way to write a
+prompt.
 
 ## Sprint 9 — Document library and citations {#sec:sprint9}
 
@@ -223,14 +193,11 @@ the end of the writing of this report.
 
 ![Use case diagram, Sprint 9](../diagrams/fig-7-7-use-case-sprint-9/fig-7-7-use-case-sprint-9.png){#fig:uc-s9}
 
-Managing the library specialises into uploading, retrying a failed document and
-deleting; uploading and retrying include extracting, chunking and embedding the text.
-Attaching documents to an article is extended by detaching one. Asking the assistant
-is extended by citing passages as *[Title, p. N]*, itself extended by opening a cited
-passage at its page. Documents are PDF, DOCX, TXT or Markdown files under 10 MB and 200
-pages, at most 20 per writer. The diagram shows the privacy boundary of the feature: a
-document is the writer's alone, and it never feeds the voice profile, portfolio
-insights or search (FR-87).
+Managing the library specialises into uploading, retrying and deleting; uploading
+includes extracting, chunking and embedding. Attaching is extended by detaching, and
+asking the assistant by citing *[Title, p. N]*. Documents are PDF, DOCX, TXT or
+Markdown, under 10 MB and 200 pages, 20 per writer. A document is private: it never
+feeds the voice profile, insights or search (FR-87).
 
 ### Design
 
@@ -238,27 +205,20 @@ insights or search (FR-87).
 
 ![Class diagram, Sprint 9](../diagrams/fig-7-8-classes-sprint-9/fig-7-8-classes-sprint-9.png){#fig:classes-s9}
 
-A `Document` carries its status, page and chunk counts and a readable error; its
-`DocumentChunk`s each keep the page they came from, which is what a citation points to;
-and documents are attached to articles by a many-to-many association. The status moves
-from pending to extracting to ready, or to failed with a reason the writer can act on;
-the only backward move is a retry. The diagram shows that a citation is a property of
-the data, not of the model's output: the page number travels with the chunk from
-extraction to the prompt.
+A `Document` carries its status, counts and a readable error; each `DocumentChunk`
+keeps its page, and documents attach to articles many-to-many. The status only moves
+forward, except a retry. A citation is a property of the data: the page travels with
+the chunk to the prompt.
 
 **Sequence diagram — ingestion.** @fig:seq-ingest shows a document's path, the
 companion of the publishing pipeline of @fig:seq-publish.
 
 ![Sequence diagram: document upload and ingestion](../diagrams/fig-7-9-sequence-document-ingestion/fig-7-9-sequence-document-ingestion.png){#fig:seq-ingest}
 
-The browser asks for a presigned URL and uploads the file straight to a private
-bucket — the file never passes through the API. The registration checks that the object
-exists and is under 10 MB, counts the writer's documents under a per-writer lock and
-queues ingestion. The worker extracts the text page by page, refuses a document over
-200 pages or without a text layer with a readable reason, then chunks it, embeds the
-chunks and marks it ready in one transaction. The diagram shows that a document is
-either fully usable or clearly refused: there is no state in which the assistant can
-retrieve half a document.
+The file goes straight to a private bucket through a presigned URL, never through the
+API. Registration checks it and the 20-document limit; the worker extracts the text
+page by page and chunks, embeds and marks it ready in one transaction, or refuses it
+with a reason. No document is half usable.
 
 ### Realisation
 
@@ -266,11 +226,10 @@ retrieve half a document.
 
 ![The document library, one document refused with its reason](../figures/screens/writer-16-document-library.png){#fig:documents}
 
-The library lists each document with its type, pages, status, size and upload time,
-and counts the documents against the limit — 2 of 20 (FR-84). One document is being
-extracted; the other is refused with the reason "This document has no text to read"
-and offers a retry: a failure is stated in words the writer can act on, not as an error
-code.
+The library lists each document's type, pages, status, size and upload time against
+the limit of 20 (FR-84). One document is extracting; the other is refused — "This
+document has no text to read" — with a retry: failures are stated in words the writer
+can act on.
 
 @fig:sources shows the attachment of a document from the Sources tab of the assistant.
 
@@ -285,11 +244,10 @@ relevant: notes for one piece are not fed into another.
 
 ![A reply citing its source as [Title, p. N]](../figures/screens/writer-18-ai-cited-reply.png){#fig:cited}
 
-Asked a factual question about the writer's field notes, the assistant retrieved three
-passages from one document and answered with the figure and its source,
-*[Tackle Market Field Notes, p. 2]* (FR-86). The steps above the answer show where the
-facts came from before the answer is read. The writer can therefore check a claim
-before it goes out under their name, which is the purpose of US-72.
+Asked a factual question, the assistant retrieved three passages from one document
+and answered with the figure and its source, *[Tackle Market Field Notes, p. 2]*
+(FR-86). The writer can check a claim before it goes out under their name, the
+purpose of US-72.
 
 ## Conclusion {.unnumbered}
 

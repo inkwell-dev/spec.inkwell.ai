@@ -32,15 +32,11 @@ evaluation needs the aggregation pipeline that every metric depends on.
 
 ![Use case diagram, Sprint 3](../diagrams/fig-5-1-use-case-sprint-3/fig-5-1-use-case-sprint-3.png){#fig:uc-s3}
 
-Interacting with an article specialises into liking, commenting, replying, reposting,
-following and reporting, and includes notifying the recipient. On a marketplace
-listing, liking, commenting and reposting are refused while saving stays available,
-because a listing is a private commercial offer rather than a publication (FR-70).
-Viewing article analytics and reading a writer evaluation both include the aggregation
-of raw events into metrics — a scheduled job rather than a user action, drawn because
-no metric exists without it. The diagram therefore shows the two halves of the sprint
-joined at one point: interactions produce events, and the aggregation turns events
-into the numbers both the writer and the magazine read.
+Interacting specialises into liking, commenting, replying, reposting, following and
+reporting, and includes notifying the recipient; on a marketplace listing only saving
+is allowed (FR-70). Article analytics and the writer evaluation both include the
+aggregation of events into metrics. The diagram joins the sprint's two halves:
+interactions produce events, and the aggregation turns them into numbers.
 
 ### Design
 
@@ -49,26 +45,20 @@ into the numbers both the writer and the magazine read.
 ![Class diagram, Sprint 3](../diagrams/fig-5-2-classes-sprint-3/fig-5-2-classes-sprint-3.png){#fig:classes-s3}
 
 Likes, reposts and follows are many-to-many associations; comments and notifications
-are classes because they carry content and state. The four rollup tables are
-`ArticleMetrics` per article, and `WriterAudienceMetrics`, `WriterContentMetrics` and
-`WriterQualityMetrics` per writer. The diagram shows that the metrics are stored
-separately from the events they summarise: each rollup has one row per article or per
-writer, rewritten by the aggregation, so reading a dashboard costs the same whatever
-the number of events behind it.
+are classes, because they carry content and state. The four rollups —
+`ArticleMetrics` and the three writer metrics — hold one row per article or writer,
+rewritten by the aggregation, so reading a dashboard costs the same whatever the
+number of events behind it.
 
 **Sequence diagram — from reading events to metrics.** @fig:seq-aggregation follows a
 reading event to the dashboard.
 
 ![Sequence diagram: analytics aggregation](../diagrams/fig-5-3-sequence-analytics-aggregation/fig-5-3-sequence-analytics-aggregation.png){#fig:seq-aggregation}
 
-The browser batches events; the API takes the reader's identity from the access token
-when one is sent — never from the request body — and attaches the time and device
-server-side before appending the event. Every five minutes the worker reads only the
-events since the last run and upserts the per-article metrics; just after, it computes
-the three per-writer rollups and rechecks marketplace eligibility. Dashboards read the
-rollups, never the raw events, so they stay fast as the event log grows (NFR-15,
-NFR-16). The diagram shows the one place where freshness is traded for speed: a metric
-can be up to five minutes behind the events.
+The API takes the reader's identity from the access token, never from the request.
+Every five minutes the worker processes only the new events into the per-article and
+per-writer rollups and rechecks eligibility. Dashboards read only the rollups and stay
+fast (NFR-15, NFR-16), at the price of a five-minute delay.
 
 The metrics the aggregation produces are those of the evaluation report, defined in
 @tbl:metrics. Each definition is the one the aggregation computes.
@@ -98,13 +88,10 @@ reaches its recipient.
 
 ![Sequence diagram: live notification delivery](../diagrams/fig-5-9-sequence-notification-delivery/fig-5-9-sequence-notification-delivery.png){#fig:seq-notify}
 
-The client keeps a server-sent-events stream open; when a reader likes an article, the
-like and the notification row are written first, and only after the commit is the
-event pushed to the recipient's open streams. If the connection drops, the client
-reconnects with the identifier of the last event received and the server replays what
-was missed. The diagram shows why a notification is never lost and never announces
-something that did not happen: the database is the record, and the live push is only a
-faster way to read it.
+The like and its notification are committed first, then pushed to the recipient's
+open stream; after a dropped connection the server replays what was missed. A
+notification is never lost and never announces something that did not happen: the
+database is the record, the push a faster way to read it.
 
 ### Realisation
 
@@ -141,18 +128,15 @@ doing — on one screen.
 
 ![“My articles”: every article, sortable by performance](../figures/screens/writer-13-my-articles.png){#fig:my-articles}
 
-"My articles" lists every article, drafts and marketplace listings included, searchable
-by content and filterable by date, with its views and engagement (FR-33). The
-engagement column is the per-view rate of @tbl:metrics, which is why values above 100%
-appear on articles whose seeded reactions outnumber their recorded views. Sorting
-happens on the server across the whole body of work, not on the page shown.
+"My articles" lists every article, drafts and listings included, searchable and
+sorted on the server across all of them (FR-33). Engagement is the per-view rate of
+@tbl:metrics, so it exceeds 100% where seeded reactions outnumber recorded views.
 
 ![The writer's analytics: views over the last 30 days](../figures/screens/writer-10-dashboard-analytics.png){#fig:writer-analytics}
 
-The analytics page gives the totals — views, average read time, engagement rate,
-likes — and the daily views of the last 30 days (FR-32). The note under the chart says
-that it is counted from the events, not from a rollup: a daily series is the one panel
-that may read the event log directly, bounded to thirty days, as NFR-15 allows.
+The analytics page gives views, read time, engagement and likes, and the daily views
+of the last 30 days (FR-32). As the note says, this series is counted from the events:
+the one panel NFR-15 allows to read them directly, bounded to thirty days.
 
 @fig:writer-profile shows a writer's public profile.
 
@@ -167,11 +151,10 @@ that a magazine evaluates in more depth.
 
 ![A magazine browsing eligible writers](../figures/screens/magazine-07-discover-writers.png){#fig:find-writers}
 
-A magazine browses writers filtered to the eligible ones and by topic, searches them by
-name or bio, and sorts them — here by engagement (FR-44). Each card already gives
-readers, engagement and article count, and *View evaluation* opens the full report. In
-this sprint the page is reachable by any magazine account; from Sprint 5 it sits behind
-the subscription wall, which is why FR-44 is attributed to both sprints.
+A magazine filters writers by eligibility and topic, searches and sorts them (FR-44);
+each card gives readers, engagement and articles, and *View evaluation* opens the
+report. Any magazine reaches this page in Sprint 3; Sprint 5 puts it behind the
+subscription wall, hence two sprints for FR-44.
 
 ## Sprint 4 — Retrieval, portfolio insights and hybrid search {#sec:sprint4}
 
@@ -195,13 +178,11 @@ be estimated once it existed, which is why the sprint begins with it.
 
 ![Use case diagram, Sprint 4](../diagrams/fig-5-5-use-case-sprint-4/fig-5-5-use-case-sprint-4.png){#fig:uc-s4}
 
-Searching specialises into searching by keyword and by meaning and includes merging the
-two result sets; using the assistant includes retrieving passages from the writer's own
-corpus and showing the sources used; publishing includes embedding the article,
-extracting the writer's voice profile and invalidating the insights cache; reading a
-writer evaluation is extended by generating portfolio insights. The diagram shows that
-publishing has become the trigger of the whole AI layer: every capability of the sprint
-depends on what happens after a writer clicks *Publish*.
+Searching specialises into keyword and meaning and includes merging the two results;
+the assistant includes retrieving the writer's passages and showing them; publishing
+includes embedding the article, extracting the voice profile and clearing the insights
+cache; the evaluation is extended by portfolio insights. Publishing has become the
+trigger of the whole AI layer.
 
 ### Design
 
@@ -210,26 +191,21 @@ depends on what happens after a writer clicks *Publish*.
 ![Class diagram, Sprint 4](../diagrams/fig-5-6-classes-sprint-4/fig-5-6-classes-sprint-4.png){#fig:classes-s4}
 
 An `ArticleChunk` is a passage of a published article with its 1,536-dimension
-embedding; the `WriterMemory` holds the extracted voice profile (tone, style examples,
-vocabulary, topics); the `PortfolioInsight` caches the AI assessment of a writer; the
-`AiInteraction` log records every call. The diagram shows that the AI layer adds data
-derived from articles and never modifies them: every chunk, profile and insight can be
-deleted and rebuilt from the published articles, which is what the re-embedding on
-every publication does.
+embedding; the `WriterMemory` holds the voice profile; the `PortfolioInsight` caches
+the AI assessment; `AiInteraction` logs every call. The AI layer only adds data derived
+from articles: every chunk, profile and insight can be rebuilt from them, which the
+re-embedding on each publication does.
 
 **Sequence diagram — what publishing sets in motion.** @fig:seq-publish shows the
 background pipeline a publication starts.
 
 ![Sequence diagram: the publishing pipeline](../diagrams/fig-5-8-sequence-publish-pipeline/fig-5-8-sequence-publish-pipeline.png){#fig:seq-publish}
 
-The API writes the article and enqueues an embedding job. The worker deletes the
-article's previous chunks, splits it into passages of 120 to 1,200 characters — each
-prefixed with its nearest heading, so that a short paragraph embeds near its
-subject — embeds them, stores the vectors and drops the writer's cached insights. It
-then chains the extraction of the voice profile from the most recent articles, which
-the model returns as a schema‑validated object. The diagram shows that publishing
-returns immediately: the writer never waits for an embedding, and a failure of the
-provider delays retrieval without blocking publication.
+The API saves the article and queues an embedding job. The worker replaces the
+article's chunks — passages of 120 to 1,200 characters, each prefixed with its nearest
+heading — embeds them, clears the cached insights, then extracts the voice profile.
+Publishing returns immediately: the writer never waits for an embedding, and a
+provider failure delays retrieval without blocking publication.
 
 **Sequence diagram — a chat turn grounded in the writer's corpus.** @fig:seq-rag shows
 retrieval-augmented generation, the technique of conditioning a language model on
@@ -238,27 +214,21 @@ in this sprint.
 
 ![Sequence diagram: AI chat with retrieval](../diagrams/fig-5-4-sequence-ai-chat-rag/fig-5-4-sequence-ai-chat-rag.png){#fig:seq-rag}
 
-The question is embedded; the five passages of the writer's own work closest to it by
-cosine similarity are retrieved, provided they score above 0.60; the voice profile is
-read; the prompt is assembled from role, memory, passages and question; the answer is
-streamed, and the passages used are shown as sources. The similarity floor lets
-retrieval return *nothing* rather than five irrelevant passages, and the voice profile
-keeps the answer in the writer's style even then. @sec:eval-rag measures how well
-this retrieval finds the right passage and how often the floor correctly returns
-nothing.
+The question is embedded and the five closest passages of the writer's own work are
+retrieved if they score above 0.60; the prompt adds the voice profile, and the answer
+is streamed with its sources. The floor lets retrieval return *nothing* rather than
+five irrelevant passages, and the profile keeps the style even then. @sec:eval-rag
+measures both.
 
 **Sequence diagram — hybrid search.** @fig:seq-search shows search.
 
 ![Sequence diagram: hybrid search with reciprocal rank fusion](../diagrams/fig-5-7-sequence-hybrid-search/fig-5-7-sequence-hybrid-search.png){#fig:seq-search}
 
-The query is ranked lexically with `ts_rank` over the article's weighted search vector
-[@postgres16fts], and semantically by cosine similarity, keeping the best passage per
-article. Because the two scores are on unrelated scales, the rankings are fused by
-position with reciprocal rank fusion — each article scores Σ 1/(60 + rank) over the two
-lists [@cormack2009rrf] — so an article that never uses the searcher's words can still
-be found by meaning. The diagram shows that the two rankings are independent and run in
-parallel: if the embedding provider fails, search degrades to keyword search instead
-of failing. @sec:eval-search compares the three rankings on the same queries.
+The query is ranked by words (`ts_rank` [@postgres16fts]) and by meaning (cosine
+similarity), and the two rankings are fused by position with reciprocal rank fusion,
+Σ 1/(60 + rank) [@cormack2009rrf], so an article can be found without sharing the
+searcher's words. The rankings are independent: if the embedding provider fails,
+search falls back to keywords. @sec:eval-search compares the three.
 
 ### Realisation
 
@@ -275,13 +245,11 @@ agreement between the two. Search is available without an account, like the feed
 
 ![A writer evaluation report with portfolio insights](../figures/screens/magazine-08-writer-evaluation.png){#fig:evaluation}
 
-The report gives the three panels of @tbl:metrics — audience, quality with its
-retention curve, and content with its topics — and the portfolio insights generated by
-the model, here a description of the writer's voice, with *Regenerate* as the explicit
-action of FR-46 (FR-45, FR-46). Two fields the capture cannot measure, geographic
-distribution and device split, are stated as not collected rather than shown as zero.
-The screen is the reason the analytics exist: it turns reading into evidence a buyer
-can weigh.
+The report gives the three panels of @tbl:metrics and the portfolio insights, with
+*Regenerate* as the explicit action of FR-46 (FR-45). Fields the capture cannot
+measure, such as geography and device, are stated as not collected rather than shown
+as zero. This screen is why the analytics exist: it turns reading into evidence a
+buyer can weigh.
 
 ## Conclusion {.unnumbered}
 

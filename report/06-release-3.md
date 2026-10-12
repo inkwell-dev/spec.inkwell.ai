@@ -35,14 +35,11 @@ estimate held is discussed with the velocity in @sec:velocity.
 
 ![Use case diagram, Sprint 5](../diagrams/fig-6-1-use-case-sprint-5/fig-6-1-use-case-sprint-5.png){#fig:uc-s5}
 
-A magazine without an active subscription can only subscribe; with one, it browses
-the marketplace, purchases an article exclusively — unlocking a preview extends the
-purchase — tops up credits, views its library and publishes a purchased article from
-it. Every credit movement includes moving credits in one transaction. A writer lists
-an article when the condition `[writer is eligible]` holds, which includes setting a price and classifying the content at
-publish time; the administrator reviews the report queue, grants eligibility and
-manages users. The diagram shows that the subscription is the gate of every magazine
-use case but one: it is the condition `[subscription active]` of @sec:actors, drawn here as the wall in front of the marketplace.
+Without an active subscription a magazine can only subscribe; with one, it browses,
+previews and buys articles exclusively, tops up credits and publishes from its
+library, every credit movement in one transaction. A writer lists an article when
+`[writer is eligible]`; the administrator moderates and grants eligibility. The
+subscription is the wall in front of the marketplace.
 
 **Business rules.** The marketplace is governed by the rules of @tbl:rules. They are
 part of the analysis because every screen and every test of the sprint applies them.
@@ -69,68 +66,52 @@ product decisions, kept as named constants (@sec:parameters).
 
 ![Class diagram, Sprint 5](../diagrams/fig-6-2-classes-sprint-5/fig-6-2-classes-sprint-5.png){#fig:classes-s5}
 
-A `Purchase` records a stage — preview unlock or full purchase — with the credits paid,
-the platform fee and the writer's payout, and a full purchase links to the preview that
-preceded it. Each stage writes three `Transaction` rows: the magazine's debit, the
-writer's payout and the platform fee; amounts are always positive and their direction
-comes from the type, enforced by a constraint. The diagram shows that no balance is
-stored without its explanation: the magazine's credit balance and the writer's earnings
-are caches of the transaction rows, which is exactly what the ledger invariants check
-(NFR-19).
+A `Purchase` records a stage — preview or full purchase — with the credits paid, the
+fee and the payout, and writes three `Transaction` rows: the magazine's debit, the
+writer's payout and the platform fee. No balance is stored without its explanation:
+credit balances and earnings are caches of these rows, which the ledger invariants
+check (NFR-19).
 
 **Sequence diagram — the purchase.** @fig:seq-purchase shows the three calls of a
 licence.
 
 ![Sequence diagram: preview, purchase and publication](../diagrams/fig-6-3-sequence-two-stage-purchase/fig-6-3-sequence-two-stage-purchase.png){#fig:seq-purchase}
 
-Each purchase stage opens one database transaction: it locks the article row and reads
-its owner, refusing with 409 if another magazine already owns it, then locks the
-magazine's credit balance, refuses with 402 when it is insufficient, debits the
-magazine, credits the writer, and writes the purchase and its three ledger rows. The
-full purchase charges only what the preview has not already paid, and leaves the
-article in the magazine's library, owned and unpublished; publishing is a third call.
-The diagram shows the two guarantees of the design: the row lock rules out two
-magazines buying the same article or one magazine spending the same credits twice
-(NFR-20), and the idempotency key on every request rules out a retried request
-charging twice (NFR-06).
+Each stage is one transaction: it locks the article (409 if already owned) and the
+credit balance (402 if too low), moves the credits and writes the ledger rows. The
+row lock rules out a double purchase or double spend (NFR-20); the idempotency key, a
+retried request charging twice (NFR-06).
 
 **Activity diagram — the eligibility gate.** @fig:act-eligibility shows how a writer
 becomes eligible.
 
 ![Activity diagram: the marketplace eligibility gate](../diagrams/fig-6-4-activity-eligibility-gate/fig-6-4-activity-eligibility-gate.png){#fig:act-eligibility}
 
-After each aggregation the worker checks the writers above both thresholds who are not
-yet eligible, marks them eligible and writes an audit-log entry with the metric
-snapshot; an administrator can grant eligibility directly, with the same audit trail.
-Comment likes and reposts are deliberately not counted as reactions, so that other
-people's activity cannot move a writer's threshold. The diagram shows that both paths
-end in the same audit entry, so every eligible writer can be traced to the numbers or
-the person that made them eligible.
+After each aggregation the worker marks the writers above both thresholds eligible
+and logs the metric snapshot; an administrator can also grant eligibility, with the
+same audit entry. Comment likes and reposts do not count, so other people's activity
+cannot move a threshold. Every eligible writer can be traced to the numbers or the
+person that made them eligible.
 
 **Sequence diagram — moderation.** @fig:seq-moderation shows the two sources of
 reports.
 
 ![Sequence diagram: reporting and moderation](../diagrams/fig-6-5-sequence-moderation/fig-6-5-sequence-moderation.png){#fig:seq-moderation}
 
-After publication a classifier model reviews the article; a flag files a pending report
-with no reporter but never blocks publication. Readers report articles, users or
-comments. The administrator works the queue: dismiss the report, remove the article or
-ban the author, a ban taking effect within fifteen minutes (NFR-09). The diagram shows
-the policy behind the design: the classifier only *files* a report, because refusing
-publication on a false positive would be worse than a human clearing it from the
-queue. Its precision and recall are measured in @sec:eval-moderation.
+After publication a classifier reviews the article and, if it flags it, files a
+pending report without blocking publication; readers report articles, users or
+comments. The administrator dismisses, removes the article or bans the author (in
+effect within fifteen minutes, NFR-09). A false positive costs a dismissed report,
+never a refused article; @sec:eval-moderation measures the classifier.
 
 **Activity diagram — the article access decision.** @fig:act-access shows the decision
 taken server-side for every article body.
 
 ![Activity diagram: the article access decision](../diagrams/fig-6-6-activity-article-access/fig-6-6-activity-article-access.png){#fig:act-access}
 
-The author and administrators always read. A marketplace article is visible only to a
-magazine with an active subscription, and its body only once that magazine has
-previewed or bought it — otherwise it receives the title, excerpt and price with the
-content set to `null`. A premium public article requires the premium plan or a
-subscribed magazine. A free public article is readable by everyone. The diagram is the
-rule of FR-56 and NFR-04: the browser is told the verdict and never computes it, so a
+The author and administrators always read. A marketplace body reaches only a
+subscribed magazine that previewed or bought it, a premium body only the premium plan
+or a subscribed magazine; otherwise the content is `null`. The server decides, so a
 modified client cannot read what it has not paid for.
 
 **State diagram — the article lifecycle.** @fig:state-article shows the states an
@@ -138,13 +119,10 @@ article goes through.
 
 ![State diagram: the article lifecycle](../diagrams/fig-6-8-state-article-lifecycle/fig-6-8-state-article-lifecycle.png){#fig:state-article}
 
-A draft is published as free, premium or listed on the marketplace. A listed article
-can be withdrawn to public — never the reverse, because an article the public has read
-has no exclusivity left to sell — or deleted, as long as no magazine owns it. Its first
-full purchase makes it *owned*, after which the writer can neither withdraw nor delete
-it; the magazine's publication makes it *published by a magazine*, public and free. The
-diagram shows that every transition that could destroy what a magazine paid for is
-absent, which is what makes the exclusivity of @tbl:rules enforceable.
+A draft is published as free, premium or listed. A listing can become public — never
+the reverse — or be deleted while unsold; a purchase makes it *owned*, and the
+magazine's publication public. No transition can destroy what a magazine paid for,
+which enforces the exclusivity of @tbl:rules.
 
 ### Realisation
 
@@ -153,11 +131,9 @@ premium article opened by a visitor.
 
 ![A premium article behind the paywall](../figures/screens/guest-06-article-premium-paywall.png){#fig:paywall}
 
-The visitor reads the title, the author and the opening of the article; the rest of the
-body is withheld by the access decision of @fig:act-access, and only a premium reader
-or a subscribed magazine receives it (FR-03, FR-16). What the screen does not show is as important as
-what it shows: the body never reaches the browser, so it cannot be revealed by
-inspecting the page.
+The visitor sees the title, the author and the opening; the body is withheld by the
+access decision of @fig:act-access (FR-03, FR-16). It never reaches the browser, so
+inspecting the page cannot reveal it.
 
 @fig:plans shows the plans offered to a reader.
 
@@ -230,12 +206,10 @@ earnings and @fig:sold-article a sold article.
 
 ![A sold article, as its author sees it](../figures/screens/writer-11-sold-article.png){#fig:sold-article}
 
-Earnings are itemised by article and by stage, and each line of the payout history
-shows what the magazine paid and the platform fee: for a purchase, 54 credits paid,
-10 credits of fee — 20% rounded down — and 44 credits to the writer (FR-37). The
-arithmetic of @tbl:rules is therefore visible to the writer, line by line, which is the
-trust US-42 asks for. A sold article tells its author who owns it, and can no longer be
-withdrawn or deleted (FR-72), as the lifecycle of @fig:state-article requires.
+Earnings are itemised by article and stage: 54 credits paid, 10 of fee (20% rounded
+down), 44 to the writer (FR-37). The arithmetic of @tbl:rules is visible line by line,
+as US-42 asks. A sold article names its owner and can no longer be withdrawn or
+deleted (FR-72).
 
 The administrator closes the sprint. @fig:admin-grant shows a manual eligibility grant,
 @fig:admin-users user management and @fig:admin-reports the report queue.
@@ -246,13 +220,11 @@ The administrator closes the sprint. @fig:admin-grant shows a manual eligibility
 
 ![Administration: the report queue](../figures/screens/admin-03-report-queue.png){#fig:admin-reports}
 
-The grant records who made a writer eligible (FR-55); the user table searches and
-filters accounts and edits a plan (FR-53, FR-54); the report queue lists reports by
-status with the four actions of @fig:seq-moderation — dismiss, mark resolved, remove the
-article, ban the author (FR-51, FR-52). The second report of @fig:admin-reports has no
-reporter: it was filed by the classifier at publish time (FR-57), and the
-administrator's note records why the article stayed published — the human decision the
-design reserves for a person.
+The grant records who made a writer eligible (FR-55); the user table searches accounts
+and edits a plan (FR-53, FR-54); the report queue offers the four actions of
+@fig:seq-moderation (FR-51, FR-52). Its second report has no reporter: the classifier
+filed it (FR-57), and the administrator's note explains why the article stayed — the
+decision the design reserves for a person.
 
 ## Sprint 6 — Tests, demonstration and deployment {#sec:sprint6}
 
@@ -291,18 +263,10 @@ verified and what must be deployable. Three needs follow from the previous sprin
 
 ![Test strategy](../diagrams/fig-6-7-test-strategy/fig-6-7-test-strategy.png){#fig:test-strategy}
 
-The base is the **unit and service tests** of the backend, which run against a real
-PostgreSQL database rather than mocks, so that constraints, transactions and row locks
-are exercised for real; each test runs in a transaction that is rolled back. Above them,
-**integration tests** go through the API — authentication, publishing, purchasing — and
-verify the ledger afterwards. At the top, **end-to-end tests** drive a real browser over
-a seeded corpus. Two families protect the money: the **ledger invariant harness**,
-whose tests are mostly negative — a fixture builds a coherent purchase, corrupts one
-column and checks that the right invariant fires — and a **price sweep** that checks
-every price from 1 to 300 credits, both stages and both splits, reconciling exactly.
-The figure shows the choice behind the strategy: the database is never mocked, because
-the guarantees under test — a unique constraint, a row lock, a rollback — live in the
-database.
+**Unit and service tests** run against a real database, each in a rolled-back
+transaction; **integration tests** go through the API; **end-to-end tests** drive a
+browser. The **ledger harness** and a **price sweep** from 1 to 300 credits guard the
+money. The database is never mocked: the guarantees under test live in it.
 
 **Deployment.** The deployment follows the physical architecture of @fig:arch-physical
 and the pipeline of @fig:arch-cicd: multi-stage images for the API and worker (one

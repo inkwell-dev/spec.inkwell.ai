@@ -115,23 +115,18 @@ being written to a ledger inside one database transaction.
 
 ### Sequential and agile approaches
 
-A **sequential (waterfall) process** runs requirements, design, implementation, testing
-and delivery once each, in order; its classic description already warned that testing
-at the end exposes design errors when they are most expensive to correct
-[@royce1970]. An **agile process** builds the product in short iterations, each
-delivering working software that is reviewed before the next is planned, and values
-responding to change over following a plan [@agilemanifesto2001; @sommerville2016].
-@fig:waterfall-agile contrasts the two.
+A **sequential (waterfall) process** runs each phase once, in order, and its classic
+description warned that late testing exposes design errors when they cost most
+[@royce1970]. An **agile process** delivers working software in short, reviewed
+iterations [@agilemanifesto2001; @sommerville2016]. @fig:waterfall-agile contrasts
+the two.
 
 ![Classic and agile approaches compared](../diagrams/fig-1-2-waterfall-vs-agile/fig-1-2-waterfall-vs-agile.png){#fig:waterfall-agile height=45%}
 
-The figure makes the deciding difference visible: in the sequential process the first
-working software appears in the last phase, while in the agile process it appears at
-the end of the first iteration. Inkwell.ai is built in layers that each depend on the
-one below — the marketplace evaluates writers on analytics, analytics need published
-articles, articles need accounts and an editor — so a defect in a lower layer must be
-found before the next is built on it. Short iterations that end in working, tested
-software are what that layering requires.
+Working software appears only in the last phase of the sequential process, but at
+the end of every agile iteration. Inkwell.ai is built in layers — accounts, articles,
+analytics, marketplace — each depending on the one below, so each must work before
+the next is built on it.
 
 ### Scrum, and its adaptation to a one-person project {#sec:scrum}
 
@@ -142,12 +137,10 @@ applied.
 
 ![The Scrum framework, as practised in this project](../diagrams/fig-1-1-scrum-framework/fig-1-1-scrum-framework.png){#fig:scrum height=45%}
 
-The figure reads from left to right: the product backlog feeds sprint planning, the
-sprint backlog is built during a fixed two-week sprint, and every sprint ends with an
-increment checked against the definition of done, reviewed, and followed by a
-retrospective whose actions return to the next planning. What it implies for this
-project is that the unit of progress is the increment, not the document: each sprint
-must leave the platform runnable and tested.
+The backlog feeds sprint planning; each two-week sprint ends with an increment checked
+against the definition of done, a review and a retrospective whose actions return to
+the next planning. For this project the unit of progress is therefore the increment:
+every sprint leaves the platform runnable and tested.
 
 Scrum is designed for a team of ten or fewer people holding three accountabilities —
 Product Owner, Scrum Master and Developers [@scrumguide2020] — and this project has one
@@ -332,48 +325,31 @@ who read.
 
 ![Global use case diagram — visitor and reader](../diagrams/fig-1-3-use-case-visitor-reader/fig-1-3-use-case-visitor-reader.png){#fig:uc-visitor-reader}
 
-The visitor browses the feed, reads free articles, searches, views profiles and
-shares, and reaches registration from *Sign in*: *Create an account* and *Sign in with
-Google* both extend it. The reader inherits all of this and adds the social use
-cases — liking, commenting and replying, liking a comment, reposting, saving,
-following, blocking, reporting — together with notifications, the profile and the
-upgrade to premium. The premium plan does not make a new actor: *Read a premium
-article* extends *Read an article* under the condition `[plan = premium]`. The
-diagram shows that the reader's use cases are all small, independent interactions
-with one article or one account, which is why each is delivered by a short story of
-the backlog.
+The visitor browses, reads free articles, searches, views profiles and shares;
+*Create an account* and *Sign in with Google* extend *Sign in*. The reader inherits
+all of this and adds the social use cases, notifications, the profile and the
+upgrade. Premium is a condition, not an actor: *Read a premium article* extends
+*Read an article* when `[plan = premium]`.
 
 **Writer.** @fig:uc-writer gives the use cases of the writer.
 
 ![Global use case diagram — writer](../diagrams/fig-1-4-use-case-writer/fig-1-4-use-case-writer.png){#fig:uc-writer}
 
-The writer inherits the reader's use cases and adds three groups: writing (drafting
-with automatic saving, images, publishing with a placement and a visibility,
-withdrawing a listing, deleting), the assistant (asking, inline actions, a write into
-the draft that the writer keeps or discards, dictation, replies read aloud, documents
-uploaded, attached and cited by page), and the writer's own figures (analytics,
-eligibility progress, earnings). Eligibility appears as a condition, not an actor:
-*Publish as premium* and *List on the marketplace* extend *Publish an article* when
-`[writer is eligible]`. Every use of the assistant includes *Consume the AI
-allowance*, which only the premium plan grants. The diagram shows where the
-complexity of the platform lies: the writer has the most use cases, and most of the
-inclusions and extensions sit around *Publish an article* and *Ask the assistant*.
+The writer inherits the reader's use cases and adds writing, the assistant and their
+own figures. *Publish as premium* and *List on the marketplace* extend *Publish an
+article* when `[writer is eligible]`, and the assistant includes the premium AI
+allowance. Most of the complexity sits around publishing and the assistant.
 
 **Magazine and administrator.** @fig:uc-magazine-admin gives the use cases of the two
 actors that specialise nobody.
 
 ![Global use case diagram — magazine and administrator](../diagrams/fig-1-5-use-case-magazine-admin/fig-1-5-use-case-magazine-admin.png){#fig:uc-magazine-admin}
 
-A magazine subscribes, tops up credits, cancels and follows its balance; with an
-active subscription it browses writers, reads their evaluation (extended by the
-generation of portfolio insights), browses the marketplace, purchases an article
-(extended by a preview unlock), keeps it in its library and publishes it. The four
-marketplace use cases include *Check the active subscription*: the subscription is
-the gate, not a different actor. The administrator works the report queue — dismissing
-a report, removing an article or banning its author — searches users, changes a plan
-and grants eligibility. Drawing the two actors side by side without a generalisation
-shows the answer to a question the single diagram left open: neither the magazine nor
-the administrator is a kind of reader or writer.
+The magazine manages its subscription and credits; with an active subscription it
+evaluates writers, previews, buys and publishes articles — the four marketplace use
+cases include *Check the active subscription*. The administrator works the report
+queue, manages users and grants eligibility. No generalisation links the two: neither
+is a kind of reader or writer.
 
 ## Global class diagram {#sec:classes-global}
 
@@ -394,27 +370,20 @@ tags.
 
 ![Class diagram: accounts and articles](../diagrams/fig-1-6-classes-accounts-articles/fig-1-6-classes-accounts-articles.png){#fig:classes-accounts}
 
-One `User` class serves every kind of account. Its account type, role and plan are
-attributes, and a database constraint keeps role and plan empty for a magazine account,
-which is the data-model reason the magazine inherits nothing from the reader
-(@sec:actors). `Article.publisherId` names the magazine that published a licensed
-article and is empty for every other article; it is the single attribute through which
-the marketplace changes the core model.
+One `User` class serves every account; type, role and plan are attributes, and a
+constraint keeps role and plan empty for a magazine — the data-model reason it
+inherits nothing from the reader. `Article.publisherId`, set only on a licensed
+article, is the single attribute through which the marketplace changes the core.
 
 **Social layer and moderation.** @fig:classes-social shows comments, notifications,
 reports and the social associations.
 
 ![Class diagram: social layer and moderation](../diagrams/fig-1-7-classes-social/fig-1-7-classes-social.png){#fig:classes-social}
 
-Relationships that carry nothing but a pair and a date — likes, comment likes,
-reposts, saves, follows, blocks — are drawn as many-to-many associations; each is
-stored as a join table with a unique constraint on its pair. The operations that create
-them — `like()`, `repost()`, `save()`, `follow()`, `block()`, `likeComment()` — belong to
-`User`, the class that acts. The diagram shows that the social layer adds almost no
-entity of its own: every interaction is an association between a user and an article,
-a comment or another user, which makes interactions cheap to count for analytics and
-impossible to duplicate, since the unique pair constraint turns a repeated like into a
-no-op.
+Likes, comment likes, reposts, saves, follows and blocks carry only a pair and a
+date, so they are many-to-many associations stored as join tables with a unique
+pair; `User` holds the operations that create them. Interactions are therefore cheap
+to count and cannot be duplicated.
 
 **AI and documents.** @fig:classes-ai shows the article chunks embedded for retrieval,
 the writer memory, the cached portfolio insights, the AI interaction log, and the
@@ -422,11 +391,10 @@ private document library with its chunks.
 
 ![Class diagram: AI and documents](../diagrams/fig-1-8-classes-ai-documents/fig-1-8-classes-ai-documents.png){#fig:classes-ai}
 
-Everything in this diagram is derived from articles and documents and can be rebuilt
-from them: chunks are deleted and re-embedded on every publication, and the insights
-are a cache. A `DocumentChunk` keeps the page it came from, which is what a citation
-points to. A document is private to its owner: its chunks are retrieved only for the
-articles it is attached to, never for writer memory, insights or search (FR-87).
+Everything here can be rebuilt from articles and documents: chunks are re-embedded on
+every publication and the insights are a cache. A `DocumentChunk` keeps its page,
+which a citation points to, and a document's chunks serve only the articles it is
+attached to — never memory, insights or search (FR-87).
 
 **Marketplace.** @fig:classes-marketplace shows purchases, the ledger transactions,
 magazine subscriptions and the eligibility audit log.
@@ -444,11 +412,10 @@ metric rollups.
 
 ![Class diagram: analytics](../diagrams/fig-1-10-classes-analytics/fig-1-10-classes-analytics.png){#fig:classes-analytics}
 
-The analytics are layered: raw `AnalyticsEvent` rows are written once and never read by
-a dashboard, which reads only the rollups, so a dashboard's cost does not grow with the
-event log (NFR-15). Fields that the browser cannot measure — country, device, the
-drop-off per paragraph — are stored as empty rather than zero, so that "not measured"
-stays distinguishable from "measured, and none".
+Raw `AnalyticsEvent` rows are written once and never read by a dashboard, which
+reads only the rollups, so its cost does not grow with the events (NFR-15). Fields
+the browser cannot measure — country, device, paragraph drop-off — are stored empty,
+not zero, so "not measured" stays distinct from "none".
 
 ## Product backlog {#sec:backlog}
 
@@ -509,11 +476,9 @@ the writing of this report alongside the last sprints.
 
 ![Gantt chart of the project](../diagrams/fig-2-4-gantt/fig-2-4-gantt.png){#fig:gantt}
 
-The chart shows the one break in the rhythm of the sprints: the six weeks of the design
-track between Sprint 1 and Sprint 2. Placing them there was deliberate — the editor
-and the social features of Sprint 2 onwards were built from finished screens rather
-than designed while being coded — and it is the reason the first release spans two
-months instead of one.
+The chart shows one break in the rhythm: the six-week design track between Sprints 1
+and 2. It was deliberate — later features were built from finished screens rather
+than designed while coded — and it is why the first release spans two months.
 
 ## Conclusion {.unnumbered}
 
