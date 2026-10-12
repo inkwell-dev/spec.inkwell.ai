@@ -3,8 +3,7 @@
 ' Likes, reposts, saves, follows, blocks and comment likes are many-to-many
 ' associations (join tables); the operations that create them belong to User.
 !include ../_style.puml
-skinparam nodesep 22
-skinparam ranksep 45
+!pragma layout elk
 hide circle
 hide empty methods
 
@@ -82,7 +81,7 @@ User "0..*" -- "0..*" Comment : likes
 User "0..*" -- "0..*" User : follows
 User "0..*" -- "0..*" User : blocks
 
-Comment -[hidden]-- NotificationType
-NotificationType -[hidden]right- ReportTargetType
-ReportTargetType -[hidden]right- ReportStatus
+Comment -[hidden]- NotificationType
+Comment -[hidden]- ReportTargetType
+Comment -[hidden]- ReportStatus
 @enduml

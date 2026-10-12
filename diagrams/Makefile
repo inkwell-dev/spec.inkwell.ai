@@ -19,7 +19,11 @@ PRUN    := docker run --rm --user $(shell id -u):$(shell id -g) -e HOME=/tmp \
              -v $(CURDIR):/work -w /work $(IMAGE)
 DRAWIO  := drawio --no-sandbox
 
-PUML    := $(wildcard */*.puml)
+# The use case diagrams keep their content in .puml, but their layout is drawn
+# by tools/gen-use-cases.py into a .drawio file (actors stacked on the left,
+# use cases to the right); PlantUML does not render them.
+UC_PUML := $(wildcard fig-*-use-case-*/*.puml)
+PUML    := $(filter-out $(UC_PUML),$(wildcard */*.puml))
 DIO     := $(wildcard */*.drawio)
 
 .PHONY: all puml dio one regen check clean
@@ -41,16 +45,16 @@ dio:
 
 one:
 	@test -n "$(F)" || { echo "usage: make one F=fig-5-4-sequence-ai-chat-rag"; exit 1; }
-	@if [ -f "$(F)/$(F).puml" ]; then \
-	  $(PRUN) -tsvg $(F)/$(F).puml; $(PRUN) -tpng $(F)/$(F).puml; \
-	elif [ -f "$(F)/$(F).drawio" ]; then \
+	@if [ -f "$(F)/$(F).drawio" ]; then \
 	  $(DRAWIO) -x -f svg -o $(F)/$(F).svg $(F)/$(F).drawio >/dev/null; \
 	  $(DRAWIO) -x -f png --scale 1.5 -o $(F)/$(F).png $(F)/$(F).drawio >/dev/null; \
+	elif [ -f "$(F)/$(F).puml" ]; then \
+	  $(PRUN) -tsvg $(F)/$(F).puml; $(PRUN) -tpng $(F)/$(F).puml; \
 	else echo "no source found for $(F)"; exit 1; fi
 	@echo "✓ $(F)"
 
 regen:
-	cd tools && python3 gen-architecture.py
+	cd tools && python3 gen-architecture.py && python3 gen-use-cases.py
 
 check:
 	$(PRUN) -checkonly $(PUML) && echo "✓ all PlantUML sources parse"

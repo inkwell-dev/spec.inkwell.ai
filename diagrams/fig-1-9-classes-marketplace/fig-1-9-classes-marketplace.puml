@@ -2,8 +2,7 @@
 ' Global class diagram, part 4 of 5: the marketplace.
 ' User and Article appear as references; they are defined in part 1.
 !include ../_style.puml
-skinparam nodesep 22
-skinparam ranksep 45
+!pragma layout elk
 hide circle
 hide empty methods
 
@@ -85,10 +84,9 @@ User "1" -- "0..*" Transaction
 User "1" -- "0..*" MagazineSubscription
 User "1" -- "0..*" EligibilityAuditLog
 
-MagazineSubscription -[hidden]down- EligibilityAuditLog
-EligibilityAuditLog -[hidden]-- PurchaseStage
-PurchaseStage -[hidden]right- TransactionType
-TransactionType -[hidden]right- TransactionStatus
-PurchaseStage -[hidden]down- SubscriptionStatus
-SubscriptionStatus -[hidden]right- EligibilitySource
+Transaction -[hidden]- PurchaseStage
+Transaction -[hidden]- TransactionType
+Transaction -[hidden]- TransactionStatus
+Transaction -[hidden]- SubscriptionStatus
+Transaction -[hidden]- EligibilitySource
 @enduml

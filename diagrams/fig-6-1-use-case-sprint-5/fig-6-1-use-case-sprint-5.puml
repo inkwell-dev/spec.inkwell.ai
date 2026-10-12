@@ -4,12 +4,12 @@
 skinparam nodesep 14
 skinparam ranksep 65
 
+actor "Magazine" as MA
 actor "Reader" as LG
 actor "Writer" as R
-actor "Magazine" as MA
 actor "Administrator" as AD
 
-R  --|> LG
+R -left-|> LG
 
 rectangle {
   usecase "Sign in" as AUTH
@@ -58,7 +58,7 @@ LIST      ..> PRICE : <<include>>
 LIST      ..> AUTH : <<include>>
 BUY       ..> LEDGER : <<include>>
 BUY       <.. PREVIEW : <<extend>>
-LIB       <.. PUBLISH : <<extend>>
+LIB <.right. PUBLISH : <<extend>>
 PUBLISH   ..> AUTH : <<include>>
 PREVIEW   ..> LEDGER : <<include>>
 TOPUP     ..> LEDGER : <<include>>
@@ -69,7 +69,7 @@ LIST      ..> CLASSIFY : <<include>>
 
 
 note as N1
-  Listing on the marketplace requires eligibility:
+  Listing on the marketplace requires [writer is eligible]:
   5,000 identified readers and 1,000 reactions,
   lifetime and monotonic, or an administrator's grant.
 end note
@@ -80,6 +80,5 @@ note as N2
   purchase (FR-72). The owner then publishes it under
   its own masthead, public and free (FR-73).
 end note
-note right of LIST : [writer is eligible]
 note "Browsing, purchasing, the library and\npublication need [subscription active]." as NSUB
 @enduml

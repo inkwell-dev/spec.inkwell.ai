@@ -2,8 +2,7 @@
 ' Global class diagram, part 3 of 5: AI and documents.
 ' User and Article are defined in the first part; they appear here as references.
 !include ../_style.puml
-skinparam nodesep 22
-skinparam ranksep 45
+!pragma layout elk
 hide circle
 hide empty methods
 
@@ -90,7 +89,6 @@ User "1" -- "0..*" Document : owns
 Document "1" -- "0..*" DocumentChunk : is chunked into
 Article "0..*" -- "0..*" Document : is grounded in
 
-WriterMemory -[hidden]down- PortfolioInsight
-PortfolioInsight -[hidden]-- AiActionType
-AiActionType -[hidden]right- DocumentStatus
+DocumentChunk -[hidden]- AiActionType
+DocumentChunk -[hidden]- DocumentStatus
 @enduml

@@ -2,8 +2,7 @@
 ' Global class diagram, part 5 of 5: analytics.
 ' Raw events are written once; dashboards read only the four rollups.
 !include ../_style.puml
-skinparam nodesep 22
-skinparam ranksep 45
+!pragma layout elk
 hide circle
 hide empty methods
 
@@ -65,7 +64,5 @@ User "1" -- "0..1" WriterAudienceMetrics
 User "1" -- "0..1" WriterContentMetrics
 User "1" -- "0..1" WriterQualityMetrics
 
-User -[hidden]right- Article
-WriterContentMetrics -[hidden]down- WriterQualityMetrics
-AnalyticsEvent -[hidden]-- AnalyticsEventType
+AnalyticsEvent -[hidden]- AnalyticsEventType
 @enduml

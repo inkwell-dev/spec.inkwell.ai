@@ -66,6 +66,9 @@
 % up pages away from them. \restylefloat lets an [H] figure that does not fit
 % move to the next page instead of running into the footer.
 \usepackage{float}
+% build.py gives every image both a width and a height cap; without this the
+% image is stretched to fill both instead of fitting inside them.
+\setkeys{Gin}{keepaspectratio}
 % Let float manage figures, so that a pinned [H] figure that does not fit moves to
 % the next page instead of running into the footer.
 \restylefloat{figure}

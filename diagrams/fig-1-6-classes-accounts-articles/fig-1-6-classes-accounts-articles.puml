@@ -2,8 +2,7 @@
 ' Global class diagram, part 1 of 5: accounts and articles.
 ' Operations are named after the service methods that implement them.
 !include ../_style.puml
-skinparam nodesep 22
-skinparam ranksep 45
+!pragma layout elk
 hide circle
 hide empty methods
 
@@ -92,10 +91,11 @@ User "0..1" -- "0..*" Article : publishes
 Article "0..*" -- "0..*" Tag : is tagged with
 
 ' Enumerations in two rows under the classes.
-MagazineProfile -[hidden]-- AccountType
-AccountType -[hidden]right- Role
-Role -[hidden]right- Plan
-AccountType -[hidden]down- ArticleStatus
-ArticleStatus -[hidden]right- Placement
-Placement -[hidden]right- Visibility
+
+Tag -[hidden]- AccountType
+Tag -[hidden]- Role
+Tag -[hidden]- Plan
+Tag -[hidden]- ArticleStatus
+Tag -[hidden]- Placement
+Tag -[hidden]- Visibility
 @enduml
