@@ -1,0 +1,94 @@
+@startuml
+' Global class diagram, part 3 of 5: AI and documents.
+' User and Article are defined in the first part; they appear here as references.
+!include ../_style.puml
+!pragma layout elk
+hide circle
+hide empty methods
+
+class User {
+  - id : UUID
+  + getRepresentativeChunks() : ArticleChunk[]
+}
+class Article {
+  - id : UUID
+  + publish()
+}
+class ArticleChunk {
+  - chunkIndex : Integer
+  - content : Text
+  - embedding : Vector
+  + embedArticle(article : Article)
+  + findSimilarChunks(query : String) : ArticleChunk[]
+}
+class WriterMemory {
+  - tonePreferences : Json
+  - styleExamples : Json
+  - vocabularyPatterns : Json
+  - topics : Json
+  + extract()
+}
+class PortfolioInsight {
+  - voiceSummary : Text
+  - topicExpertise : Json
+  - consistencyScore : Integer
+  - expiresAt : Timestamp
+  + generate()
+  + getCached()
+}
+class AiInteraction {
+  - actionType : AiActionType
+  - tokensUsed : Integer
+  - model : String
+  + billAction(tokens : Integer)
+}
+class Document {
+  - title : String
+  - filename : String
+  - sizeBytes : Integer
+  - storageKey : String
+  - status : DocumentStatus
+  - pageCount : Integer
+  - error : Text
+  - deletedAt : Timestamp
+  + register()
+  + retry()
+  + remove()
+}
+class DocumentChunk {
+  - chunkIndex : Integer
+  - page : Integer
+  - content : Text
+  - embedding : Vector
+  + ingest(document : Document)
+  + findSimilarDocumentChunks(query : String) : DocumentChunk[]
+}
+
+class AiActionType <<Enumeration>> {
+  chat
+  inline_reformulate
+  inline_shorten
+  inline_expand
+  inline_simplify
+  inline_improve
+  voice_transcribe
+  portfolio_insight
+}
+class DocumentStatus <<Enumeration>> {
+  pending
+  extracting
+  ready
+  failed
+}
+
+Article "1" -- "0..*" ArticleChunk : is chunked into
+User "1" -- "0..1" WriterMemory
+User "1" -- "0..1" PortfolioInsight
+User "1" -- "0..*" AiInteraction
+User "1" -- "0..*" Document : owns
+Document "1" -- "0..*" DocumentChunk : is chunked into
+Article "0..*" -- "0..*" Document : is grounded in
+
+DocumentChunk -[hidden]- AiActionType
+DocumentChunk -[hidden]- DocumentStatus
+@enduml

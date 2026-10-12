@@ -42,7 +42,7 @@ spec = SPEC.read_text()
 
 def clean(text: str) -> str:
     text = re.sub(r'\s*—\s*\*superseding the manual insert of FR-30 \([^)]*\)\*',
-                  ' — superseding the manual insert of FR-30', text)
+                  ', superseding the manual insert of FR-30', text)
     text = re.sub(r'\s*\*\((?:amended|added|corrected|updated)[^)]*\)\*', '', text)
     text = re.sub(r'\s*\([^()]*\b20\d\d-\d\d-\d\d[^()]*\)', '', text)
     text = text.replace('**', '')
@@ -78,10 +78,10 @@ includes = {}
 # ── Functional requirements ──────────────────────────────────────────────────
 ACTOR_SECTIONS = [
     (1, 'Visitor (A1)', 'visitor'),
-    (2, 'Free and premium reader (A2, A3)', 'readers'),
-    (3, 'Writer and eligible writer (A4, A5)', 'writers'),
-    (4, 'Magazine (A6, A7)', 'magazines'),
-    (5, 'Administrator (A8)', 'administrator'),
+    (2, 'Reader (A2)', 'readers'),
+    (3, 'Writer (A3)', 'writers'),
+    (4, 'Magazine (A4)', 'magazines'),
+    (5, 'Administrator (A5)', 'administrator'),
     (6, 'Cross-cutting', 'cross-cutting'),
 ]
 fr_all = []
@@ -96,7 +96,7 @@ for n, actor, slug in ACTOR_SECTIONS:
                    f'{", ".join(map(str, sprints))} |')
     table = ['| ID | Requirement | Priority | Sprint |', '|:----|:------------------------------------------|:---|:--|']
     table += [f'| {r[0]} | {r[1]} | {r[2]} | {r[3]} |' for r in rs]
-    includes[f'fr-{slug}'] = '\n'.join(table) + f'\n\n: Functional requirements — {actor.split(" (")[0].lower()} {{#tbl:fr-{slug}}}'
+    includes[f'fr-{slug}'] = '\n'.join(table) + f'\n\n: Functional requirements: {actor.split(" (")[0].lower()} {{#tbl:fr-{slug}}}'
 pri = Counter(r[2] for r in fr_all)
 summary.append(f'| **Total** | **{len(fr_all)}** | **{pri["Must"]}** | **{pri["Should"]}** | **{pri["Could"]}** | |')
 includes['fr-summary'] = '\n'.join(summary) + '\n\n: Functional requirements by actor and priority {#tbl:fr-summary}'
@@ -112,7 +112,7 @@ for e in re.split(r'\n### ', backlog)[1:]:
     rs = []
     for r in rows(e):
         if len(r) == 5:            # E9 has no actor column
-            r = [r[0], r[1], '—', r[2], r[3], r[4]]
+            r = [r[0], r[1], 'none', r[2], r[3], r[4]]
         rs.append(dict(epic=name, id=r[0], story=r[1], actor=r[2], pri=r[3], pts=int(r[4]),
                        sprints=[s.strip() for s in r[5].split(',')]))
     rs.sort(key=lambda s: num(s['id']))
@@ -187,7 +187,7 @@ def images(text: str, flavour: str) -> str:
         if not re.search(r'\bwidth=', attrs):
             attrs += ' width=80%' if 'figures/screens/' in path else ' width=100%'
         if not re.search(r'\bheight=', attrs):
-            attrs += ' height=58%' if 'figures/screens/' in path else ' height=72%'
+            attrs += ' height=38%' if 'figures/screens/' in path else ' height=72%'
         return f'![{caption}]({image_for(path, flavour)}){{{attrs.strip()}}}'
     return re.sub(r'!\[([^\]]*)\]\(([^)]+)\)(?:\{([^}]*)\})?', fig, text)
 
@@ -202,7 +202,7 @@ TITLE_LATEX = r'''```{=latex}
 \centering\sffamily
 {\large\bfseries TEK-UP University\par}
 \vspace{2pt}
-{\normalsize GLSI — Software Engineering and Information Systems\par}
+{\normalsize GLSI (Software Engineering and Information Systems)\par}
 \vspace{3.2cm}
 {\Large\bfseries End-of-Studies Project Report\par}
 \vspace{6pt}
@@ -227,7 +227,7 @@ Host organisation: & \textbf{Intuitiv Group} \\
 \end{titlepage}
 ```'''
 
-LISTS_LATEX = '```{=latex}\n\\tableofcontents\n\\listoffigures\n\\listoftables\n```\n'
+LISTS_LATEX = '```{=latex}\n{\\setstretch{1.0}\\tableofcontents\\listoffigures\\listoftables}\n```\n'
 LISTS_DOCX = ('# Table of contents {.unnumbered}\n\n```{=openxml}\n'
               '<w:p><w:r><w:fldChar w:fldCharType="begin" w:dirty="true"/>'
               '<w:instrText xml:space="preserve"> TOC \\o "1-3" \\h \\z \\u </w:instrText>'
@@ -246,7 +246,7 @@ for flavour in ('latex', 'docx'):
     lists = LISTS_LATEX if flavour == 'latex' else LISTS_DOCX
     f = f.replace('<!-- LISTS -->', lists)
     main = '```{=latex}\n\\mainmatter\n```\n\n' if flavour == 'latex' else ''
-    appendix = '```{=latex}\n\\appendix\n```\n\n' if flavour == 'latex' else ''
+    appendix = '```{=latex}\n\\appendix\n\\AtBeginEnvironment{longtable}{\\footnotesize}\n```\n\n' if flavour == 'latex' else ''
     start = '```{=latex}\n\\frontmatter\n```\n\n' if flavour == 'latex' else ''
     doc = start + f + '\n\n' + main + body + '\n\n' + refs + '\n\n' + appendix + annexes
     doc = images(doc, flavour)

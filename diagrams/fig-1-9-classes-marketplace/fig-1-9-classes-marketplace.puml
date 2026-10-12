@@ -1,0 +1,92 @@
+@startuml
+' Global class diagram, part 4 of 5: the marketplace.
+' User and Article appear as references; they are defined in part 1.
+!include ../_style.puml
+!pragma layout elk
+hide circle
+hide empty methods
+
+class User {
+  - id : UUID
+  - earningsBalance : Integer
+  + countProgress() : Progress
+}
+class Article {
+  - id : UUID
+  - marketplacePrice : Integer
+  + switchToPublic()
+}
+class Purchase {
+  - stage : PurchaseStage
+  - creditsPaid : Integer
+  - platformFee : Integer
+  - writerPayout : Integer
+  + previewUnlock()
+  + buy()
+  + publish()
+}
+class Transaction {
+  - type : TransactionType
+  - amount : Integer
+  - idempotencyKey : String
+  - status : TransactionStatus
+  + checkLedgerInvariants() : Violation[]
+}
+class MagazineSubscription {
+  - status : SubscriptionStatus
+  - creditsGranted : Integer
+  - expiresAt : Timestamp
+  + renew()
+}
+class EligibilityAuditLog {
+  - source : EligibilitySource
+  - readersAt : Integer
+  - reactionsAt : Integer
+  + record(source : EligibilitySource)
+}
+
+class PurchaseStage <<Enumeration>> {
+  preview_unlock
+  full_purchase
+}
+class TransactionType <<Enumeration>> {
+  subscription_charge
+  monthly_credit_grant
+  credit_topup
+  preview_unlock
+  article_full_purchase
+  writer_payout
+  platform_fee
+  refund
+}
+class TransactionStatus <<Enumeration>> {
+  pending
+  completed
+  failed
+  refunded
+}
+class SubscriptionStatus <<Enumeration>> {
+  active
+  past_due
+  cancelled
+  refunded
+}
+class EligibilitySource <<Enumeration>> {
+  threshold
+  admin_grant
+}
+
+Article "1" -- "0..*" Purchase
+User "1" -- "0..*" Purchase : buys
+Purchase "0..1" -- "0..1" Purchase : prior preview
+Purchase "1" -- "2..3" Transaction : records
+User "1" -- "0..*" Transaction
+User "1" -- "0..*" MagazineSubscription
+User "1" -- "0..*" EligibilityAuditLog
+
+Transaction -[hidden]- PurchaseStage
+Transaction -[hidden]- TransactionType
+Transaction -[hidden]- TransactionStatus
+Transaction -[hidden]- SubscriptionStatus
+Transaction -[hidden]- EligibilitySource
+@enduml

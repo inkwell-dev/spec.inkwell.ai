@@ -9,6 +9,7 @@ hide empty methods
 class User {
   - id : UUID
   - username : String
+  + getRepresentativeChunks() : ArticleChunk[]
 }
 class Article {
   - id : UUID
@@ -50,6 +51,8 @@ class AiInteraction {
   - actionType : AiActionType
   - tokensUsed : Integer
   - model : String
+  + chat(messages : Message[])
+  + billAction(tokens : Integer)
 }
 
 class ArticleStatus <<Enumeration>> {
@@ -73,13 +76,8 @@ User "1" -- "0..1" WriterMemory : is profiled by
 User "1" -- "0..1" PortfolioInsight : is assessed by
 User "1" -- "0..*" AiInteraction : triggers
 
-note as N1
-  A chunk carries a 1536-dimension vector and is indexed
-  with HNSW using vector_cosine_ops. Chunks exist only for
-  published articles, and are deleted and re-created on
-  every re-publish; the same job drops the writer's
-  cached insight.
-end note
-
-ArticleStatus -[hidden]down- AiActionType
+' Layout: enumerations underneath; the note on chunks is in the text.
+WriterMemory -[hidden]down- PortfolioInsight
+PortfolioInsight -[hidden]-- ArticleStatus
+ArticleStatus -[hidden]right- AiActionType
 @enduml

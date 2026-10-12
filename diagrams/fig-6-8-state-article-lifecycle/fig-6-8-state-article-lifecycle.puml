@@ -12,17 +12,17 @@ state Draft {
   Draft : invisible to everyone but the author
 }
 
-state "Published — public, free" as PubFree {
+state "Published: public, free" as PubFree {
   PubFree : in the public feed
   PubFree : body readable by guests
 }
 
-state "Published — public, premium" as PubPremium {
+state "Published: public, premium" as PubPremium {
   PubPremium : in the public feed
   PubPremium : body requires a premium plan
 }
 
-state "Listed — marketplace" as Market {
+state "Listed: marketplace" as Market {
   Market : absent from the public feed
   Market : priced in credits
   Market : body requires a preview or a purchase

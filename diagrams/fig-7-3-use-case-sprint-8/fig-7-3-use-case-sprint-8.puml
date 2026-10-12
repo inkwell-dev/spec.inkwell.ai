@@ -6,7 +6,7 @@ skinparam nodesep 12
 skinparam ranksep 60
 
 actor "Visitor" as VIS
-actor "Free reader" as LG
+actor "Reader" as LG
 actor "Writer" as R
 
 LG --|> VIS

@@ -1,0 +1,74 @@
+@startuml
+' Global use case diagram, part 2 of 3: the writer.
+' Eligibility and the premium plan are states, drawn as conditions.
+!include ../_style.puml
+left to right direction
+skinparam nodesep 8
+skinparam ranksep 70
+
+actor "Reader" as RDR
+actor "Writer" as WRT
+RDR <|-- WRT
+
+rectangle "Inkwell.ai" {
+  usecase "Create a draft" as DRAFT
+  usecase "Edit a draft" as EDIT
+  usecase "Save the draft automatically" as AUTOSAVE
+  usecase "Insert an image" as IMAGE
+  usecase "Publish an article" as PUBLISH
+  usecase "Choose placement and visibility" as PLACE
+  usecase "Publish as premium" as PREMIUM
+  usecase "List on the marketplace" as LIST
+  usecase "Withdraw a listing to public" as WITHDRAW
+  usecase "Delete an article" as DELETE
+
+  usecase "Ask the assistant" as ASK
+  usecase "Apply an inline action" as INLINE
+  usecase "Have the assistant write into the draft" as WRITE
+  usecase "Keep or discard a write" as KEEP
+  usecase "Dictate a prompt" as DICTATE
+  usecase "Hear the reply read aloud" as HEAR
+  usecase "Consume the AI allowance" as QUOTA
+  usecase "Upload a reference document" as UPLOAD
+  usecase "Attach a document to an article" as ATTACH
+  usecase "Cite a document by page" as CITE
+
+  usecase "View article analytics" as STATS
+  usecase "View eligibility progress" as ELIG
+  usecase "View earnings" as EARN
+}
+
+WRT -- DRAFT
+WRT -- EDIT
+WRT -- IMAGE
+WRT -- PUBLISH
+WRT -- WITHDRAW
+WRT -- DELETE
+WRT -- ASK
+WRT -- INLINE
+WRT -- KEEP
+WRT -- UPLOAD
+WRT -- ATTACH
+WRT -- STATS
+WRT -- ELIG
+WRT -- EARN
+
+EDIT ..> AUTOSAVE : <<include>>
+PUBLISH ..> PLACE : <<include>>
+PUBLISH <.. PREMIUM : "<<extend>>\n[writer is eligible]"
+PUBLISH <.. LIST : "<<extend>>\n[writer is eligible]"
+ASK <.. WRITE : <<extend>>
+KEEP ..> WRITE : <<include>>
+ASK <.. DICTATE : <<extend>>
+ASK <.. HEAR : <<extend>>
+ASK <.. CITE : "<<extend>>\n[documents attached]"
+ASK ..> QUOTA : <<include>>
+INLINE ..> QUOTA : <<include>>
+
+note as N1
+  Every use case of the Writer includes «Sign in».
+  The assistant needs the premium plan:
+  «Consume the AI allowance» has the condition
+  [plan = premium].
+end note
+@enduml

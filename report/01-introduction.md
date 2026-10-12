@@ -12,20 +12,20 @@ intuition.
 
 This end-of-studies project starts from that double gap. On one side, writers need an
 assistant that helps them write *in their own voice*, not a generic text generator; on
-the other, magazines need objective signals — who reads a writer, how far, how often
-they come back — before they commit money. Between the two, a market is missing: a
+the other, magazines need objective signals (who reads a writer, how far, how often
+they come back) before they commit money. Between the two, a market is missing: a
 place where a magazine can browse, evaluate and license an existing article directly
 from its author, with clear terms and a trustworthy record of who paid what.
 
 **Inkwell.ai** is the platform built to fill that gap. It combines three pillars:
 
-1. **AI-collaborative writing** — an assistant integrated into the editor as chat,
+1. **AI-collaborative writing**: an assistant integrated into the editor as chat,
    inline actions and voice input, grounded in the writer's published corpus and in
    reference documents the writer uploads, able to write directly into the draft;
-2. **decision-support analytics** — every published article generates audience,
+2. **decision-support analytics**: every published article generates audience,
    content and quality signals that feed dashboards for the writer and an evaluation
    report for magazines, completed by AI-generated portfolio insights;
-3. **an article licensing marketplace** — magazines are a distinct account type that
+3. **an article licensing marketplace**: magazines are a distinct account type that
    subscribes, receives monthly credits, previews an article for a tenth of its price
    and buys the rest for exclusive republication rights.
 
@@ -40,8 +40,8 @@ follows that structure:
 - **Chapter 2** describes the working environment, compares the technological choices
   with their alternatives, justifies the main parameters of the system, and presents
   its logical and physical architecture.
-- **Chapters 3 to 6** present the four releases sprint by sprint — the sprint backlog,
-  the analysis, the design and the realisation — from the functional foundation to
+- **Chapters 3 to 6** present the four releases sprint by sprint (the sprint backlog,
+  the analysis, the design and the realisation), from the functional foundation to
   the marketplace, testing and deployment, and finally to the reworked assistant and
   the document library.
 - **Chapter 7** evaluates the result: the retrieval behind the assistant, the hybrid

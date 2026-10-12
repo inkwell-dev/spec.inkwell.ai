@@ -30,6 +30,9 @@ class AiInteraction {
   - outputText : Text
   - tokensUsed : Integer
   - model : String
+  + chat(messages : Message[])
+  + inline(action : AiActionType, text : Text)
+  + billAction(tokens : Integer)
 }
 class AnalyticsEvent {
   - id : UUID
@@ -68,12 +71,8 @@ Article "0..1" -- "0..*" AiInteraction : is the context of
 Article "1" -- "0..*" AnalyticsEvent : is measured by
 User "0..1" -- "0..*" AnalyticsEvent : viewer
 
-note as N1
-  voice_transcribe is reserved in the enumeration but
-  unused in this sprint. Voice input ships in Sprint 8
-  (FR-82, FR-83) and is presented with Release 4.
-end note
-
-AiActionType -[hidden]down- AnalyticsEventType
-AnalyticsEventType -[hidden]down- Plan
+' Enumerations underneath; the notes are in the report's text.
+AiInteraction -[hidden]-- AiActionType
+AiActionType -[hidden]right- AnalyticsEventType
+AnalyticsEventType -[hidden]right- Plan
 @enduml

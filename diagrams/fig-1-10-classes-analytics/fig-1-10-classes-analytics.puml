@@ -1,0 +1,68 @@
+@startuml
+' Global class diagram, part 5 of 5: analytics.
+' Raw events are written once; dashboards read only the four rollups.
+!include ../_style.puml
+!pragma layout elk
+hide circle
+hide empty methods
+
+class User {
+  - id : UUID
+  + getMyAnalytics() : Dashboard
+}
+class Article {
+  - id : UUID
+  + getArticleAnalytics() : ArticleMetrics
+}
+class AnalyticsEvent {
+  - eventType : AnalyticsEventType
+  - metadata : Json
+  + createEvents(batch : AnalyticsEvent[])
+}
+class ArticleMetrics {
+  - totalViews : Integer
+  - totalUniqueViews : Integer
+  - completionRate : Float
+  - engagementRate : Float
+  - paragraphDropoff : Json
+  + aggregate()
+}
+class WriterAudienceMetrics {
+  - totalUniqueReaders : Integer
+  - returningReaderRate : Float
+  - topCountries : Json
+  - deviceSplit : Json
+  + aggregate()
+}
+class WriterContentMetrics {
+  - totalPublished : Integer
+  - postingFrequency : Float
+  - postingConsistency : Float
+  - topTags : Json
+  + aggregate()
+}
+class WriterQualityMetrics {
+  - engagementRate : Float
+  - repostRate : Float
+  - commentDepth : Float
+  - retentionCurve : Json
+  + aggregate()
+}
+
+class AnalyticsEventType <<Enumeration>> {
+  view
+  scroll
+  time_on_page
+  like
+  comment
+  repost
+}
+
+Article "1" -- "0..*" AnalyticsEvent
+Article "1" -- "0..1" ArticleMetrics
+User "1" -- "0..1" WriterAudienceMetrics
+User "1" -- "0..1" WriterContentMetrics
+User "1" -- "0..1" WriterQualityMetrics
+
+AnalyticsEvent -[hidden]- AnalyticsEventType
+@enduml
