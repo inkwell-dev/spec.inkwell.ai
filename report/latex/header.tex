@@ -82,6 +82,11 @@
 
 % ── Tables ───────────────────────────────────────────────────────────────────
 \usepackage{etoolbox}
+% Tables reach pandoc as raw LaTeX (latex/grid-tables.lua), so its template
+% no longer sees a table and does not load these itself.
+\usepackage{longtable,booktabs,array,calc}
+% Shaded table columns.
+\usepackage{colortbl}
 \AtBeginEnvironment{longtable}{\small\setstretch{1.05}}
 \setlength{\LTpre}{6pt}
 \setlength{\LTpost}{8pt}
