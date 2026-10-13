@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """Lay out the global use case diagram for an A3 fold-out page.
 
+RETIRED: `make regen` no longer runs this. After the supervisor's review the
+figure is edited by hand in draw.io, and running this script would overwrite
+that drawing. Kept for reference only.
+
 The content comes from fig-1-11-use-case-global/…puml (merged by
 gen-global-figures.py from the three role diagrams). The per-sprint diagrams
 stack their actors on the left; with five actors and 65 use cases that makes a
