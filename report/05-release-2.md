@@ -44,8 +44,9 @@ interactions produce events, and the aggregation turns them into numbers.
 
 ![Class diagram, Sprint 3](../diagrams/fig-5-2-classes-sprint-3/fig-5-2-classes-sprint-3.png){#fig:classes-s3}
 
-Likes, reposts and follows are many-to-many associations; comments and notifications
-are classes, because they carry content and state. The four rollups
+Likes, reposts and follows are many-to-many associations, each with an association
+class (`Like`, `Repost`, `Follow`) that records when it was made; comments and
+notifications are classes, because they carry content and state. The four rollups
 (`ArticleMetrics` and the three writer metrics) hold one row per article or writer,
 rewritten by the aggregation, so reading a dashboard costs the same whatever the
 number of events behind it.

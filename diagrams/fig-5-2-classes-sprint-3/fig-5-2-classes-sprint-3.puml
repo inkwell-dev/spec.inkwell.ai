@@ -28,6 +28,20 @@ class Comment {
   + reply(content : Text) : Comment
   + remove()
 }
+' Association classes: a like, a repost and a follow carry data of their own,
+' so each many-to-many association has a class of its own, as in the global class diagram (fig-1-12).
+class Like {
+  - id : UUID
+  - createdAt : Timestamp
+}
+class Repost {
+  - id : UUID
+  - createdAt : Timestamp
+}
+class Follow {
+  - id : UUID
+  - createdAt : Timestamp
+}
 class Notification {
   - type : NotificationType
   - data : Json
@@ -87,9 +101,12 @@ class AnalyticsEventType <<Enumeration>> {
 }
 
 User "0..*" -- "0..*" Article : likes
+(User, Article) .. Like
 User "1" -- "0..*" Comment : posts
 User "0..*" -- "0..*" Article : reposts
-User "0..*" -- "0..*" User : follows
+(User, Article) .. Repost
+User "follower\n0..*" -- "followed\n0..*" User : follows
+(User, User) .. Follow
 User "1" -- "0..*" Notification : receives
 Article "1" -- "0..*" Comment : carries
 Article "1" -- "0..*" AnalyticsEvent
