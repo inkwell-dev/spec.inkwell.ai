@@ -163,14 +163,12 @@ streams into the document; the rail keeps the chat, the sources and the voice co
 one click away, and its marker signals activity (FR-81). A slow step is therefore never
 mistaken for a frozen screen, as US-67 requires.
 
-@fig:voice shows a prompt being recorded.
-
-![Recording a prompt](../figures/screens/writer-19-voice-recording.png){#fig:voice}
-
-While recording, the composer shows *Listening… speak your prompt*, the elapsed time
-and controls to confirm or cancel; the transcript then fills the composer, editable
-(FR-82). Dictation uses the same allowance as typing: voice is a way to write a
-prompt.
+Voice input is not a separate screen: it lives in the same composer, behind the
+microphone at its bottom left (visible in @fig:keep-discard). While recording, the
+composer shows *Listening… speak your prompt*, the elapsed time and controls to confirm
+or cancel; the transcript then fills the composer, editable, before anything is sent
+(FR-82). The round trip behind it is the one in @fig:seq-voice. Dictation uses the same
+allowance as typing: voice is a way to write a prompt, not a separate conversation.
 
 ## Sprint 9: Document library and citations {#sec:sprint9}
 
