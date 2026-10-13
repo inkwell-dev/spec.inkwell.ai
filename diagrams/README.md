@@ -20,6 +20,16 @@ cases in columns to the right, a link across columns routed through its own lane
 notes under the boundary. After editing a use case `.puml`, run `make regen`
 then `make one F=<figure>`.
 
+**The global use case diagram is the exception.** After the supervisor's review,
+`fig-1-11-use-case-global.drawio` is laid out by hand in draw.io: actors in a row
+along the top, each base use case with its extensions beside it, and every
+authenticated use case drawn with an explicit `«include»` to *Sign in*. That
+include is meant to stand out, so no note replaces it. The `.puml` beside the
+drawing holds the same content as text and is kept in step **by hand**, so edit
+both together. `make regen` touches neither, and `tools/gen-use-case-global.py`
+is retired. In draw.io, write the stereotypes as `«include»` and `«extend»`, not
+`<<…>>`.
+
 **The complete class diagram has two versions**, both kept in
 `fig-1-12-classes-global/`. The report uses the **grid layout** (version B),
 written by `tools/gen-class-global.py`. Version A,

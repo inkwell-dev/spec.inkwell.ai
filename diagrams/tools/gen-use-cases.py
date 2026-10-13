@@ -462,7 +462,7 @@ def build(name):
 
 
 if __name__ == '__main__':
-    # The global diagram has a layout of its own, for an A3 page (gen-use-case-global.py).
+    # The global diagram (fig-1-11) is skipped: it is laid out by hand in draw.io.
     names = sys.argv[1:] or sorted(os.path.basename(os.path.dirname(p))
                                    for p in glob.glob(os.path.join(ROOT, 'fig-*-use-case-*', '*.puml'))
                                    if 'use-case-global' not in p)
