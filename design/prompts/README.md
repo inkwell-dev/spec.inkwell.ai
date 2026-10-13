@@ -7,6 +7,13 @@ Stitch generates **one screen per prompt**, so the prompts are split into a shar
 **design-system preamble** plus **one file per screen**. Paste the preamble at the top of
 every screen prompt to keep the design language consistent.
 
+> **Note, 2026-10-13: the wordmark these prompts describe has been replaced.** Every
+> prompt below that asks for an "Inkwell" wordmark in Violet-600 predates the logo. The
+> shipped brand is the Nib Drop mark (violet) beside a Slate-900 "Inkwell" in Geist
+> Semibold, specified in [`../brand/README.md`](../brand/README.md). The prompts are left
+> as written because they are the inputs that produced the prototype; regenerate a
+> screen against `../brand/`, not against the text here.
+
 ---
 
 ## ⚙️ Configuration applied
@@ -48,6 +55,7 @@ every screen prompt to keep the design language consistent.
 | [`17-notifications.md`](./17-notifications.md) | Notification center — grouped, read/unread, filters (`/notifications`) | Standard |
 | [`DESKTOP-PROMPTS.md`](./DESKTOP-PROMPTS.md) | Desktop (1440px) expansions for screens 01–13 | — |
 | [`desktop-refinement.md`](./desktop-refinement.md) | Desktop for bonus screens + new screens 14–17 | — |
+| [`18-logo.md`](./18-logo.md) | Logo brief, run in **Claude Design** rather than Stitch. The result is archived in [`../brand/`](../brand/) | — |
 
 ---
 

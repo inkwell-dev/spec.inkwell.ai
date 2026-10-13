@@ -64,6 +64,32 @@ In Figma, the **shadcn/ui community kit** is used as the base component library.
 | `text-sm` | 14px | Secondary text, labels |
 | `text-xs` | 12px | Captions, metadata |
 
+### 3.4 Brand & Logo
+
+> **Added 2026-10-13.** Before this, the brand was the word "Inkwell" set in Violet-600
+> bold, with the stock Next.js favicon.
+
+The logo is **Nib Drop**: a single ink drop whose lower point splits into a pen nib,
+beside the word "Inkwell" in Geist Sans Semibold (−0.025em). The full handoff, with exact
+path data, sizes, clear space, color variants and the board, is
+[`design/brand/README.md`](./design/brand/README.md). The rules that matter when
+building:
+
+| Rule | Value |
+|------|-------|
+| Mark color | `--primary`: `#7C3AED` light, `#8257F0` dark. Never a gradient, glow or shadow |
+| Wordmark color | `--foreground` (Slate-900 light, near-white dark) |
+| Hover (logo as link) | mark `#6D28D9` (`--ink-accent-hover`) |
+| Small sizes | at 16px or below, use the **favicon cut** (wider slit, no breather hole) |
+| App icon | violet tile `rx 14/64`, white mark; mark fills 72% / 66% / 60% of the tile at 16 / 32 / 64px+ |
+| Lockup | mark height = 1.2 × font size, gap = 0.32 × font size |
+| Sidebar | 32px app icon + 17px wordmark, 10px gap |
+
+In the frontend the logo is `src/components/brand/inkwell-logo.tsx`. It reads the
+theme tokens rather than hard-coded hex, so it follows dark mode on its own. The favicon,
+Apple touch icon and PWA manifest icons live in `src/app/` and `public/icons/`, and
+`scripts/generate-brand-icons.mjs` regenerates the PNG and ICO fallbacks.
+
 ---
 
 ## 4. 📐 Breakpoints

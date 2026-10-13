@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#F1F5F9;font-family:Geist,system-ui,sans-serif;color:#0F172A;-webkit-font-smoothing:antialiased}a{color:#7C3AED;text-decoration:none}a:hover{color:#6D28D9;text-decoration:underline}</style>
+</helmet>
+<section data-screen-label="Turn 1 · Concepts" style="padding:64px;display:flex;flex-direction:column;gap:40px">
+  <header style="display:flex;flex-direction:column;gap:10px;max-width:760px">
+    <div style="font-family:'Geist Mono',monospace;font-size:12px;color:#64748B;letter-spacing:0.02em">INKWELL · LOGO EXPLORATION · TURN 1</div>
+    <h1 style="margin:0;font-size:40px;font-weight:600;letter-spacing:-0.03em;line-height:1.1">Four directions for the Inkwell mark</h1>
+    <p style="margin:0;font-size:16px;line-height:1.55;color:#334155;text-wrap:pretty">Each symbol is drawn on a 24-unit grid with 1.5-unit corner radii, uses only Violet-600 and Slate-900, and is tested at 512, 32 and 16 px on the canvas, card and dark surfaces. Wordmark: Geist Sans Semibold, −0.025em. Chosen direction: <a href="#1a">1a</a> Nib Drop, with SVG source at the end of the page.</p>
+  </header>
+
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+    <sc-for list="{{ concepts }}" as="c" hint-placeholder-count="4">
+      <article id="{{ c.id }}" data-screen-label="{{ c.id }} {{ c.name }}" style="width:1080px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;padding:40px;display:flex;flex-direction:column;gap:36px;box-sizing:border-box">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;background:#0F172A;color:#FFFFFF;border-radius:6px;padding:3px 8px">{{ c.id }}</span>
+            <h2 style="margin:0;font-size:26px;font-weight:600;letter-spacing:-0.025em">{{ c.name }}</h2>
+            <sc-if value="{{ c.recommended }}" hint-placeholder-val="{{ false }}">
+              <span style="font-family:'Geist Mono',monospace;font-size:11px;font-weight:500;color:#6D28D9;background:#EDE9FE;border-radius:6px;padding:3px 8px">RECOMMENDED</span>
+            </sc-if>
+          </div>
+          <p style="margin:0;font-size:16px;line-height:1.5;color:#334155;max-width:820px;text-wrap:pretty">{{ c.rationale }}</p>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="font-family:'Geist Mono',monospace;font-size:11px;color:#64748B">SYMBOL · APP ICON</div>
+          <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:12px">
+            <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;height:280px;display:flex;align-items:center;justify-content:center;position:relative">
+              <div style="position:relative;width:200px;height:200px">
+                {{ c.big }}
+                <sc-if value="{{ showGrid }}" hint-placeholder-val="{{ true }}">
+                  <div style="position:absolute;inset:0;pointer-events:none">{{ grid }}</div>
+                </sc-if>
+              </div>
+              <span style="position:absolute;left:14px;bottom:12px;font-family:'Geist Mono',monospace;font-size:11px;color:#64748B">512 · 24-unit grid</span>
+            </div>
+            <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;height:280px;display:flex;align-items:center;justify-content:center;position:relative">
+              {{ c.iconViolet }}
+              <span style="position:absolute;left:14px;bottom:12px;font-family:'Geist Mono',monospace;font-size:11px;color:#64748B">App icon · violet</span>
+            </div>
+            <div style="background:#0A0A0A;border-radius:12px;height:280px;display:flex;align-items:center;justify-content:center;position:relative">
+              {{ c.iconLight }}
+              <span style="position:absolute;left:14px;bottom:12px;font-family:'Geist Mono',monospace;font-size:11px;color:#94A3B8">App icon · light</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="font-family:'Geist Mono',monospace;font-size:11px;color:#64748B">ACTUAL SIZE · 32 / 16 PX</div>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+            <sc-for list="{{ c.small }}" as="s" hint-placeholder-count="3">
+              <div style="background:{{ s.bg }};border:1px solid {{ s.border }};border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:14px">
+                <div style="display:flex;align-items:flex-end;gap:20px">
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:6px">{{ s.i32 }}<span style="font-family:'Geist Mono',monospace;font-size:10px;color:{{ s.label }}">32</span></div>
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:6px">{{ s.i16 }}<span style="font-family:'Geist Mono',monospace;font-size:10px;color:{{ s.label }}">16</span></div>
+                  <div style="width:1px;height:32px;background:{{ s.border }}"></div>
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:6px">{{ s.m32 }}<span style="font-family:'Geist Mono',monospace;font-size:10px;color:{{ s.label }}">32</span></div>
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:6px">{{ s.m16 }}<span style="font-family:'Geist Mono',monospace;font-size:10px;color:{{ s.label }}">16</span></div>
+                </div>
+                <span style="font-family:'Geist Mono',monospace;font-size:11px;color:{{ s.label }}">{{ s.name }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="font-family:'Geist Mono',monospace;font-size:11px;color:#64748B">HORIZONTAL LOCKUP · VARIANTS</div>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+            <sc-for list="{{ c.variants }}" as="v" hint-placeholder-count="6">
+              <div style="background:{{ v.bg }};border:1px solid {{ v.border }};border-radius:12px;height:150px;display:flex;align-items:center;justify-content:center;position:relative">
+                {{ v.lockup }}
+                <span style="position:absolute;left:14px;bottom:12px;font-family:'Geist Mono',monospace;font-size:11px;color:{{ v.label }}">{{ v.name }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="font-family:'Geist Mono',monospace;font-size:11px;color:#64748B">WORDMARK · PLAIN / WITH INK-DROP FULL STOP</div>
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+            <sc-for list="{{ words }}" as="w" hint-placeholder-count="4">
+              <div style="background:{{ w.bg }};border:1px solid {{ w.border }};border-radius:12px;height:130px;display:flex;align-items:center;justify-content:center;position:relative">
+                {{ w.el }}
+                <span style="position:absolute;left:14px;bottom:12px;font-family:'Geist Mono',monospace;font-size:11px;color:{{ w.label }}">{{ w.name }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="font-family:'Geist Mono',monospace;font-size:11px;color:#64748B">IN THE APP · BROWSER TAB + SIDEBAR</div>
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+            <sc-for list="{{ c.app }}" as="p" hint-placeholder-count="2">
+              <div style="background:{{ p.canvas }};border:1px solid {{ p.border }};border-radius:12px;overflow:hidden;display:flex;flex-direction:column">
+                <div style="background:{{ p.strip }};padding:8px 10px 0;display:flex">
+                  <div style="background:{{ p.tab }};border-radius:8px 8px 0 0;padding:8px 14px;display:flex;align-items:center;gap:8px;font-size:12px;color:{{ p.text }}">{{ p.fav }}<span>Drafts · Inkwell</span></div>
+                </div>
+                <div style="display:flex;height:150px">
+                  <div style="width:220px;background:{{ p.side }};border-right:1px solid {{ p.border }};padding:16px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px">
+                    <div style="display:flex;align-items:center;gap:10px">{{ p.icon }}{{ p.wm }}</div>
+                    <div style="height:1px;background:{{ p.border }}"></div>
+                    <div style="font-size:13px;color:{{ p.muted }};display:flex;flex-direction:column;gap:8px"><span>Drafts</span><span>Articles</span></div>
+                  </div>
+                  <div style="flex:1"></div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </article>
+    </sc-for>
+  </div>
+
+  <div id="source" data-screen-label="SVG source · 1a" style="width:1080px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;padding:40px;box-sizing:border-box;display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="font-family:'Geist Mono',monospace;font-size:11px;color:#64748B">SVG SOURCE · <a href="#1a">1a</a> NIB DROP</div>
+      <p style="margin:0;font-size:15px;line-height:1.5;color:#334155">At 16 px and below the mark switches to a favicon cut: a wider slit and no breather hole, so the nib survives the pixel grid. Wordmark SVGs reference Geist via a text element; convert to outlines before shipping the final files.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+      <sc-for list="{{ sources }}" as="src" hint-placeholder-count="4">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-family:'Geist Mono',monospace;font-size:11px;color:#0F172A;font-weight:500">{{ src.name }}</span>
+          <pre style="margin:0;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:14px;font-family:'Geist Mono',monospace;font-size:11.5px;line-height:1.6;color:#334155;white-space:pre-wrap;word-break:break-all">{{ src.code }}</pre>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showGrid&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Presentation&quot;},&quot;appIcon&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;violet&quot;,&quot;light&quot;],&quot;default&quot;:&quot;violet&quot;,&quot;tsType&quot;:&quot;'violet'|'light'&quot;,&quot;section&quot;:&quot;Presentation&quot;},&quot;lockupFullStop&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Lockup&quot;}}">
+const VIO = '#7C3AED', VIO_D = '#8257F0', INK = '#0F172A', WHITE = '#FFFFFF', CANVAS = '#F8FAFC', DARK = '#0A0A0A', BORDER = '#E2E8F0';
+let UID = 0;
+const MARKS = {
+  a: (a, k) => [`<path fill="${a}" d="M11 20.11L6.31 13.58A7 7 0 1 1 17.69 13.58L13 20.11V13.1A2.1 2.1 0 1 0 11 13.1Z"/>`],
+  a16: (a, k) => [`<path fill="${a}" d="M10.6 19.55L6.31 13.58A7 7 0 1 1 17.69 13.58L13.4 19.55V11H10.6Z"/>`],
+  b: (a, k) => [
+    `<path fill="${a}" d="M12 1L14.95 5.62A3.5 3.5 0 1 1 9.05 5.62Z"/>`,
+    `<rect x="9" y="12.5" width="6" height="10.5" rx="1.5" fill="${k}"/>`
+  ],
+  c: (a, k) => [
+    `<path fill="${a}" d="M4 13.5H20V18A4 4 0 0 1 16 22H8A4 4 0 0 1 4 18Z"/>`,
+    `<path fill="none" stroke="${k}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M4 8.5V18A4 4 0 0 0 8 22H16A4 4 0 0 0 20 18V8.5"/>`,
+    `<path fill="${a}" d="M12 2L14.08 5.11A2.5 2.5 0 1 1 9.92 5.11Z"/>`
+  ],
+  d: (a, k) => [
+    `<path fill="${a}" transform="translate(-0.9 0)" d="M12 3.34A10 10 0 0 0 12 20.66Z"/>`,
+    `<path fill="${k}" transform="translate(0.9 0)" d="M12 3.34A10 10 0 0 1 12 20.66Z"/>`
+  ]
+};
+const NS = 'xmlns="http://www.w3.org/2000/svg"';
+const pick = (id, size) => (id === 'a' && size <= 16) ? 'a16' : id;
+const symbolSvg = (id, a, k, size) => `<svg ${NS} viewBox="0 0 24 24" width="${size}" height="${size}">${MARKS[pick(id, size)](a, k, 'mk' + (++UID)).join('')}</svg>`;
+const iconSvg = (id, kind, size, scale) => {
+  const sc = scale || (size <= 16 ? 0.72 : size <= 32 ? 0.66 : 0.6);
+  const m = 64 * sc, o = (64 - m) / 2, f = m / 24;
+  const violet = kind === 'violet';
+  const bg = violet ? `<rect width="64" height="64" rx="14" fill="${VIO}"/>` : `<rect x="1" y="1" width="62" height="62" rx="13" fill="${CANVAS}" stroke="${BORDER}" stroke-width="2"/>`;
+  const a = violet ? WHITE : VIO, k = violet ? WHITE : INK;
+  return `<svg ${NS} viewBox="0 0 64 64" width="${size}" height="${size}">${bg}<g transform="translate(${o} ${o}) scale(${f})">${MARKS[pick(id, size)](a, k, 'mk' + (++UID)).join('')}</g></svg>`;
+};
+const raw = (html) => React.createElement('span', { style: { display: 'inline-flex', lineHeight: 0, flexShrink: 0 }, dangerouslySetInnerHTML: { __html: html } });
+const dropSvg = (color, w) => `<svg ${NS} viewBox="8.6 0.6 6.8 10.4" width="${w}" height="${w * 10.4 / 6.8}"><path fill="${color}" d="M12 1L14.95 5.62A3.5 3.5 0 1 1 9.05 5.62Z"/></svg>`;
+const wordmark = (color, accent, size, period) => React.createElement('span', {
+  style: { fontFamily: 'Geist, sans-serif', fontWeight: 600, fontSize: size, letterSpacing: '-0.025em', color, lineHeight: 1, display: 'inline-flex', alignItems: 'baseline' }
+}, 'Inkwell', period ? React.createElement('span', { style: { display: 'inline-flex', marginLeft: size * 0.05, lineHeight: 0 }, dangerouslySetInnerHTML: { __html: dropSvg(accent, size * 0.17) } }) : null);
+const lockup = (id, a, k, size, period) => React.createElement('span', { style: { display: 'inline-flex', alignItems: 'center', gap: size * 0.32 } }, raw(symbolSvg(id, a, k, size * 1.2)), wordmark(k, a, size, period));
+
+const CONCEPTS = [
+  { id: 'a', name: 'Nib Drop', recommended: true, rationale: 'A single drop of ink whose point becomes a split nib: the moment writing starts, held by the writer. One color, one silhouette.' },
+  { id: 'b', name: 'Drop i', rationale: 'A lowercase i whose dot is the first drop of ink: authorship (“I write”) in Slate-900, the ink in violet. The simplest form, and the clearest at 16 px.' },
+  { id: 'c', name: 'The Well', rationale: 'A modern inkwell: an open vessel holding ink, with one drop rising out of it. The writer’s craft fills the well and flows out to publishers.' },
+  { id: 'd', name: 'Two Halves', rationale: 'One lens split down the middle: the same AI understanding serves the writer on one side and the publisher on the other. Also reads as a split nib.' }
+];
+
+class Component extends DCLogic {
+  renderVals() {
+    const showGrid = this.props.showGrid ?? true;
+    const appIcon = this.props.appIcon ?? 'violet';
+    const period = this.props.lockupFullStop ?? false;
+    UID = 0;
+    let g = '';
+    for (let i = 0; i <= 24; i++) {
+      const w = i % 12 === 0 ? 0.06 : i % 4 === 0 ? 0.04 : 0.02;
+      g += `<line x1="${i}" y1="0" x2="${i}" y2="24" stroke-width="${w}"/><line x1="0" y1="${i}" x2="24" y2="${i}" stroke-width="${w}"/>`;
+    }
+    const grid = raw(`<svg ${NS} viewBox="0 0 24 24" width="200" height="200" style="overflow:visible"><g stroke="${VIO}" stroke-opacity="0.35">${g}</g></svg>`);
+
+    const concepts = CONCEPTS.map(c => {
+      const id = c.id;
+      c = { ...c, id: '1' + c.id };
+      const small = [
+        { name: 'Canvas #F8FAFC', bg: CANVAS, border: BORDER, label: '#64748B', a: VIO, k: INK },
+        { name: 'Card #FFFFFF', bg: WHITE, border: BORDER, label: '#64748B', a: VIO, k: INK },
+        { name: 'Dark #0A0A0A', bg: DARK, border: '#262626', label: '#94A3B8', a: VIO_D, k: CANVAS }
+      ].map(s => ({ ...s, i32: raw(iconSvg(id, 'violet', 32)), i16: raw(iconSvg(id, 'violet', 16)), m32: raw(symbolSvg(id, s.a, s.k, 32)), m16: raw(symbolSvg(id, s.a, s.k, 16)) }));
+      const variants = [
+        { name: 'Full color · canvas', bg: CANVAS, border: BORDER, label: '#64748B', a: VIO, k: INK },
+        { name: 'Full color · card', bg: WHITE, border: BORDER, label: '#64748B', a: VIO, k: INK },
+        { name: 'Full color on dark', bg: DARK, border: DARK, label: '#94A3B8', a: VIO_D, k: CANVAS },
+        { name: 'Single color · Violet-600', bg: WHITE, border: BORDER, label: '#64748B', a: VIO, k: VIO },
+        { name: 'Single color · Slate-900', bg: CANVAS, border: BORDER, label: '#64748B', a: INK, k: INK },
+        { name: 'Reversed · white on violet', bg: VIO, border: VIO, label: '#EDE9FE', a: WHITE, k: WHITE }
+      ].map(v => ({ ...v, lockup: lockup(id, v.a, v.k, 34, period) }));
+      const app = [
+        { canvas: CANVAS, strip: BORDER, tab: WHITE, side: WHITE, border: BORDER, text: '#334155', muted: '#64748B', a: VIO, k: INK },
+        { canvas: DARK, strip: '#171717', tab: DARK, side: '#111111', border: '#262626', text: '#E2E8F0', muted: '#94A3B8', a: VIO_D, k: CANVAS }
+      ].map(p => ({ ...p, fav: raw(iconSvg(id, appIcon, 16)), icon: raw(iconSvg(id, appIcon, 32)), wm: wordmark(p.k, p.a, 17, false) }));
+      return {
+        ...c, recommended: !!c.recommended, small, variants, app,
+        big: raw(symbolSvg(id, VIO, INK, 200)),
+        iconViolet: raw(iconSvg(id, 'violet', 160)),
+        iconLight: raw(iconSvg(id, 'light', 160))
+      };
+    });
+
+    const words = [
+      { name: 'Plain · canvas', bg: CANVAS, border: BORDER, label: '#64748B', el: wordmark(INK, VIO, 48, false) },
+      { name: 'Plain · dark', bg: DARK, border: DARK, label: '#94A3B8', el: wordmark(CANVAS, VIO_D, 48, false) },
+      { name: 'Ink-drop full stop · card', bg: WHITE, border: BORDER, label: '#64748B', el: wordmark(INK, VIO, 48, true) },
+      { name: 'Ink-drop full stop · dark', bg: DARK, border: DARK, label: '#94A3B8', el: wordmark(CANVAS, VIO_D, 48, true) }
+    ];
+
+    const b = (a, k, m = 'a', u = 'nib') => MARKS[m](a, k, u).map(s => '  ' + s).join('\n');
+    const bi = (a, k, u = 'nib') => MARKS.a(a, k, u).map(s => '    ' + s).join('\n');
+    const sources = [
+      { name: 'Symbol · full color (512)', code: `<svg ${NS} viewBox="0 0 24 24" width="512" height="512">\n${b(VIO, INK)}\n</svg>` },
+      { name: 'Favicon cut · 16 px', code: `<svg ${NS} viewBox="0 0 24 24" width="16" height="16">\n${b(VIO, INK, 'a16', 'nib16')}\n</svg>` },
+      { name: 'App icon · violet', code: `<svg ${NS} viewBox="0 0 64 64" width="512" height="512">\n  <rect width="64" height="64" rx="14" fill="${VIO}"/>\n  <g transform="translate(12.8 12.8) scale(1.6)">\n${bi(WHITE, WHITE)}\n  </g>\n</svg>` },
+      { name: 'Horizontal lockup · full color on light', code: `<svg ${NS} viewBox="0 0 138 32" height="32">\n  <g transform="scale(1.3333)">\n${bi(VIO, INK)}\n  </g>\n  <text x="40" y="24.5" font-family="Geist, sans-serif" font-weight="600" font-size="25" letter-spacing="-0.625" fill="${INK}">Inkwell</text>\n</svg>` },
+      { name: 'Wordmark · with ink-drop full stop', code: `<svg ${NS} viewBox="0 0 108 32" height="32">\n  <text x="0" y="24.5" font-family="Geist, sans-serif" font-weight="600" font-size="25" letter-spacing="-0.625" fill="${INK}">Inkwell</text>\n  <path fill="${VIO}" transform="translate(${(91.5 - 8.6 * 0.42).toFixed(2)} ${(24.5 - 11 * 0.42).toFixed(2)}) scale(0.42)" d="M12 1L14.95 5.62A3.5 3.5 0 1 1 9.05 5.62Z"/>\n</svg>` }
+    ];
+
+    return { concepts, grid, showGrid, words, sources };
+  }
+}
+</script>
+</body>
+</html>
