@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """Merge the split class figures into one complete class diagram.
 
+RETIRED: `make regen` no longer runs this. The complete class diagram (fig-1-12)
+is now edited in draw.io after the supervisor's review, and its .puml is written
+by tools/gen-class-global.py from that drawing; running this script would
+overwrite it. Kept for reference only.
+
 Chapter 1 shows the classes in five parts (by domain), so each stays readable at
 page width. This script merges those parts into one source, so the whole picture
 can be shown too without a second copy of the content to keep in step:

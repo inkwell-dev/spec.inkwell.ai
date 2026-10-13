@@ -25,8 +25,9 @@ DRAWIO  := drawio --no-sandbox
 UC_PUML := $(wildcard fig-*-use-case-*/*.puml)
 # fig-1-11-use-case-global is the exception: its .drawio is edited by hand in
 # draw.io and its .puml kept in step by hand, so regen does not touch either.
-# The complete class diagram is laid out by tools/gen-class-global.py for an A3
-# page; its .puml is only the merged content.
+# The complete class diagram (fig-1-12) is the same kind of exception: its
+# .drawio is edited in draw.io and re-laid out on demand by
+# tools/gen-class-global.py, which also writes its .puml. Its .puml is not rendered.
 PUML    := $(filter-out $(UC_PUML) fig-1-12-classes-global/fig-1-12-classes-global.puml,$(wildcard */*.puml))
 DIO     := $(wildcard */*.drawio)
 
@@ -58,11 +59,10 @@ one:
 	@echo "✓ $(F)"
 
 regen:
-	cd tools && python3 gen-architecture.py && python3 gen-global-figures.py \
-	  && python3 gen-use-cases.py && python3 gen-class-global.py
-# fig-1-12-classes-global: the report uses the grid layout (version B), written by
-# gen-class-global.py from the content of the hand layout kept beside it,
-# fig-1-12-classes-global-friend-layout.drawio (version A).
+	cd tools && python3 gen-architecture.py && python3 gen-use-cases.py
+# Not in regen: fig-1-11 (hand-made in draw.io) and fig-1-12, whose layout tool
+# rewrites the drawing it reads. Run that one by hand, then review in draw.io:
+#   cd tools && python3 gen-class-global.py
 
 check:
 	$(PRUN) -checkonly $(PUML) && echo "✓ all PlantUML sources parse"
