@@ -43,8 +43,9 @@ private choices only their author sees.
 
 ![Class diagram, Sprint 7](../diagrams/fig-7-2-classes-sprint-7/fig-7-2-classes-sprint-7.png){#fig:classes-s7}
 
-Comment likes, blocks and saves are many-to-many associations created by the
-operations this sprint adds to `User`, each a join table with a unique pair, so a
+Comment likes, blocks and saves are many-to-many associations, each with an
+association class (`CommentLike`, `Block`, `Save`), created by the operations this
+sprint adds to `User`; each is a join table with a unique pair, so a
 repeated request is a no-op; a block works both ways, and comment likes never count
 towards eligibility. No existing class changed: the social layer grew by association
 only, without reopening the marketplace rules.
