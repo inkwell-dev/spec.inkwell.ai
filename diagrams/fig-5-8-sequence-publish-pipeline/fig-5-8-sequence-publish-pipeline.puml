@@ -3,6 +3,7 @@
 ' The writer's request returns before any of the expensive work happens. This is
 ' the figure that answers "why is anything a background job at all".
 !include ../_style.puml
+!include ../_sequence.puml
 mainframe interaction SequenceDiagram Publish pipeline
 autonumber "0 :"
 

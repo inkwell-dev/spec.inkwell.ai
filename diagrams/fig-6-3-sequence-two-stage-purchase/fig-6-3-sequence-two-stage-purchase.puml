@@ -1,6 +1,7 @@
 @startuml
 ' Figure 6.3 – System sequence diagram: preview unlock then full purchase
 !include ../_style.puml
+!include ../_sequence.puml
 mainframe interaction SequenceDiagram Two-stage article purchase
 autonumber "0 :"
 

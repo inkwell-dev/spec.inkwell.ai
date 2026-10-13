@@ -121,7 +121,7 @@ is part of the response stream (FR-80).
 
 **Sequence diagram: writing into the document.** @fig:seq-write shows the write.
 
-![Sequence diagram: writing into the document](../diagrams/fig-7-5-sequence-in-document-write/fig-7-5-sequence-in-document-write.png){#fig:seq-write}
+![Sequence diagram: writing into the document](../diagrams/fig-7-5-sequence-in-document-write/fig-7-5-sequence-in-document-write.png){#fig:seq-write .foldout height=88%}
 
 The text streams into a protected range opened at a block boundary, block by block.
 The writer then keeps it, as one undo step, or discards it, restoring exactly what
@@ -130,7 +130,7 @@ the writer owns.
 
 **Sequence diagram: voice.** @fig:seq-voice shows the voice round trip.
 
-![Sequence diagram: the voice round trip](../diagrams/fig-7-6-sequence-voice-round-trip/fig-7-6-sequence-voice-round-trip.png){#fig:seq-voice}
+![Sequence diagram: the voice round trip](../diagrams/fig-7-6-sequence-voice-round-trip/fig-7-6-sequence-voice-round-trip.png){#fig:seq-voice .foldout height=88%}
 
 A recording of up to five minutes is transcribed with Whisper and billed 200 tokens
 per started minute, the transcript landing in the composer. The duration billed is
@@ -213,7 +213,7 @@ the chunk to the prompt.
 **Sequence diagram: ingestion.** @fig:seq-ingest shows a document's path, the
 companion of the publishing pipeline of @fig:seq-publish.
 
-![Sequence diagram: document upload and ingestion](../diagrams/fig-7-9-sequence-document-ingestion/fig-7-9-sequence-document-ingestion.png){#fig:seq-ingest}
+![Sequence diagram: document upload and ingestion](../diagrams/fig-7-9-sequence-document-ingestion/fig-7-9-sequence-document-ingestion.png){#fig:seq-ingest .foldout .sideways height=88%}
 
 The file goes straight to a private bucket through a presigned URL, never through the
 API. Registration checks it and the 20-document limit; the worker extracts the text

@@ -4,6 +4,7 @@
 ' pipeArticleWrite in src/ai/article-write-stream.ts (backend);
 ' features/ai/article-writer.ts and features/editor/ai-write-range.ts (frontend).
 !include ../_style.puml
+!include ../_sequence.puml
 mainframe interaction SequenceDiagram In-document write
 autonumber "0 :"
 

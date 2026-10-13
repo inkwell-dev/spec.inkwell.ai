@@ -4,6 +4,7 @@
 ' src/ai/voice-billing.ts and the transcribe/speak routes in ai.controller.ts;
 ' features/ai/use-voice-input.ts and use-speech-out.ts (frontend).
 !include ../_style.puml
+!include ../_sequence.puml
 mainframe interaction SequenceDiagram Voice round trip
 autonumber "0 :"
 

@@ -1,6 +1,7 @@
 @startuml
 ' Figure 5.7 – System sequence diagram: hybrid search with reciprocal rank fusion
 !include ../_style.puml
+!include ../_sequence.puml
 mainframe interaction SequenceDiagram Hybrid search
 autonumber "0 :"
 

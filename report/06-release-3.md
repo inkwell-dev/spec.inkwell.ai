@@ -75,7 +75,7 @@ check (NFR-19).
 **Sequence diagram: the purchase.** @fig:seq-purchase shows the three calls of a
 licence.
 
-![Sequence diagram: preview, purchase and publication](../diagrams/fig-6-3-sequence-two-stage-purchase/fig-6-3-sequence-two-stage-purchase.png){#fig:seq-purchase}
+![Sequence diagram: preview, purchase and publication](../diagrams/fig-6-3-sequence-two-stage-purchase/fig-6-3-sequence-two-stage-purchase.png){#fig:seq-purchase .foldout .sideways height=88%}
 
 Each stage is one transaction: it locks the article (409 if already owned) and the
 credit balance (402 if too low), moves the credits and writes the ledger rows. The
