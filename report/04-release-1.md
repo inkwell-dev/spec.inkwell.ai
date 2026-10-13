@@ -101,8 +101,9 @@ leads to an account, which is the boundary between the visitor and the other act
 ![Sign-in, with Google sign-in](../figures/screens/guest-02-login.png){#fig:login}
 
 It offers the two authentication methods of FR-05 side by side (e-mail and password,
-and *Continue with Google*) and the link to registration that @fig:uc-global draws as
-*Create an account* extending *Sign in*.
+and *Continue with Google*) and the link to registration, *Create an account* in
+@fig:uc-global. Google sign-in extends *Create an account* there, because a first
+Google sign-in creates the account.
 
 Registration differs by account type. @fig:register shows a personal account and
 @fig:register-magazine a magazine account.
