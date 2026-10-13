@@ -37,7 +37,7 @@ rectangle "Inkwell.ai" {
   usecase "Reply" as R_CREPLY
   usecase "Like" as R_CLIKE
   usecase "Delete" as R_CDELETE
-  usecase "View profile" as R_PROFILE
+  usecase "Interact with a profile" as R_PROFILE
   usecase "Block" as R_BLOCK
   usecase "Follow" as R_FOLLOW
   usecase "View notifications" as R_NOTIF
@@ -49,7 +49,6 @@ rectangle "Inkwell.ai" {
   usecase "Manage my articles" as W_ARTICLES
   usecase "Create" as W_CREATE
   usecase "Edit" as W_EDIT
-  usecase "Save draft" as W_SAVE
   usecase "Publish" as W_PUBLISH
   usecase "Choose publish type" as W_PLACE
   usecase "Delete" as W_DELETE
@@ -82,7 +81,7 @@ rectangle "Inkwell.ai" {
   usecase "Grant eligibility" as A_GRANT
   usecase "Change a user's plan" as A_PLAN
   usecase "Delete" as A_UDELETE
-  usecase "Manage articles" as A_ARTICLES
+  usecase "Manage all articles" as A_ARTICLES
   usecase "Delete" as A_ADELETE
 }
 
@@ -128,7 +127,6 @@ WRT -- W_STATS
 WRT -- W_EARN
 W_ARTICLES <.. W_CREATE : <<extend>>
 W_ARTICLES <.. W_EDIT : <<extend>>
-W_ARTICLES <.. W_SAVE : <<extend>>
 W_ARTICLES <.. W_PUBLISH : <<extend>>
 W_ARTICLES <.. W_DELETE : <<extend>>
 W_PUBLISH ..> W_PLACE : <<include>>
