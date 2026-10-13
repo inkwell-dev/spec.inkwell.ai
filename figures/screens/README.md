@@ -61,11 +61,17 @@ reference these files by name, the way `diagrams/README.md` does for the UML fig
 | `writer-16-document-library` | the library, one document refused with its reason | FR-84 |
 | `writer-17-ai-sources-tab` | the Sources tab, a document attached | FR-85 |
 | `writer-18-ai-cited-reply` | a reply citing `[Title, p. N]` | FR-86 |
-| `writer-19-voice-recording` | recording a prompt | FR-82 |
+| `writer-19-voice-recording` | recording a prompt (no longer used, see below) | FR-82 |
 
 Both sittings are taken. `writer-19-voice-recording` was taken by hand in a real
 browser: Chromium blocks the microphone on the dev app's plain-http origin, so the
 headless capture cannot record.
+
+**2026-10-13: `writer-19-voice-recording` left the report.** A still of the composer
+while recording showed little beyond an active microphone button, so the report now
+describes voice input in prose beside the chat figures (Sprint 8 realisation), pointing
+at the microphone in `writer-14-ai-keep-discard` and at the voice sequence diagram. The
+file stays here as the last capture of that state; it is not recaptured with the logo.
 
 ## Captured whole, 2026-08-23
 
