@@ -6,7 +6,7 @@
 > geometry untouched, and the presentation board moved into `board/`. The prompt
 > that produced it is `design/prompts/18-logo.md`. The shipped implementation lives
 > in the frontend at `src/components/brand/` and `src/app/` (icon, apple-icon,
-> manifest).
+> manifest, opengraph-image).
 
 ## Overview
 Brand identity for Inkwell, an AI-powered writing marketplace. The chosen direction, **Nib Drop**, is a single ink drop whose lower point splits into a pen nib (a vertical slit ending in a round breather hole). It stands for the moment writing starts, held by the writer. The mark is one flat shape in one color.

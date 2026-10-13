@@ -90,6 +90,13 @@ theme tokens rather than hard-coded hex, so it follows dark mode on its own. The
 Apple touch icon and PWA manifest icons live in `src/app/` and `public/icons/`, and
 `scripts/generate-brand-icons.mjs` regenerates the PNG and ICO fallbacks.
 
+The same script renders `src/app/opengraph-image.png`, the 1200×630 link-preview card
+used by any page without an image of its own. A page that sets its own `openGraph`
+replaces the root's, image included, so the article, writer and magazine pages fall back
+to the card explicitly through `src/lib/og.ts`. Without that, a page with no thumbnail,
+avatar or logo would share with no image at all. The footer signs the copyright line
+with a 16px mark.
+
 ---
 
 ## 4. 📐 Breakpoints
