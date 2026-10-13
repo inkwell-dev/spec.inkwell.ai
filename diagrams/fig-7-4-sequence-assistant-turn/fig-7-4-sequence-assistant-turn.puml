@@ -2,6 +2,7 @@
 ' Figure 7.4 – System sequence diagram: one assistant turn, answer or write
 ' Sprint 8 (FR-78, FR-80). Source: AiService.chat in src/ai/ai.service.ts.
 !include ../_style.puml
+!include ../_sequence.puml
 mainframe interaction SequenceDiagram Assistant turn
 autonumber "0 :"
 

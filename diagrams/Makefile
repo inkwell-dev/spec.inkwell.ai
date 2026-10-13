@@ -23,7 +23,9 @@ DRAWIO  := drawio --no-sandbox
 # by tools/gen-use-cases.py into a .drawio file (actors stacked on the left,
 # use cases to the right); PlantUML does not render them.
 UC_PUML := $(wildcard fig-*-use-case-*/*.puml)
-PUML    := $(filter-out $(UC_PUML),$(wildcard */*.puml))
+# The complete class diagram is laid out by tools/gen-class-global.py for an A3
+# page; its .puml is only the merged content.
+PUML    := $(filter-out $(UC_PUML) fig-1-12-classes-global/fig-1-12-classes-global.puml,$(wildcard */*.puml))
 DIO     := $(wildcard */*.drawio)
 
 .PHONY: all puml dio one regen check clean
@@ -54,7 +56,11 @@ one:
 	@echo "✓ $(F)"
 
 regen:
-	cd tools && python3 gen-architecture.py && python3 gen-use-cases.py
+	cd tools && python3 gen-architecture.py && python3 gen-global-figures.py \
+	  && python3 gen-use-cases.py && python3 gen-use-case-global.py && python3 gen-class-global.py
+# fig-1-12-classes-global: the report uses the grid layout (version B), written by
+# gen-class-global.py from the content of the hand layout kept beside it,
+# fig-1-12-classes-global-friend-layout.drawio (version A).
 
 check:
 	$(PRUN) -checkonly $(PUML) && echo "✓ all PlantUML sources parse"

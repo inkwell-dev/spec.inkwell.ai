@@ -311,111 +311,32 @@ designed for but was never exercised) and NFR-37 (met on desktop and for critica
 violations, not on mobile; see @sec:eval-perf). They return as limitations in the
 general conclusion.
 
-## Global use case diagrams {#sec:uc-global}
+## Global use case diagram {#sec:uc-global}
 
-The global use cases are drawn in three diagrams, one per group of actors, so that
-each use case is a single action and every label can be read at page width. The
-use cases are those of the functional requirements; the per-sprint diagrams of
-Chapters 3 to 6 then refine each sprint's share. In the three diagrams, every use case
-of a signed-in actor includes *Sign in*, which is stated once in a note rather than
-drawn twenty times.
+@fig:uc-global gives the use cases of the five actors. At this size it is printed on
+a fold-out page.
 
-**Visitor and reader.** @fig:uc-visitor-reader gives the use cases of the two actors
-who read.
+![Global use case diagram](../diagrams/fig-1-11-use-case-global/fig-1-11-use-case-global.png){#fig:uc-global .foldout height=88%}
 
-![Global use case diagram: visitor and reader](../diagrams/fig-1-3-use-case-visitor-reader/fig-1-3-use-case-visitor-reader.png){#fig:uc-visitor-reader}
-
-The visitor browses, reads free articles, searches, views profiles and shares;
-*Create an account* and *Sign in with Google* extend *Sign in*. The reader inherits
-all of this and adds the social use cases, notifications, the profile and the
-upgrade. Premium is a condition, not an actor: *Read a premium article* extends
-*Read an article* when `[plan = premium]`.
-
-**Writer.** @fig:uc-writer gives the use cases of the writer.
-
-![Global use case diagram: writer](../diagrams/fig-1-4-use-case-writer/fig-1-4-use-case-writer.png){#fig:uc-writer}
-
-The writer inherits the reader's use cases and adds writing, the assistant and their
-own figures. *Publish as premium* and *List on the marketplace* extend *Publish an
-article* when `[writer is eligible]`, and the assistant includes the premium AI
-allowance. Most of the complexity sits around publishing and the assistant.
-
-**Magazine and administrator.** @fig:uc-magazine-admin gives the use cases of the two
-actors that specialise nobody.
-
-![Global use case diagram: magazine and administrator](../diagrams/fig-1-5-use-case-magazine-admin/fig-1-5-use-case-magazine-admin.png){#fig:uc-magazine-admin}
-
-The magazine manages its subscription and credits; with an active subscription it
-evaluates writers, previews, buys and publishes articles, and the four marketplace use
-cases include *Check the active subscription*. The administrator works the report
-queue, manages users and grants eligibility. No generalisation links the two: neither
-is a kind of reader or writer.
+Each actor's use cases hang below it, and the reader and the writer inherit those of
+the actors to their left. Premium, eligibility and an active subscription are
+conditions on an «extend» or an «include», not actors, and every use case of a
+signed-in actor includes *Sign in*, stated once in the note. The per-sprint diagrams
+of Chapters 3 to 6 refine each sprint's share.
 
 ## Global class diagram {#sec:classes-global}
 
-The data model counts thirty persisted tables. Drawn in a single diagram they form an
-unreadable strip, because `User` is related to most of the others, so the global class
-diagram is split by domain into five figures, each small enough to be read at page
-width. Attributes are shown with domain types (`Json`, `Vector`, `Timestamp`); audit
-columns are omitted; the enumerations each figure uses are drawn underneath it. Each
-class shows the main **operations** it supports; they are implemented by the service of
-the same domain (for instance `Article.publish()` by the articles service), because the
-classes are persisted records and the behaviour lives in the service layer. `User` and
-`Article` are defined in the first figure and appear in the others as references,
-with only the attributes and operations that figure needs.
+@fig:classes-global gives the data model: thirty persisted tables with domain types,
+the main operations of each class, and the enumerations along the bottom; audit
+columns are omitted. It is also printed on a fold-out page.
 
-**Accounts and articles.** @fig:classes-accounts shows the `User` and its optional
-`MagazineProfile`, the `Article` with its placement, visibility and price, and its
-tags.
+![Global class diagram](../diagrams/fig-1-12-classes-global/fig-1-12-classes-global.png){#fig:classes-global .foldout height=88%}
 
-![Class diagram: accounts and articles](../diagrams/fig-1-6-classes-accounts-articles/fig-1-6-classes-accounts-articles.png){#fig:classes-accounts}
-
-One `User` class serves every account; type, role and plan are attributes, and a
-constraint keeps role and plan empty for a magazine, which is the data-model reason it
-inherits nothing from the reader. `Article.publisherId`, set only on a licensed
-article, is the single attribute through which the marketplace changes the core.
-
-**Social layer and moderation.** @fig:classes-social shows comments, notifications,
-reports and the social associations.
-
-![Class diagram: social layer and moderation](../diagrams/fig-1-7-classes-social/fig-1-7-classes-social.png){#fig:classes-social}
-
-Likes, comment likes, reposts, saves, follows and blocks carry only a pair and a
-date, so they are many-to-many associations stored as join tables with a unique
-pair; `User` holds the operations that create them. Interactions are therefore cheap
-to count and cannot be duplicated.
-
-**AI and documents.** @fig:classes-ai shows the article chunks embedded for retrieval,
-the writer memory, the cached portfolio insights, the AI interaction log, and the
-private document library with its chunks.
-
-![Class diagram: AI and documents](../diagrams/fig-1-8-classes-ai-documents/fig-1-8-classes-ai-documents.png){#fig:classes-ai}
-
-Everything here can be rebuilt from articles and documents: chunks are re-embedded on
-every publication and the insights are a cache. A `DocumentChunk` keeps its page,
-which a citation points to, and a document's chunks serve only the articles it is
-attached to, never memory, insights or search (FR-87).
-
-**Marketplace.** @fig:classes-marketplace shows purchases, the ledger transactions,
-magazine subscriptions and the eligibility audit log.
-
-![Class diagram: marketplace](../diagrams/fig-1-9-classes-marketplace/fig-1-9-classes-marketplace.png){#fig:classes-marketplace}
-
-Money is never a single number: a `Purchase` records two or three `Transaction` rows
-(the magazine's debit, the writer's payout and the platform fee), and every balance can
-be recomputed from them, which is what the ledger invariants of NFR-19 check. Amounts
-are always positive; their direction comes from the transaction type, enforced by a
-constraint.
-
-**Analytics.** @fig:classes-analytics shows the raw analytics events and the four
-metric rollups.
-
-![Class diagram: analytics](../diagrams/fig-1-10-classes-analytics/fig-1-10-classes-analytics.png){#fig:classes-analytics}
-
-Raw `AnalyticsEvent` rows are written once and never read by a dashboard, which
-reads only the rollups, so its cost does not grow with the events (NFR-15). Fields
-the browser cannot measure (country, device, paragraph drop-off) are stored empty,
-not zero, so "not measured" stays distinct from "none".
+One `User` class serves every account, told apart by type, role and plan, and
+`Article` is the other hub. Social interactions are join tables with a unique pair; a
+`Purchase` records two or three `Transaction` rows from which every balance can be
+recomputed (NFR-19); and dashboards read the metric rollups, never raw events
+(NFR-15). Each operation is implemented by the service of its domain.
 
 ## Product backlog {#sec:backlog}
 

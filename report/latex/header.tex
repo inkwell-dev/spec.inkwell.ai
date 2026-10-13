@@ -91,6 +91,28 @@
 \setlength{\LTpre}{6pt}
 \setlength{\LTpost}{8pt}
 
+% ── A3 fold-out pages (latex/foldouts.lua) ───────────────────────────────────
+% One page of A3 landscape, folded into the A4 report. LuaTeX takes the size of
+% each page from \pagewidth and \pageheight when it is shipped out, so the
+% sizes are changed for that page only, inside a group. The margins stay those
+% of the A4 pages; the extra 210 mm all go to the text width.
+\usepackage{afterpage}
+\newcommand{\foldoutbegin}{%
+  \clearpage
+  \begingroup
+  \pagewidth=420mm \pageheight=297mm
+  \paperwidth=420mm \paperheight=297mm
+  \textwidth=\dimexpr\textwidth+210mm\relax
+  \hsize=\textwidth \linewidth=\textwidth \columnwidth=\textwidth
+  \headwidth=\textwidth}
+\newcommand{\foldoutend}{\clearpage\endgroup}
+% A tall figure turned a quarter on the sheet: the image is set rotated, and
+% the box it fits into is the text area with height and width exchanged.
+\newcommand{\foldoutsideways}{%
+  \let\foldoutincludegraphics\includegraphics
+  \renewcommand{\includegraphics}[2][]{%
+    \rotatebox{90}{\foldoutincludegraphics[width=0.86\textheight,height=\textwidth,keepaspectratio]{##2}}}}
+
 % ── Lists of figures and tables: "Figure 1.1 – Title" lines ──────────────────
 \usepackage{tocbasic}
 % numwidth is the box the "Figure 1.10 – " prefix sits in; the title starts

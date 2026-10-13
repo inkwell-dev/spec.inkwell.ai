@@ -1,6 +1,7 @@
 @startuml
 ' Figure 6.5 – System sequence diagram: reporting and moderation
 !include ../_style.puml
+!include ../_sequence.puml
 mainframe interaction SequenceDiagram Moderation
 autonumber "0 :"
 

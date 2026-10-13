@@ -1,6 +1,7 @@
 @startuml
 ' Figure 4.3 – System sequence diagram: sign in and silent token refresh
 !include ../_style.puml
+!include ../_sequence.puml
 mainframe interaction SequenceDiagram Sign in
 autonumber "0 :"
 

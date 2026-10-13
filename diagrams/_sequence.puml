@@ -1,0 +1,25 @@
+' ─────────────────────────────────────────────────────────────
+' Sequence diagrams: included after _style.puml.
+'
+' A sequence diagram is scaled to the text width, so what decides
+' its legibility is how much drawing surrounds each word. Three
+' settings keep that small:
+'   * long message labels wrap, so the lifelines stay close;
+'   * the text is larger than in the other diagrams, because the
+'     gaps between lifelines and the box padding do not grow with
+'     it, so a larger font raises the share of the figure that is
+'     text;
+'   * the participants are not repeated at the bottom.
+' Do not add ParticipantPadding: PlantUML prints a warning banner
+' into the image instead of applying it.
+' ─────────────────────────────────────────────────────────────
+skinparam maxMessageSize 205
+skinparam defaultFontSize 15
+skinparam ArrowFontSize 15
+skinparam sequence {
+  ParticipantFontSize 16
+}
+skinparam note {
+  FontSize 14
+}
+hide footbox

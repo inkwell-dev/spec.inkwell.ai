@@ -4,6 +4,7 @@
 ' DocumentIngestionService.ingest in src/documents/.
 ' The companion of fig-5-8: a second background pipeline, for a second corpus.
 !include ../_style.puml
+!include ../_sequence.puml
 mainframe interaction SequenceDiagram Document ingestion
 autonumber "0 :"
 

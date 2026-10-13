@@ -1,6 +1,7 @@
 @startuml
 ' Figure 4.6 – System sequence diagram: inline AI edit on a text selection
 !include ../_style.puml
+!include ../_sequence.puml
 mainframe interaction SequenceDiagram Inline AI action
 autonumber "0 :"
 

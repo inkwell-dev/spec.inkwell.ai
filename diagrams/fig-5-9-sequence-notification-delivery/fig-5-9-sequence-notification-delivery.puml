@@ -1,6 +1,7 @@
 @startuml
 ' Figure 5.9 – System sequence diagram: live notification delivery over SSE
 !include ../_style.puml
+!include ../_sequence.puml
 mainframe interaction SequenceDiagram Notification delivery
 autonumber "0 :"
 

@@ -187,7 +187,10 @@ def images(text: str, flavour: str) -> str:
         if not re.search(r'\bwidth=', attrs):
             attrs += ' width=80%' if 'figures/screens/' in path else ' width=100%'
         if not re.search(r'\bheight=', attrs):
-            attrs += ' height=38%' if 'figures/screens/' in path else ' height=72%'
+            # A sequence diagram is tall and narrow: give it most of the page
+            # height, or its width, and its text, shrink to fit.
+            attrs += (' height=38%' if 'figures/screens/' in path
+                      else ' height=88%' if '-sequence-' in path else ' height=72%')
         return f'![{caption}]({image_for(path, flavour)}){{{attrs.strip()}}}'
     return re.sub(r'!\[([^\]]*)\]\(([^)]+)\)(?:\{([^}]*)\})?', fig, text)
 
