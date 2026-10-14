@@ -99,15 +99,12 @@ reports.
 
 ![Sequence diagram: reporting and moderation](../diagrams/fig-6-5-sequence-moderation/fig-6-5-sequence-moderation.png){#fig:seq-moderation}
 
-After publication a classifier reviews the article and, if it flags it, files a
-pending report without blocking publication; readers report articles, users or
-comments. The administrator dismisses, removes the article or bans the author (in
-effect within fifteen minutes, NFR-09). The administrator works only in a dedicated
-console, with four sections: Reports, with the pending count, Users, Articles and
-Settings. It offers no reader or writer feature, and the API enforces it: every reader
-and writer action answers an administrator with a 403, and their analytics events are
-ignored (FR-90). A false positive costs a dismissed report,
-never a refused article; @sec:eval-moderation measures the classifier.
+After publication a classifier reviews the article and, if it flags it, files a pending
+report without blocking publication. Readers report articles, users or comments. The
+administrator dismisses a report, removes the article or bans the author, in effect
+within 15 minutes (NFR-09), from a console that offers no reader or writer feature: the
+API refuses those features to an administrator, analytics included (FR-90). A false
+positive costs a dismissed report, never a refused article (@sec:eval-moderation).
 
 **Activity diagram: the article access decision.** @fig:act-access shows the decision
 taken server-side for every article body.
@@ -228,17 +225,12 @@ queue and @fig:admin-articles the article directory.
 
 ![Administration: the article directory](../figures/screens/admin-04-articles.png){#fig:admin-articles}
 
-The grant records who made a writer eligible (FR-55); the user directory searches
-accounts and edits a plan (FR-53, FR-54), and bans from the directory itself (FR-89).
-Ban is not offered on an administrator, on the signed-in administrator or on an account
-already banned, and is confirmed in place. The report queue offers the four actions of
-@fig:seq-moderation (FR-51, FR-52). Its second report has no reporter: the classifier
-filed it (FR-57), and the administrator's note explains why the article stayed: the
-decision the design reserves for a person. The article directory lists every published
-article, active or removed, and searches by title or author (FR-88). A removed article
-is one an administrator removed or its author deleted. Remove is confirmed in place.
-Articles and profiles open read-only from the console, so the administrator reads
-without being offered a reader's actions.
+The grant records who made a writer eligible (FR-55). The user directory searches
+accounts, edits a plan and bans (FR-53, FR-54, FR-89). The report queue offers the 4
+actions of @fig:seq-moderation (FR-51, FR-52). Its second report was filed by the
+classifier (FR-57), and the administrator's note records why the article stayed. The
+article directory lists every published article, active or removed, searchable by title
+or author (FR-88). Articles and profiles open read-only from the console.
 
 ## Sprint 6: Tests, demonstration and deployment {#sec:sprint6}
 

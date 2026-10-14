@@ -182,23 +182,18 @@ or magazine) and its **role** (reader, writer or administrator).
 
 ![Actors of the system](../diagrams/fig-1-13-actors/fig-1-13-actors.png){#fig:actors height=60%}
 
-Three further properties change what an actor may do without making it a different
-actor: a reader's **plan** (free or premium), a writer's **marketplace eligibility**,
-and a magazine's **subscription** (active or not). They are states of an account:
-the same person moves between them by upgrading, by being read, or by subscribing. So
-they are drawn in the use case diagrams as **conditions** on the use cases they unlock,
-not as separate actors: the assistant requires `[plan = premium]`, listing on the
-marketplace requires `[writer is eligible]`, and every marketplace use case
-requires `[subscription active]` (@fig:uc-s2, @fig:uc-s5).
+A reader's **plan** (free or premium), a writer's **marketplace eligibility** and a
+magazine's **subscription** (active or not) change what an actor may do, not which actor
+it is: the same person moves between these states by upgrading, by being read or by
+subscribing. The use case diagrams therefore draw them as **conditions** on the use
+cases they unlock: `[plan = premium]`, `[writer is eligible]` and `[subscription
+active]` (@fig:uc-s2, @fig:uc-s5).
 
-Two generalisations hold: the reader specialises the visitor, and the writer
-specialises the reader. The other two actors specialise nobody. A **magazine** is a
-different account type with no role and no plan (a database constraint enforces it),
-so it inherits nothing from the readers or writers; a person who runs a magazine and
-also writes uses two accounts. The **administrator** holds a role that cannot be
-obtained through the interface and is granted in the database; its capabilities are
-moderation and management, not an extension of reading or writing, so it is not drawn
-as a specialised reader either.
+The reader specialises the visitor, and the writer specialises the reader. A
+**magazine** specialises nobody: it is a different account type with no role and no
+plan, enforced by a database constraint, so a person who runs a magazine and also writes
+uses 2 accounts. Nor does the **administrator**: its role is granted in the database,
+and its duties are moderation and management, not an extension of reading or writing.
 
 ## Functional requirements {#sec:fr}
 
@@ -296,14 +291,11 @@ a fold-out page.
 
 ![Global use case diagram](../diagrams/fig-1-11-use-case-global/fig-1-11-use-case-global.png){#fig:uc-global .foldout .here height=88%}
 
-Each actor's use cases hang below it, each base use case with its extensions
-beside it, and the reader and the writer inherit the use cases of the actors to
-their left. Every use case of a signed-in actor includes *Sign in*, and the figure
-draws each of those «include» links rather than stating the rule once: signing in
-is the boundary between the visitor and every other actor, and drawing it shows
-how much of the platform lies behind it. The conditions that unlock a use case
-(the premium plan, marketplace eligibility, an active subscription) are left to
-the per-sprint diagrams of Chapters 2 to 5, which refine each sprint's share.
+Each actor's use cases hang below it, with their extensions beside them, and the reader
+and the writer inherit the use cases of the actors to their left. Every «include» of
+*Sign in* is drawn rather than stated once, because signing in is the boundary between
+the visitor and every other actor. The conditions that unlock a use case are left to the
+per-sprint diagrams of Chapters 2 to 5.
 
 ## Global class diagram {#sec:classes-global}
 
@@ -313,13 +305,12 @@ columns are omitted. It is also printed on a fold-out page.
 
 ![Global class diagram](../diagrams/fig-1-12-classes-global/fig-1-12-classes-global.png){#fig:classes-global .foldout .here height=88%}
 
-One `User` class serves every account, told apart by type, role and plan, and
-`Article` is the other hub. Social interactions that carry data of their own (likes,
-saves, reposts, comment likes, follows, blocks) are association classes on
-many-to-many associations, stored as join tables with a unique pair; a
-`Purchase` records two or three `Transaction` rows from which every balance can be
-recomputed (NFR-19); and dashboards read the metric rollups, never raw events
-(NFR-15). Each operation is implemented by the service of its domain.
+One `User` class serves every account, told apart by type, role and plan, and `Article`
+is the other hub. Social interactions that carry data of their own (likes, saves,
+reposts, comment likes, follows, blocks) are association classes, stored as join tables
+with a unique pair. A `Purchase` records 2 or 3 `Transaction` rows from which every
+balance can be recomputed (NFR-19), and dashboards read the metric rollups, never raw
+events (NFR-15).
 
 ## Product backlog {#sec:backlog}
 
