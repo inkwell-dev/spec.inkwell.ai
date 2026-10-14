@@ -32,7 +32,7 @@ OUT = HERE / 'build'
 OUT.mkdir(exist_ok=True)
 
 FRONT = ['00-front.md']
-BODY = ['01-introduction.md', '02-context-requirements.md', '03-environment-architecture.md',
+BODY = ['01-introduction.md', '02-context-requirements.md',
         '04-release-1.md', '05-release-2.md', '06-release-3.md', '07-release-4.md',
         '08-evaluation.md', '09-conclusion.md']
 ANNEX = ['10-annexes.md']

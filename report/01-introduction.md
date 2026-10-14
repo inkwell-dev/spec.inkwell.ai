@@ -33,18 +33,17 @@ The work was carried out over six months, from February to July 2026, following 
 Scrum framework in nine fixed two-week sprints grouped into four releases. This report
 follows that structure:
 
-- **Chapter 1** presents the context of the project, studies the existing solutions,
-  justifies the development method, and then analyses and specifies the
-  requirements: actors, functional and non-functional requirements, the global use
-  case and class diagrams, the product backlog and the release plan.
-- **Chapter 2** describes the working environment, compares the technological choices
-  with their alternatives, justifies the main parameters of the system, and presents
-  its logical and physical architecture.
-- **Chapters 3 to 6** present the four releases sprint by sprint (the sprint backlog,
+- **Chapter 1** presents the context of the project, studies the existing solutions
+  and justifies the development method. It then analyses and specifies the
+  requirements (actors, functional and non-functional requirements, the global use
+  case and class diagrams, the product backlog and the release plan) and describes the
+  working environment, the technological choices, the main parameters of the system
+  and its logical and physical architecture.
+- **Chapters 2 to 5** present the four releases sprint by sprint (the sprint backlog,
   the analysis, the design and the realisation), from the functional foundation to
   the marketplace, testing and deployment, and finally to the reworked assistant and
   the document library.
-- **Chapter 7** evaluates the result: the retrieval behind the assistant, the hybrid
+- **Chapter 6** evaluates the result: the retrieval behind the assistant, the hybrid
   search, the moderation classifier, the performance and accessibility of the
   platform, the test coverage and the delivery itself.
 

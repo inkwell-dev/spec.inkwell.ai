@@ -28,7 +28,7 @@ Over nine two-week sprints in four releases, the project delivered:
   schema-drift check, 796 backend tests, a demonstration corpus and a production-ready
   stack.
 
-The evaluation of Chapter 7 measured the result rather than asserting it: retrieval
+The evaluation of Chapter 6 measured the result rather than asserting it: retrieval
 returns a relevant passage for 89% of questions, hybrid search keeps every relevant
 article for paraphrased queries that keyword search misses, the moderation classifier
 reaches a precision of 0.93 and a recall of 1.00, the API answers in tens of
@@ -71,7 +71,7 @@ Some points remain open and are stated as such.
   performance requirements.
 - **Harden the background work**: retries with back-off on every queue, and a
   readiness check that includes Redis.
-- **Tune retrieval and search with the measurements of Chapter 7**: raise the
+- **Tune retrieval and search with the measurements of Chapter 6**: raise the
   similarity floor to 0.65, cache the embeddings of frequent queries, and fail fast to
   keyword search once the provider's quota is known to be exhausted.
 - **Fix the accessibility findings** (contrast tokens and accessible names on icon

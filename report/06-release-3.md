@@ -311,7 +311,7 @@ shared utilities at 73% and the data layer, where the ledger checks live, at 67%
 the code that moves money or removes content is the most tested, as the strategy
 intended. The AI module (21%), authentication (28%) and the analytics aggregation (0%)
 are the least covered: their logic is largely SQL and provider calls, verified by the
-end-to-end suite and by the measurements of Chapter 7 rather than by unit tests. Line
+end-to-end suite and by the measurements of Chapter 6 rather than by unit tests. Line
 coverage of 48.5% overall is therefore not a uniform level of confidence but a
 concentrated one, and extending it to the aggregation queries is the first
 improvement listed in the conclusion. The harness was itself validated by sabotage:
@@ -327,7 +327,7 @@ and 8,000 comments, with generated cover art and avatars. A fixed cast of named
 accounts makes every demonstration path reproducible, and a flag lowers the
 eligibility thresholds so that the gate can be crossed live (US-54). Every seeded date
 can be bounded below, so the corpus never predates the platform. The same corpus is
-the one evaluated in Chapter 7.
+the one evaluated in Chapter 6.
 
 **Deployment.** The production stack builds, migrates and starts with one command, and
 its pipeline runs from a push to a running service (US-52). The domain `inkwell-ai.me`
