@@ -429,22 +429,51 @@ later are those of commodity hardware, not of a server.
 
 ### Software environment
 
-@tbl:software lists the tools used outside the application code itself. They share a
+The tools used outside the application code itself are presented below. They share a
 principle: every artefact (code, diagrams, this report) is kept as text under
 version control, and everything that runs, runs in a container.
 
-| Tool | Use |
-|:----------------------------|:----------------------------------------------------|
-| JetBrains IDE | code editor |
-| Git and GitHub | version control, pull requests, continuous integration (GitHub Actions) and container registry (GHCR) |
-| Docker and Docker Compose | containers for every service, in development and in production [@composedocs] |
-| Figma | design system and screen design |
-| PlantUML and draw.io | UML and architecture diagrams, kept as versioned sources |
-| Swagger UI | exploring the REST API through the OpenAPI document the backend generates |
-| Playwright | end-to-end tests and the capture of this report's screenshots [@playwrightdocs] |
-| Pandoc and LuaLaTeX | assembling and typesetting this report from its Markdown sources |
+::: {.tech logo="Logos/jetbrains_logo.png"}
+**JetBrains IDE**
 
-: Software tools {#tbl:software}
+Code editor.
+:::
+
+::: {.tech logo="Logos/git_logo.png"}
+**Git and GitHub**
+
+Version control, pull requests, continuous integration (GitHub Actions) and container registry (GHCR).
+:::
+
+::: {.tech logo="Logos/docker_logo.png"}
+**Docker and Docker Compose**
+
+Containers for every service, in development and in production [@composedocs].
+:::
+
+::: {.tech logo="Logos/figma_logo.png"}
+**Figma**
+
+Design system and screen design.
+:::
+
+::: {.tech logo="Logos/plantuml_logo.png"}
+**PlantUML and draw.io**
+
+UML and architecture diagrams, kept as versioned sources.
+:::
+
+::: {.tech logo="Logos/swagger_logo.png"}
+**Swagger UI**
+
+Exploring the REST API through the OpenAPI document the backend generates.
+:::
+
+::: {.tech logo="Logos/playwright_logo.png"}
+**Playwright**
+
+End-to-end tests and the capture of this report's screenshots [@playwrightdocs].
+:::
 
 ### Foundation and design track
 
@@ -478,38 +507,112 @@ property of the project itself.
 
 ### Frontend
 
-@tbl:tech-frontend gives the frontend stack. Its central decision is the web framework:
+The frontend stack is presented below. Its central decision is the web framework:
 the platform's public pages (the feed, articles, profiles) must be rendered on the
 server so that search engines and link previews see their content, while the editor
 and the assistant are interactive applications.
 
-| Choice | Alternatives considered | Deciding criteria |
-|:-------------------------|:----------------------|:------------------------------------------|
-| **Next.js 16** (App Router) with **React 19** | Remix, Nuxt (Vue), a client-only React application | server rendering per route for public pages and a request proxy for protected routes, in the most used React framework [@nextjsdocs; @stateofjs2024]; a client-only application would serve empty HTML to search engines |
-| **TypeScript** (strict) | JavaScript | one typed language from the database schema to the browser; the API client types are generated from the backend (NFR-30) |
-| **Tailwind CSS 4** with accessible headless primitives | CSS modules, a component library such as MUI | the Figma tokens map directly to utility classes; headless primitives give accessible dialogs and menus without imposing a visual style |
-| **TipTap 3** | Lexical, Slate, Quill | built on ProseMirror, stores the document as JSON, and accepts custom extensions, which the protected range the assistant writes into needs [@tiptapdocs] |
-| **TanStack Query 5** and **Zustand 5** | Redux Toolkit | server state (caching, invalidation, optimistic updates) and client state handled separately, with far less code than a single global store |
-| **Vercel AI SDK** (React bindings) | hand-written stream parsing | consumes the assistant's typed stream of text, status and write parts [@aisdkdocs] |
+::: {.tech logo="Logos/nextjs_logo.png"}
+**Next.js 16** (App Router) with **React 19**
 
-: Frontend technologies compared with their alternatives {#tbl:tech-frontend}
+*Alternatives considered:* Remix, Nuxt (Vue), a client-only React application.
+
+Server rendering per route for public pages and a request proxy for protected routes, in the most used React framework [@nextjsdocs; @stateofjs2024]; a client-only application would serve empty HTML to search engines.
+:::
+
+::: {.tech logo="Logos/typescript_logo.png"}
+**TypeScript** (strict)
+
+*Alternatives considered:* JavaScript.
+
+One typed language from the database schema to the browser; the API client types are generated from the backend (NFR-30).
+:::
+
+::: {.tech logo="Logos/tailwindcss_logo.png"}
+**Tailwind CSS 4** with accessible headless primitives
+
+*Alternatives considered:* CSS modules, a component library such as MUI.
+
+The Figma tokens map directly to utility classes; headless primitives give accessible dialogs and menus without imposing a visual style.
+:::
+
+::: {.tech logo="Logos/tiptap_logo.png"}
+**TipTap 3**
+
+*Alternatives considered:* Lexical, Slate, Quill.
+
+Built on ProseMirror, stores the document as JSON, and accepts custom extensions, which the protected range the assistant writes into needs [@tiptapdocs].
+:::
+
+::: {.tech logo="Logos/tanstack_logo.png"}
+**TanStack Query 5** and **Zustand 5**
+
+*Alternatives considered:* Redux Toolkit.
+
+Server state (caching, invalidation, optimistic updates) and client state handled separately, with far less code than a single global store.
+:::
+
+::: {.tech logo="Logos/vercel_logo.png"}
+**Vercel AI SDK** (React bindings)
+
+*Alternatives considered:* hand-written stream parsing.
+
+Consumes the assistant's typed stream of text, status and write parts [@aisdkdocs].
+:::
 
 ### Backend
 
-@tbl:tech-backend gives the backend stack. Its two structuring decisions are the
+The backend stack is presented below. Its two structuring decisions are the
 framework, which must host both an HTTP API and a background worker, and the data
 store, which must hold relational data, full-text search and vector search.
 
-| Choice | Alternatives considered | Deciding criteria |
-|:-------------------------|:----------------------|:------------------------------------------|
-| **NestJS 11** | Express or Fastify alone | modules, dependency injection, guards and OpenAPI generation built in [@nestjsdocs]; the same modules serve the API and the worker. Fastify is faster in raw benchmarks [@techempower2025], but the API's latency is dominated by the database and the model calls (@sec:eval-perf), not by the HTTP layer |
-| **PostgreSQL 16 + pgvector** | PostgreSQL with a separate vector database (Qdrant, Pinecone) | relational data, full-text search and vector search in one database [@pgvector2026; @postgres16fts]: an article and its embeddings change in one transaction and are never out of sync, and there is one service less to run. HNSW, the index pgvector offers, is among the best recall-per-latency trade-offs in public benchmarks [@aumuller2020annbench] |
-| **Drizzle ORM** | Prisma, TypeORM | SQL-shaped, type-safe queries with explicit migrations [@drizzledocs]; the purchase transaction needs `SELECT … FOR UPDATE` and the search needs `ts_rank` and vector operators, which Drizzle writes directly |
-| **Redis 7 + BullMQ** | RabbitMQ, PostgreSQL-based queues | repeatable jobs, priorities and a separate worker process on one Redis instance [@bullmqdocs]; Redis also carries the notification fan-out |
-| **MinIO** | storing files in PostgreSQL, a cloud bucket | the S3 API, so the same presigned-upload code runs against a cloud bucket in production; files never pass through the API |
-| **Passport** (JWT, Google OAuth 2.0) and **bcrypt** | an external identity provider | standard strategies [@rfc7519; @rfc6749] with the session data kept in the platform's own database |
+::: {.tech logo="Logos/nestjs_logo.png"}
+**NestJS 11**
 
-: Backend technologies compared with their alternatives {#tbl:tech-backend}
+*Alternatives considered:* Express or Fastify alone.
+
+Modules, dependency injection, guards and OpenAPI generation built in [@nestjsdocs]; the same modules serve the API and the worker. Fastify is faster in raw benchmarks [@techempower2025], but the API's latency is dominated by the database and the model calls (@sec:eval-perf), not by the HTTP layer.
+:::
+
+::: {.tech logo="Logos/postegreSQL_logo.png"}
+**PostgreSQL 16 + pgvector**
+
+*Alternatives considered:* PostgreSQL with a separate vector database (Qdrant, Pinecone).
+
+Relational data, full-text search and vector search in one database [@pgvector2026; @postgres16fts]: an article and its embeddings change in one transaction and are never out of sync, and there is one service less to run. HNSW, the index pgvector offers, is among the best recall-per-latency trade-offs in public benchmarks [@aumuller2020annbench].
+:::
+
+::: {.tech logo="Logos/drizzleorm_logo.png"}
+**Drizzle ORM**
+
+*Alternatives considered:* Prisma, TypeORM.
+
+SQL-shaped, type-safe queries with explicit migrations [@drizzledocs]; the purchase transaction needs `SELECT … FOR UPDATE` and the search needs `ts_rank` and vector operators, which Drizzle writes directly.
+:::
+
+::: {.tech logo="Logos/redis_logo.png"}
+**Redis 7 + BullMQ**
+
+*Alternatives considered:* RabbitMQ, PostgreSQL-based queues.
+
+Repeatable jobs, priorities and a separate worker process on one Redis instance [@bullmqdocs]; Redis also carries the notification fan-out.
+:::
+
+::: {.tech logo="Logos/minio_logo.png"}
+**MinIO**
+
+*Alternatives considered:* storing files in PostgreSQL, a cloud bucket.
+
+The S3 API, so the same presigned-upload code runs against a cloud bucket in production; files never pass through the API.
+:::
+
+::: {.tech logo="Logos/padlock_logo.png"}
+**Passport** (JWT, Google OAuth 2.0) and **bcrypt**
+
+*Alternatives considered:* an external identity provider.
+
+Standard strategies [@rfc7519; @rfc6749] with the session data kept in the platform's own database.
+:::
 
 ### Artificial-intelligence services
 

@@ -113,6 +113,22 @@
   \renewcommand{\includegraphics}[2][]{%
     \rotatebox{90}{\foldoutincludegraphics[width=0.86\textheight,height=\textwidth,keepaspectratio]{##2}}}}
 
+% ── Technology sections (latex/tech-rows.lua) ────────────────────────────────
+% One row per tool or technology: the logo centred in the left third, its
+% justification in the right two thirds, a light rule under the row. Both
+% columns are minipages, so a row is never split across two pages; \needspace
+% moves a row that would only just fit to the next page with its neighbours.
+\usepackage{xcolor}
+\newenvironment{techrow}{%
+  \par\needspace{2.6cm}\noindent
+  \begin{minipage}[c]{0.30\linewidth}\centering}{%
+  \end{minipage}\par\vspace{5pt}%
+  {\color{black!20}\hrule height 0.4pt}\vspace{7pt}}
+% Ends the logo column and opens the text column.
+\newcommand{\techrowtext}{%
+  \end{minipage}\hfill
+  \begin{minipage}[c]{0.66\linewidth}\setlength{\parskip}{3pt}\raggedright}
+
 % ── Lists of figures and tables: "Figure 1.1 – Title" lines ──────────────────
 \usepackage{tocbasic}
 % numwidth is the box the "Figure 1.10 – " prefix sits in; the title starts
