@@ -29,7 +29,7 @@ rectangle {
   usecase "Review the\nreport queue" as MOD
   usecase "Dismiss a report" as MOD1
   usecase "Delete an article" as MOD2
-  usecase "Ban a user" as MOD3
+  usecase "Ban an author" as MOD3
   usecase "Grant eligibility\nmanually" as ELIG
   usecase "Manage users" as USERS
   usecase "Manage all\narticles" as ARTICLES
