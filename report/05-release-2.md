@@ -21,7 +21,7 @@ writers and read an evaluation report built on audience, content and quality met
 
 <!-- INCLUDE:sprint-3 -->
 
-The sprint commits {{S3PTS}} points. Its weight is concentrated in two analytics
+The sprint commits {{S3PTS}} points. Its weight is concentrated in 2 analytics
 stories, the writer's per-article analytics (US-30, 8 points) and the evaluation report
 (US-32, 13 points): the social stories are small and similar to one another, while the
 evaluation needs the aggregation pipeline that every metric depends on.
@@ -35,7 +35,7 @@ evaluation needs the aggregation pipeline that every metric depends on.
 Interacting specialises into liking, commenting, replying, reposting, following and
 reporting, and includes notifying the recipient. On a marketplace listing only saving
 is allowed (FR-70). Article analytics and the writer evaluation both include the
-aggregation of events into metrics. The diagram joins the sprint's two halves:
+aggregation of events into metrics. The diagram joins the sprint's 2 halves:
 interactions produce events, and the aggregation turns them into numbers.
 
 ### Design
@@ -46,8 +46,8 @@ interactions produce events, and the aggregation turns them into numbers.
 
 Likes, reposts and follows are many-to-many associations, each with an association
 class (`Like`, `Repost`, `Follow`) that records when it was made. Comments and
-notifications are classes, because they carry content and state. The four rollups
-(`ArticleMetrics` and the three writer metrics) hold one row per article or writer,
+notifications are classes, because they carry content and state. The 4 rollups
+(`ArticleMetrics` and the 3 writer metrics) hold one row per article or writer,
 rewritten by the aggregation, so reading a dashboard costs the same whatever the
 number of events behind it.
 
@@ -57,9 +57,9 @@ reading event to the dashboard.
 ![Sequence diagram: analytics aggregation](../diagrams/fig-5-3-sequence-analytics-aggregation/fig-5-3-sequence-analytics-aggregation.png){#fig:seq-aggregation .foldout height=88%}
 
 The API takes the reader's identity from the access token, never from the request.
-Every five minutes the worker processes only the new events into the per-article and
+Every 5 minutes the worker processes only the new events into the per-article and
 per-writer rollups and rechecks eligibility. Dashboards read only the rollups and stay
-fast (NFR-15, NFR-16), at the price of a five-minute delay.
+fast (NFR-15, NFR-16), at the price of a 5-minute delay.
 
 The metrics the aggregation produces are those of the evaluation report, defined in
 @tbl:metrics. Each definition is the one the aggregation computes.
@@ -81,7 +81,7 @@ The metrics the aggregation produces are those of the evaluation report, defined
 The table shows that every metric is a ratio or a distribution rather than a raw
 count, so that a writer with a small but attentive audience can compare with a writer
 with a large and indifferent one. It also shows the limit of the capture: the retention
-curve has four points because the browser records the deepest scroll, not the
+curve has 4 points because the browser records the deepest scroll, not the
 paragraph being read.
 
 **Sequence diagram: live notifications.** @fig:seq-notify shows how a notification
@@ -115,7 +115,7 @@ followers), and unread ones are marked by a bar and a dot until *Mark all as rea
 (FR-13, FR-14). The list mixes social events with marketplace ones, so a writer follows
 both the conversation around their work and its sales in one place.
 
-The writer's view of their own work is shown in three screens. @fig:dashboard is the
+The writer's view of their own work is shown in 3 screens. @fig:dashboard is the
 dashboard, @fig:my-articles the list of articles and @fig:writer-analytics the
 analytics.
 
@@ -137,7 +137,7 @@ sorted on the server across all of them (FR-33). Engagement is the per-view rate
 
 The analytics page gives views, read time, engagement and likes, and the daily views
 of the last 30 days (FR-32). As the note says, this series is counted from the events:
-the one panel NFR-15 allows to read them directly, bounded to thirty days.
+the one panel NFR-15 allows to read them directly, bounded to 30 days.
 
 @fig:writer-profile shows a writer's public profile.
 
@@ -155,7 +155,7 @@ that a magazine evaluates in more depth.
 A magazine filters writers by eligibility and topic, searches and sorts them (FR-44).
 Each card gives readers, engagement and articles, and *View evaluation* opens the
 report. Any magazine reaches this page in Sprint 3. Sprint 5 puts it behind the
-subscription wall, hence two sprints for FR-44.
+subscription wall, hence 2 sprints for FR-44.
 
 ## Sprint 4: Retrieval, portfolio insights and hybrid search {#sec:sprint4}
 
@@ -179,7 +179,7 @@ be estimated once it existed, which is why the sprint begins with it.
 
 ![Use case diagram, Sprint 4](../diagrams/fig-5-5-use-case-sprint-4/fig-5-5-use-case-sprint-4.png){#fig:uc-s4}
 
-Searching specialises into keyword and meaning and includes merging the two results.
+Searching specialises into keyword and meaning and includes merging the 2 results.
 The assistant includes retrieving the writer's passages and showing them. Publishing
 includes embedding the article, extracting the voice profile and clearing the insights
 cache. The evaluation is extended by portfolio insights. Publishing has become the
@@ -215,10 +215,10 @@ in this sprint.
 
 ![Sequence diagram: AI chat with retrieval](../diagrams/fig-5-4-sequence-ai-chat-rag/fig-5-4-sequence-ai-chat-rag.png){#fig:seq-rag}
 
-The question is embedded and the five closest passages of the writer's own work are
+The question is embedded and the 5 closest passages of the writer's own work are
 retrieved if they score above 0.60. The prompt adds the voice profile, and the answer
 is streamed with its sources. The floor lets retrieval return *nothing* rather than
-five irrelevant passages, and the profile keeps the style even then. @sec:eval-rag
+5 irrelevant passages, and the profile keeps the style even then. @sec:eval-rag
 measures both.
 
 **Sequence diagram: hybrid search.** @fig:seq-search shows search.
@@ -226,10 +226,10 @@ measures both.
 ![Sequence diagram: hybrid search with reciprocal rank fusion](../diagrams/fig-5-7-sequence-hybrid-search/fig-5-7-sequence-hybrid-search.png){#fig:seq-search}
 
 The query is ranked by words (`ts_rank` [@postgres16fts]) and by meaning (cosine
-similarity), and the two rankings are fused by position with reciprocal rank fusion,
+similarity), and the 2 rankings are fused by position with reciprocal rank fusion,
 Σ 1/(60 + rank) [@cormack2009rrf], so an article can be found without sharing the
 searcher's words. The rankings are independent: if the embedding provider fails,
-search falls back to keywords. @sec:eval-search compares the three.
+search falls back to keywords. @sec:eval-search compares all 3.
 
 ### Realisation
 
@@ -239,17 +239,16 @@ search falls back to keywords. @sec:eval-search compares the three.
 
 The page says how it works: articles are matched on wording and on meaning (FR-06).
 For "fishing", the first results are articles whose titles contain the word: they rank
-high in both the lexical and the semantic list, and reciprocal rank fusion rewards
-agreement between the two. Search is available without an account, like the feed.
+high in both the lexical and the semantic list, and reciprocal rank fusion rewards agreement between both. Search is available without an account, like the feed.
 
 @fig:evaluation shows the evaluation report that a magazine reads before buying.
 
 ![A writer evaluation report with portfolio insights](../figures/screens/magazine-08-writer-evaluation.png){#fig:evaluation}
 
-The report gives the three panels of @tbl:metrics and the portfolio insights, with
+The report gives the 3 panels of @tbl:metrics and the portfolio insights, with
 *Regenerate* as the explicit action of FR-46 (FR-45). Fields the capture cannot
 measure, such as geography and device, are stated as not collected rather than shown
-as zero. This screen is why the analytics exist: it turns reading into evidence a
+as 0. This screen is why the analytics exist: it turns reading into evidence a
 buyer can weigh.
 
 ## Conclusion {.unnumbered}

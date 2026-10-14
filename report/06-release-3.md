@@ -4,10 +4,10 @@
 
 The third release delivers the reason the analytics exist: the marketplace. Sprint 5
 adds the premium plan, magazine subscriptions and credits, the eligibility gate, the
-two-stage purchase with exclusive rights, the magazine's own act of publishing, and the
+2-stage purchase with exclusive rights, the magazine's own act of publishing, and the
 moderation console. Sprint 6 is a technical sprint: it delivers no new screen, but the
 test strategy that proves the business rules of Sprint 5, a demonstration corpus, and a
-deployable production stack. Both sprints follow the same four steps as the others.
+deployable production stack. Both sprints follow the same 4 steps as the others.
 
 ## Sprint 5: Marketplace, subscriptions, premium and moderation {#sec:sprint5}
 
@@ -23,7 +23,7 @@ ledger, that writers see their earnings, and that administrators moderate.
 
 The sprint commits {{S5PTS}} points, about twice the average of the other sprints. The
 load was accepted rather than split because the marketplace stories form one
-transaction model: a preview, a purchase, a publication and an earnings line are four
+transaction model: a preview, a purchase, a publication and an earnings line are 4
 views of the same ledger rows, and delivering half of them would have left money that
 could be spent but not accounted for. The ledger harness of Sprint 1 and the screens of
 the design track had removed most of the uncertainty in advance. How far this
@@ -68,12 +68,12 @@ product decisions, kept as named constants (@sec:parameters).
 ![Class diagram, Sprint 5](../diagrams/fig-6-2-classes-sprint-5/fig-6-2-classes-sprint-5.png){#fig:classes-s5}
 
 A `Purchase` records a stage (preview or full purchase) with the credits paid, the
-fee and the payout, and writes three `Transaction` rows: the magazine's debit, the
+fee and the payout, and writes 3 `Transaction` rows: the magazine's debit, the
 writer's payout and the platform fee. No balance is stored without its explanation:
 credit balances and earnings are caches of these rows, which the ledger invariants
 check (NFR-19).
 
-**Sequence diagram: the purchase.** @fig:seq-purchase shows the three calls of a
+**Sequence diagram: the purchase.** @fig:seq-purchase shows the 3 calls of a
 licence.
 
 ![Sequence diagram: preview, purchase and publication](../diagrams/fig-6-3-sequence-two-stage-purchase/fig-6-3-sequence-two-stage-purchase.png){#fig:seq-purchase .foldout .sideways height=88%}
@@ -94,7 +94,7 @@ same audit entry. Comment likes and reposts do not count, so other people's acti
 cannot move a threshold. Every eligible writer can be traced to the numbers or the
 person that made them eligible.
 
-**Sequence diagram: moderation.** @fig:seq-moderation shows the two sources of
+**Sequence diagram: moderation.** @fig:seq-moderation shows the 2 sources of
 reports.
 
 ![Sequence diagram: reporting and moderation](../diagrams/fig-6-5-sequence-moderation/fig-6-5-sequence-moderation.png){#fig:seq-moderation}
@@ -163,7 +163,7 @@ decides.
 
 ![A listing before preview](../figures/screens/magazine-02-listing-detail.png){#fig:listing}
 
-Each listing shows its writer, topics and price, and two buttons: *Preview* at 10% of
+Each listing shows its writer, topics and price, and 2 buttons: *Preview* at 10% of
 the price (14 credits for an article at 140) and *Buy* at the full price (FR-47). The
 listing page shows the excerpt only. The body stays locked, as @fig:act-access
 requires, until the magazine pays.
@@ -187,7 +187,7 @@ it and @fig:publish-library the act of publishing from it.
 The library separates what is owned but unpublished from what has been published, with
 the price paid and the purchase date of each article, and offers *Publish* only on the
 first tab (FR-50, FR-74). Publishing is confirmed separately (FR-73): buying and
-publishing are two decisions, as @tbl:rules requires.
+publishing are 2 decisions, as @tbl:rules requires.
 
 Once published, the article becomes public. @fig:licensed shows it, and
 @fig:magazine-profile the magazine's public profile.
@@ -198,7 +198,7 @@ Once published, the article becomes public. @fig:licensed shows it, and
 
 The licensed article names both the writer and the publishing magazine, each linking to
 its profile (FR-76), and the magazine's profile lists the articles it has published
-(FR-75). These two requirements are attributed to Sprint 5 because a licensed article
+(FR-75). These 2 requirements are attributed to Sprint 5 because a licensed article
 exists only from this sprint on: the licence buys the magazine a shelf, not just a file.
 
 The writer sees the other side of the same transactions. @fig:earnings shows the
@@ -251,7 +251,7 @@ the rules that move money before more features are built on top of them.
 ### Analysis
 
 A technical sprint has no new actor-facing use case. Its analysis states what must be
-verified and what must be deployable. Three needs follow from the previous sprints.
+verified and what must be deployable. The previous sprints leave 3 needs.
 
 - **Proof of the money rules.** The ledger, the prices and the exclusivity of Sprint 5
   must be shown correct by tests that fail when the code is wrong, not merely pass
@@ -276,7 +276,7 @@ money. The database is never mocked: the guarantees under test live in it.
 
 **Deployment.** The deployment follows the physical architecture of @fig:arch-physical
 and the pipeline of @fig:arch-cicd: multi-stage images for the API and worker (one
-image, two entry points) and for the Next.js server in standalone mode, a production Compose file in which only nginx is published (with
+image, 2 entry points) and for the Next.js server in standalone mode, a production Compose file in which only nginx is published (with
 certificates from Let's Encrypt), a one-shot migration service that must succeed before
 the API and worker start, and health and readiness endpoints checked by Compose and by
 the deployment workflow.
@@ -331,7 +331,7 @@ are not counted as delivered in the velocity of @sec:velocity.
 ## Conclusion {.unnumbered}
 
 Release 3 delivered the marketplace end to end: subscriptions and credits, the
-eligibility gate, the exclusive two-stage purchase, the magazine's own publication and
+eligibility gate, the exclusive 2-stage purchase, the magazine's own publication and
 the writer's itemised earnings, all on a ledger whose invariants are tested after every
 operation. It also delivered moderation, a test suite of 796 backend tests concentrated
 on the rules that move money, a demonstration corpus and a production-ready stack whose

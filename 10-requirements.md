@@ -95,7 +95,7 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-10 | Delete one's own comment | Must | 3 |
 | FR-60 | Like a comment or a reply, and un-like it | Must | 7 |
 | FR-66 | Like, repost and comment on an article from a feed card, and see whether one has already liked or reposted it | Must | 8 |
-| FR-68 | See a feed card's most recent comments from the last hour, up to three, without opening the article | Could | 8 |
+| FR-68 | See a feed card's most recent comments from the last hour, up to 3, without opening the article | Could | 8 |
 | FR-11 | Repost an article | Could | 3 |
 | FR-70 | Be refused when liking, commenting on or reposting a marketplace listing, while saving one stays available | Must | 5 |
 | FR-67 | Read any account's reposts from the Reposted tab on its profile, without an account | Should | 8 |
@@ -159,7 +159,7 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-41 | Subscribe, receiving a monthly credit allowance (simulated payment) | Must | 5 |
 | FR-42 | Top up credits outside the monthly grant | Should | 5 |
 | FR-43 | See the credit balance, the renewal date and the transaction history | Must | 5 |
-| FR-44 | Browse eligible writers, filtered by topic, searchable, with four sort orders | Must | 3, 5 |
+| FR-44 | Browse eligible writers, filtered by topic, searchable, with 4 sort orders | Must | 3, 5 |
 | FR-45 | Read a writer evaluation report: audience, content, quality panels | Must | 3 |
 | FR-46 | Request AI Portfolio Insights for a writer, as an explicit action | Must | 4 |
 | FR-47 | Browse a writer's marketplace-listed articles with prices | Must | 5 |

@@ -68,13 +68,13 @@ monthly credits, preview an article for 10% of its price and buy the remainder f
 exclusive republication rights, every credit movement being recorded in a ledger whose
 invariants are tested after each operation.
 
-The platform was built over nine two-week Scrum sprints grouped into four releases,
+The platform was built over 9 2-week Scrum sprints grouped into 4 releases,
 with a Next.js 16 frontend, a NestJS 11 backend and worker, PostgreSQL 16 with
 pgvector, Redis and BullMQ, MinIO object storage and nginx, all containerised with
 Docker Compose, and with Groq and Gemini models orchestrated through the Vercel AI SDK.
 The backend suite counts 796 passing tests. Measured on a labelled set, retrieval
-returns a relevant passage in its top five for 89% of questions, hybrid search keeps
-every relevant article in its top ten even for paraphrased queries that defeat keyword
+returns a relevant passage in its top 5 for 89% of questions, hybrid search keeps
+every relevant article in its top 10 even for paraphrased queries that defeat keyword
 search, and the publish-time moderation classifier reaches a precision of 0.93 and a
 recall of 1.00.
 

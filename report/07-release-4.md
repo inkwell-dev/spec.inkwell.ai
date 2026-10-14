@@ -19,7 +19,7 @@ block accounts, keep articles for later and share them outside the platform.
 
 <!-- INCLUDE:sprint-7 -->
 
-The sprint commits {{S7PTS}} points, a light load: its five stories reuse the
+The sprint commits {{S7PTS}} points, a light load: its 5 stories reuse the
 interaction model of Sprint 3 (each is a new many-to-many association with a
 notification), so they were small to estimate and to build. The sprint was kept light
 deliberately, as the start of the release that runs alongside the writing of this
@@ -32,14 +32,14 @@ report.
 ![Use case diagram, Sprint 7](../diagrams/fig-7-1-use-case-sprint-7/fig-7-1-use-case-sprint-7.png){#fig:uc-s7}
 
 Sharing and the follower lists need no account. Following from a list extends
-viewing it. Liking a comment and saving include a notification. A block hides two
+viewing it. Liking a comment and saving include a notification. A block hides 2
 accounts from each other and is lifted only in the blocker's settings, and saves are
 private. Liking, following and sharing are public signals. Saving and blocking are
 private choices only their author sees.
 
 ### Design
 
-@fig:classes-s7 shows the three new associations and the notification types they emit.
+@fig:classes-s7 shows the 3 new associations and the notification types they emit.
 
 ![Class diagram, Sprint 7](../diagrams/fig-7-2-classes-sprint-7/fig-7-2-classes-sprint-7.png){#fig:classes-s7}
 
@@ -93,7 +93,7 @@ accepts dictated prompts and reads its replies aloud. @tbl:sprint-8 lists the st
 
 <!-- INCLUDE:sprint-8 -->
 
-The sprint commits {{S8PTS}} points in two halves of similar size: the live feed card
+The sprint commits {{S8PTS}} points in 2 halves of similar size: the live feed card
 and its neighbours on one side, the reworked assistant and voice on the other. The
 largest story, US-66 (8 points), is the write into the document, which needed a new
 editor extension as well as a new kind of model call.
@@ -133,7 +133,7 @@ the writer owns.
 
 ![Sequence diagram: the voice round trip](../diagrams/fig-7-6-sequence-voice-round-trip/fig-7-6-sequence-voice-round-trip.png){#fig:seq-voice .foldout height=88%}
 
-A recording of up to five minutes is transcribed with Whisper and billed 200 tokens
+A recording of up to 5 minutes is transcribed with Whisper and billed 200 tokens
 per started minute, the transcript landing in the composer. The duration billed is
 the provider's, or the larger of the client's figure and a floor from the file size:
 the client's claim is never trusted alone.
@@ -243,7 +243,7 @@ relevant: notes for one piece are not fed into another.
 
 ![A reply citing its source as [Title, p. N]](../figures/screens/writer-18-ai-cited-reply.png){#fig:cited}
 
-Asked a factual question, the assistant retrieved three passages from one document
+Asked a factual question, the assistant retrieved 3 passages from one document
 and answered with the figure and its source, *[Tackle Market Field Notes, p. 2]*
 (FR-86). The writer can check a claim before it goes out under their name, the
 purpose of US-72.

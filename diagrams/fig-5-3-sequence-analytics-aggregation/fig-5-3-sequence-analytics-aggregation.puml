@@ -43,7 +43,7 @@ group Scheduled, offset to land just after the article rollup
   activate D
   D --> K : Rows
   K -> K : Compute the audience, content and quality rollups
-  K -> D : Upsert the three per-writer metric rows
+  K -> D : Upsert the 3 per-writer metric rows
   K -> K : Recheck marketplace eligibility
   deactivate D
   deactivate K

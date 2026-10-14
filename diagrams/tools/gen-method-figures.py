@@ -63,15 +63,15 @@ c = [
          340, 120, 200, 110, BOX + BLUE),
     cell("sb", "Sprint backlog&lt;br&gt;&lt;br&gt;the stories committed&lt;br&gt;for this sprint",
          340, 280, 200, 120, BOX + AMBER),
-    cell("sprint", "Sprint: two weeks", 600, 100, 540, 320, GRP + GREY),
+    cell("sprint", "Sprint: 2 weeks", 600, 100, 540, 320, GRP + GREY),
     cell("work", "Daily work&lt;br&gt;&lt;br&gt;build · test · integrate&lt;br&gt;continuously",
          640, 150, 220, 110, BOX + WHITE),
     cell("inc", "Increment&lt;br&gt;&lt;br&gt;verified against the&lt;br&gt;definition of done",
          900, 150, 200, 110, BOX + GREEN),
     cell("review", "Sprint review", 640, 300, 220, 60, BOX + BLUE),
     cell("retro", "Retrospective", 900, 300, 200, 60, BOX + BLUE),
-    cell("roles", "The three Scrum roles, and how they collapse here&lt;br&gt;&lt;br&gt;"
-                  "Product Owner · Scrum Master · Development Team: on this project all three "
+    cell("roles", "The 3 Scrum roles, and how they collapse here&lt;br&gt;&lt;br&gt;"
+                  "Product Owner · Scrum Master · Development Team: on this project all 3 "
                   "are the same person. The academic supervisor acts as Product Owner at sprint "
                   "boundaries, reviewing each increment against the backlog. Stated in §1.4.2 "
                   "rather than left implied, because it is the first thing an examiner asks about "
@@ -90,25 +90,27 @@ write("fig-1-1-scrum-framework", "Figure 1.1 - The Scrum framework as practised"
 
 # ── Figure 1.2 — waterfall against agile ─────────────────────────────────────
 c = [
-    cell("wf", "Classic: sequential phases", 60, 70, 470, 430, GRP + GREY),
-    cell("w1", "Requirements", 110, 120, 370, 50, BOX + BLUE),
-    cell("w2", "Design", 110, 190, 370, 50, BOX + BLUE),
-    cell("w3", "Implementation", 110, 260, 370, 50, BOX + BLUE),
-    cell("w4", "Testing", 110, 330, 370, 50, BOX + BLUE),
-    cell("w5", "Delivery: once, at the end", 110, 400, 370, 50, BOX + RED),
-    cell("ag", "Agile: Scrum, iterative", 610, 70, 530, 430, GRP + GREEN),
-    cell("s1", "Sprint 1: plan · build · verify → increment", 650, 120, 450, 50, BOX + WHITE),
-    cell("s2", "Sprint 2: plan · build · verify → increment", 650, 190, 450, 50, BOX + WHITE),
-    cell("s3", "Sprint n: plan · build · verify → increment", 650, 260, 450, 50, BOX + WHITE),
-    cell("s4", "Working software every two weeks", 650, 330, 450, 50, BOX + GREEN),
-    cell("s5", "Each increment reviewed before the next is planned", 650, 400, 450, 50, BOX + AMBER),
+    # Figure 1.2 is drawn 1220 px wide and printed at about half that, so its text is
+    # set large enough to read on paper (a later key in a draw.io style wins).
+    cell("wf", "Classic: sequential phases", 60, 70, 470, 430, GRP + GREY + "fontSize=18;"),
+    cell("w1", "Requirements", 110, 120, 370, 50, BOX + BLUE + "fontSize=16;"),
+    cell("w2", "Design", 110, 190, 370, 50, BOX + BLUE + "fontSize=16;"),
+    cell("w3", "Implementation", 110, 260, 370, 50, BOX + BLUE + "fontSize=16;"),
+    cell("w4", "Testing", 110, 330, 370, 50, BOX + BLUE + "fontSize=16;"),
+    cell("w5", "Delivery: once, at the end", 110, 400, 370, 50, BOX + RED + "fontSize=16;"),
+    cell("ag", "Agile: Scrum, iterative", 610, 70, 530, 430, GRP + GREEN + "fontSize=18;"),
+    cell("s1", "Sprint 1: plan · build · verify → increment", 650, 120, 450, 50, BOX + WHITE + "fontSize=16;"),
+    cell("s2", "Sprint 2: plan · build · verify → increment", 650, 190, 450, 50, BOX + WHITE + "fontSize=16;"),
+    cell("s3", "Sprint n: plan · build · verify → increment", 650, 260, 450, 50, BOX + WHITE + "fontSize=16;"),
+    cell("s4", "Working software every 2 weeks", 650, 330, 450, 50, BOX + GREEN + "fontSize=16;"),
+    cell("s5", "Each increment reviewed before the next is planned", 650, 400, 450, 50, BOX + AMBER + "fontSize=16;"),
     cell("why", "Why Scrum was chosen for this project&lt;br&gt;&lt;br&gt;"
                 "The product is built in layers that each need the one before: the marketplace "
                 "evaluates writers on analytics, and analytics need published articles. Fixed "
-                "two-week sprints deliver those layers in order, each one a working increment the "
+                "2-week sprints deliver those layers in order, each one a working increment the "
                 "next builds on, and each with written exit criteria, which is what lets every "
                 "release chapter show evidence rather than assert completion.",
-         60, 540, 1080, 130, NOTE + AMBER),
+         60, 540, 1080, 190, NOTE + AMBER + "fontSize=20;spacing=16;"),
     edge("b1", "w1", "w2", "", EV), edge("b2", "w2", "w3", "", EV),
     edge("b3", "w3", "w4", "", EV), edge("b4", "w4", "w5", "", EV),
     edge("b5", "s1", "s2", "", EV), edge("b6", "s2", "s3", "", EV),
@@ -139,7 +141,7 @@ c = [
     cell("g5", "build and push", 1020, 370, 160, 40, BOX + WHITE),
     cell("note", "Validated by sabotage, not by passing: removing the completed-status filter "
                  "from the earnings query fails exactly the pending-payout test, and dropping "
-                 "preview_unlock from the debit list fails seven. That exercise found a real "
+                 "preview_unlock from the debit list fails 7. That exercise found a real "
                  "coverage gap (nothing pinned the grant type filter), which was then closed.",
          720, 500, 480, 170, NOTE + AMBER),
     edge("c1", "unit", "int", "", EU),

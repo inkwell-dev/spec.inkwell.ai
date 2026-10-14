@@ -59,7 +59,7 @@ P --> R : The steps collapse into one finished run
 deactivate P
 
 note over R, D
-  The routing call may run at most three steps: decide, call the tool,
+  The routing call may run at most 3 steps: decide, call the tool,
   recap. Each stage is reported only once it has actually run, so the
   panel shows the real pipeline, not an animation. A Stop still bills
   an estimate of what was produced.

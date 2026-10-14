@@ -27,9 +27,8 @@ interface design effort.
 ### Context and motivation {#sec:motivation}
 
 The project was proposed as an end-of-studies engineering project with a
-product-shaped scope: not a prototype of one feature, but a complete two-sided
-platform with real accounts, real data flows, an AI layer and money-like
-transactions. Three observations motivated it.
+product-shaped scope: not a prototype of one feature, but a complete two-sided platform with real accounts, real data flows, an AI layer and money-like
+transactions. It was motivated by 3 observations.
 
 - **Writing assistants are generic.** Mainstream assistants draft, shorten and change
   the tone of a text from a description of what is wanted [@grammarly2026;
@@ -39,7 +38,7 @@ transactions. Three observations motivated it.
   reading in detail: Medium pays its writers according to members' reading time,
   read ratio and engagement [@medium2026partner]. Yet these signals are shown to the
   writer or used to rank content, never presented to a buyer judging the writer.
-- **Paid writing is a narrow market.** About four percent of creators earn more than
+- **Paid writing is a narrow market.** About 4 percent of creators earn more than
   a hundred thousand dollars a year, and most creator income comes from brand deals
   [@goldman2023creator]. None of the publishing platforms studied below offers a
   publication a way to license an article that already exists.
@@ -80,7 +79,7 @@ Citing uploaded documents is not new in itself, and Inkwell.ai borrows the idea.
 
 ### Problem statement and proposed solution
 
-The study shows a problem on three levels. On the **supply side**, writers lack an
+The study shows a problem on 3 levels. On the **supply side**, writers lack an
 assistant that writes in their own voice from what they have published and the
 material they are working from, and a direct path to be paid for quality. On the
 **demand side**, magazines lack objective, comparable signals about a writer's
@@ -88,7 +87,7 @@ audience, consistency and quality. Between them, the **market** is missing: ther
 no self-service place where a publication can discover, evaluate, preview and license
 an existing article, with the money recorded in a way both parties can trust.
 
-Inkwell.ai answers the three levels with one platform: an **editor with an AI
+Inkwell.ai answers the 3 levels with one platform: an **editor with an AI
 assistant** that retrieves passages from the writer's own articles and attached
 documents, decides per request whether to answer or to write into the draft, and
 cites its sources by page, an **analytics pipeline** that turns reading events into
@@ -105,8 +104,7 @@ being written to a ledger inside one database transaction.
 A **sequential (waterfall) process** runs each phase once, in order, and its classic
 description warned that late testing exposes design errors when they cost most
 [@royce1970]. An **agile process** delivers working software in short, reviewed
-iterations [@agilemanifesto2001; @sommerville2016]. @fig:waterfall-agile contrasts
-the two.
+iterations [@agilemanifesto2001; @sommerville2016]. @fig:waterfall-agile contrasts them.
 
 ![Classic and agile approaches compared](../diagrams/fig-1-2-waterfall-vs-agile/fig-1-2-waterfall-vs-agile.png){#fig:waterfall-agile height=45%}
 
@@ -124,12 +122,12 @@ applied.
 
 ![The Scrum framework, as practised in this project](../diagrams/fig-1-1-scrum-framework/fig-1-1-scrum-framework.png){#fig:scrum height=45%}
 
-The backlog feeds sprint planning. Each two-week sprint ends with an increment checked
+The backlog feeds sprint planning. Each 2-week sprint ends with an increment checked
 against the definition of done, a review and a retrospective whose actions return to
 the next planning. For this project the unit of progress is therefore the increment:
 every sprint leaves the platform runnable and tested.
 
-Scrum is designed for a team of ten or fewer people holding three accountabilities
+Scrum is designed for a team of 10 or fewer people holding 3 accountabilities
 (Product Owner, Scrum Master and Developers) [@scrumguide2020], and this project has one
 person. The adaptation, and its limits, were the following.
 
@@ -175,9 +173,9 @@ out by hand, in the project repository, versioned beside the code they describe.
 
 ## Identification of the actors {#sec:actors}
 
-The platform has five actors. @fig:actors presents them with the way each is
+The platform has 5 actors. @fig:actors presents them with the way each is
 represented in the data model, because the actors are not invented for the analysis:
-they follow from two properties every account carries: its **account type** (personal
+they follow from 2 properties every account carries: its **account type** (personal
 or magazine) and its **role** (reader, writer or administrator).
 
 ![Actors of the system](../diagrams/fig-1-13-actors/fig-1-13-actors.png){#fig:actors height=60%}
@@ -206,14 +204,14 @@ given in Annex A.
 <!-- INCLUDE:fr-summary -->
 
 The platform counts {{FRS}} functional requirements, of which {{FR_MUST}} are Must:
-four in five requirements belong to the minimum the delivery guarantees, which is
-expected for a platform whose three pillars depend on one another: dropping a Must
+4 in 5 requirements belong to the minimum the delivery guarantees, which is
+expected for a platform whose 3 pillars depend on one another: dropping a Must
 from one pillar would break another. The Should and Could requirements are the
 comforts that make each feature pleasant rather than possible: search and browsing
 by tag, live comment previews, voice, sharing. The writers carry the most
 requirements (31), because the editor, the assistant, the analytics and the earnings
 all belong to them. The administrator carries the fewest (5), all delivered in one
-sprint. A requirement listed under two sprints is delivered in two steps, the
+sprint. A requirement listed under 2 sprints is delivered in 2 steps, the
 second sprint completing the rule the first one prepared. Chapters 2 to 5 say which
 part each sprint delivers.
 
@@ -230,7 +228,7 @@ attribute. Identifiers are stable, as for the functional requirements.
 | | **Security** | | |
 | NFR-01 | Passwords stored as bcrypt hashes, cost factor 12 | authentication module, following [@owasppasswords] | inspection |
 | NFR-02 | Access tokens expire after 15 minutes, refresh tokens after 7 days | signed JWTs [@rfc7519] | inspection |
-| NFR-03 | Every protected route passes one composed guard stack | one `@Auth()` decorator composing six guards | inspection |
+| NFR-03 | Every protected route passes one composed guard stack | one `@Auth()` decorator composing 6 guards | inspection |
 | NFR-04 | Authorisation is decided server-side. The client is told the verdict | the article access decision. Locked content arrives as `null` | test |
 | NFR-05 | Per-address rate limits, tighter on credential routes | 60 requests/min, 10/min on sign-in, 5/min on registration | measurement |
 | NFR-06 | Financial operations are idempotent under retry | a unique idempotency key on every ledger transaction | test |
@@ -243,12 +241,12 @@ attribute. Identifiers are stable, as for the functional requirements.
 | NFR-12 | Full-text search is index-backed with weighted ranking | weighted `tsvector` column and GIN index [@postgres16fts] | measurement |
 | NFR-13 | Prompt context is bounded | at most 5 passages, a memory block under 200 tokens | inspection |
 | NFR-14 | Feed pagination is cursor-based, stable under insertion | none | **not met**: pagination is by offset |
-| NFR-15 | Dashboard totals and rates read pre-aggregated rows | four rollup tables refreshed by the worker | measurement |
+| NFR-15 | Dashboard totals and rates read pre-aggregated rows | 4 rollup tables refreshed by the worker | measurement |
 | NFR-16 | Analytics aggregation is incremental and idempotent | each run reads only the events since the last one | inspection |
 | NFR-17 | Expensive AI output is cached and invalidated by what changes it | insights cached 24 h, dropped when the writer publishes | inspection |
 | NFR-18 | Streaming responses are never buffered end to end | nginx `proxy_buffering off`, 300 s read timeout | inspection |
 | | **Reliability** | | |
-| NFR-19 | Every denormalised balance equals the sum of its ledger rows | three invariants asserted after every money-moving test | test |
+| NFR-19 | Every denormalised balance equals the sum of its ledger rows | 3 invariants asserted after every money-moving test | test |
 | NFR-20 | Concurrent purchases cannot double-spend | `SELECT … FOR UPDATE` on the balance-owning row | test |
 | NFR-21 | Schema changes are versioned and applied before the application starts | a one-shot migration service | inspection |
 | NFR-22 | The vector extension exists before any migration that needs it | the migration runner creates it first | inspection |
@@ -257,27 +255,27 @@ attribute. Identifiers are stable, as for the functional requirements.
 | NFR-25 | Every service reports liveness and readiness | `GET /health` and `GET /ready` | partly met: readiness checks PostgreSQL only |
 | | **Scalability** | | |
 | NFR-26 | The API holds no session state | identity carried by JWT claims | inspection |
-| NFR-27 | Long-running work never runs in the request path | six BullMQ queues consumed by a separate worker | inspection |
+| NFR-27 | Long-running work never runs in the request path | 6 BullMQ queues consumed by a separate worker | inspection |
 | NFR-28 | API and worker scale horizontally behind the proxy | stateless containers, one Compose service each | not measured |
 | | **Maintainability** | | |
-| NFR-29 | Both code bases compile in strict mode with zero lint warnings | `tsc --noEmit`, `eslint --max-warnings=0` | continuous integration |
+| NFR-29 | Both code bases compile in strict mode with 0 lint warnings | `tsc --noEmit`, `eslint --max-warnings=0` | continuous integration |
 | NFR-30 | The API contract is generated from OpenAPI | client types generated from the backend's OpenAPI document | inspection |
 | NFR-31 | Business rules are tested, not asserted | 796 backend tests | test |
 | NFR-32 | The build fails when schema and migrations disagree | a schema-drift check | continuous integration |
 | NFR-33 | Errors are captured in every runtime without personal data | Sentry in API, worker, Next.js server and browser | inspection |
 | | **Usability** | | |
-| NFR-34 | Two breakpoints are designed and implemented | 375 px and 1280–1440 px | measurement (accessibility at both) |
+| NFR-34 | 2 breakpoints are designed and implemented | 375 px and 1280–1440 px | measurement (accessibility at both) |
 | NFR-35 | One design system, applied consistently | 39 design tokens and 87 components in Figma | inspection |
 | NFR-36 | A complete dark mode | theme switch across every screen | inspection |
 | NFR-37 | Lighthouse score above 90 and no critical accessibility violation on article pages | production build audited | measurement: partly met |
 
 : Non-functional requirements and how each is verified {#tbl:nfr}
 
-Of the 37 requirements, seven are verified by an automated test and six by a
-measurement in Chapter 6. Two are enforced by the continuous-integration pipeline.
+Of the 37 requirements, 7 are verified by an automated test and 6 by a
+measurement in Chapter 6, and 2 are enforced by the continuous-integration pipeline.
 The others rest on inspection: they are properties of configuration (port bindings,
 nginx buffering, Compose dependencies) rather than of behaviour, and a test would only
-restate the configuration. Five are not fully met and are stated as such: NFR-14
+restate the configuration. Of these, 5 are not fully met and are stated as such: NFR-14
 (offset pagination), NFR-23 (no queue is configured with retries, so a failed job is
 not attempted again), NFR-25 (readiness ignores Redis), NFR-28 (horizontal scaling is
 designed for but was never exercised) and NFR-37 (met on desktop and for critical
@@ -286,7 +284,7 @@ general conclusion.
 
 ## Global use case diagram {#sec:uc-global}
 
-@fig:uc-global gives the use cases of the five actors. At this size it is printed on
+@fig:uc-global gives the use cases of the 5 actors. At this size it is printed on
 a fold-out page.
 
 ![Global use case diagram](../diagrams/fig-1-11-use-case-global/fig-1-11-use-case-global.png){#fig:uc-global .foldout .here height=88%}
@@ -299,7 +297,7 @@ per-sprint diagrams of Chapters 2 to 5.
 
 ## Global class diagram {#sec:classes-global}
 
-@fig:classes-global gives the data model: thirty persisted tables with domain types,
+@fig:classes-global gives the data model: 30 persisted tables with domain types,
 the main operations of each class, and the enumerations along the bottom. Audit
 columns are omitted. It is also printed on a fold-out page.
 
@@ -315,7 +313,7 @@ events (NFR-15).
 ## Product backlog {#sec:backlog}
 
 The product backlog expresses the requirements as user stories of the form *"As an
-⟨actor⟩, I want ⟨goal⟩ so that ⟨benefit⟩"*, grouped into nine epics, prioritised with
+⟨actor⟩, I want ⟨goal⟩ so that ⟨benefit⟩"*, grouped into 9 epics, prioritised with
 MoSCoW and estimated in story points relative to the simplest story (US-01). The
 backlog counts **{{STORIES}} stories for {{POINTS}} points**. @tbl:backlog-summary
 summarises it by epic. The full backlog is given in Annex B.
@@ -330,14 +328,14 @@ editor and to the data model. The marketplace comes next (18%), for the same rea
 applied to money: a small number of stories, each guarded by transactions, locks and
 ledger checks. The social epic has the most stories but small ones, and the technical
 epic E9 (12%) is the price of a platform that runs, migrates and is tested with one
-command. In short, the effort follows the product's ambition: two of its three
-pillars, AI and the marketplace, take almost two fifths of the points.
+command. In short, the effort follows the product's ambition: 2 of its 3
+pillars, AI and the marketplace, take almost 40% of the points.
 
 ## Release plan and schedule {#sec:release-plan}
 
-The stories are delivered in four releases of two or three sprints each, every sprint
-lasting two weeks. @tbl:release-plan gives the plan with the points committed per
-sprint. The foundation week and the three-sprint design track are not sprints,
+The stories are delivered in 4 releases of 2 or 3 sprints each, every sprint
+lasting 2 weeks. @tbl:release-plan gives the plan with the points committed per
+sprint. The foundation week and the 3-sprint design track are not sprints,
 because they deliver no user-facing increment. They are presented with the working
 environment in @sec:environment.
 
@@ -359,21 +357,21 @@ The order of the releases follows the layering argued in @sec:method: each relea
 needs the data the previous one produces. The loads are uneven. Sprint 5 commits 85
 points against an average near 40, because the marketplace stories (subscription,
 credits, preview, purchase, publication, earnings) share one transaction model and
-were planned together rather than split across two sprints. Sprints 6, 7 and 9 are
-light, for two different reasons: Sprint 6's real work, the test suite that proves
+were planned together rather than split across 2 sprints. Sprints 6, 7 and 9 are
+light, for 2 different reasons: Sprint 6's real work, the test suite that proves
 the business rules, is not expressed as user stories, and Release 4 runs alongside
 the writing of this report. How this plan compares with what was delivered is
 measured in @sec:velocity.
 
 @fig:gantt places the work on the project window, from 2 February to 31 July 2026: the
-foundation week and Sprint 1, the design track, Sprints 2 to 9 in four releases, and
+foundation week and Sprint 1, the design track, Sprints 2 to 9 in 4 releases, and
 the writing of this report alongside the last sprints.
 
 ![Gantt chart of the project](../diagrams/fig-2-4-gantt/fig-2-4-gantt.png){#fig:gantt}
 
-The chart shows one break in the rhythm: the six-week design track between Sprints 1
+The chart shows one break in the rhythm: the 6-week design track between Sprints 1
 and 2. It was deliberate, since later features were built from finished screens rather
-than designed while coded, and it is why the first release spans two months.
+than designed while coded, and it is why the first release spans 2 months.
 
 ## Working environment {#sec:environment}
 
@@ -381,7 +379,7 @@ than designed while coded, and it is why the first release spans two months.
 
 The project was developed and every measurement of Chapter 6 was taken on a single
 workstation, described in @tbl:hardware. A mid-range laptop is a deliberate baseline:
-the whole stack of eight containers runs on it, so the performance figures reported
+the whole stack of 8 containers runs on it, so the performance figures reported
 later are those of commodity hardware, not of a server.
 
 | Component | Specification |
@@ -445,24 +443,23 @@ End-to-end tests and the capture of this report's screenshots [@playwrightdocs].
 
 ### Foundation and design track
 
-Two blocks of work preceded the feature sprints and are presented here rather than as
-sprints, because neither delivers a user-facing increment.
+The feature sprints were preceded by 2 blocks of work, presented here rather than as sprints because neither delivers a user-facing increment.
 
-- **Foundation (one week).** The three repositories, their Docker images, the Compose
+- **Foundation (one week).** The 3 repositories, their Docker images, the Compose
   stack, the reverse proxy and the continuous-integration pipeline were set up first,
   so that every later sprint started from a stack that builds, tests and runs with one
   command.
-- **Design track (three sprints).** The user interface was designed in Figma before the
+- **Design track (3 sprints).** The user interface was designed in Figma before the
   editor and the social features were built: a design system of **39 tokens and 87
-  components**, then the full screen set at two widths (**375 px for mobile and
+  components**, then the full screen set at 2 widths (**375 px for mobile and
   1280–1440 px for desktop**, 58 screens), then an audit of the screens against the
   specification. The release chapters implement these designs.
 
 ### Repository organisation
 
-The source code lives in four Git repositories. `docker.inkwell.ai` is the
+The source code lives in 4 Git repositories. `docker.inkwell.ai` is the
 superproject: it holds the Compose files, the nginx configuration, the deployment
-workflow and the developer Makefile, and it carries the three others as **Git
+workflow and the developer Makefile, and it carries the 3 others as **Git
 submodules**: `backend.inkwell.ai`, `frontend.inkwell.ai`, and `spec.inkwell.ai`, which
 holds the specifications, the diagrams and this report. A commit of the superproject
 therefore identifies one exact, deployable revision of the whole system.
@@ -530,7 +527,7 @@ Consumes the assistant's typed stream of text, status and write parts [@aisdkdoc
 
 ### Backend
 
-The backend stack is presented below. Its two structuring decisions are the
+The backend stack is presented below. Its 2 structuring decisions are the
 framework, which must host both an HTTP API and a background worker, and the data
 store, which must hold relational data, full-text search and vector search.
 
@@ -584,8 +581,7 @@ Standard strategies [@rfc7519; @rfc6749] with the session data kept in the platf
 
 ### Artificial-intelligence services
 
-@tbl:tech-ai lists the models and why each was chosen. Two constraints shaped all of
-them: the project runs on providers' free tiers, and a model that is slow to *start*
+@tbl:tech-ai lists the models and why each was chosen. All of them were shaped by 2 constraints: the project runs on providers' free tiers, and a model that is slow to *start*
 answering makes the assistant feel broken, whatever its quality.
 
 | Use | Model | Alternatives considered | Deciding criteria |
@@ -606,11 +602,11 @@ the measurement.
 
 ### Infrastructure and quality
 
-**Docker Compose** runs eight services: nginx, web, api, worker, a one-shot migration
+**Docker Compose** runs 8 services: nginx, web, api, worker, a one-shot migration
 service, PostgreSQL, Redis and MinIO. **nginx** terminates TLS and routes traffic.
 **GitHub Actions** runs the quality gates and builds the images. **GHCR** stores them.
 **Jest** tests the backend against a real PostgreSQL database, **Playwright** drives a
-real browser end to end, and **Sentry** captures errors in the four runtimes.
+real browser end to end, and **Sentry** captures errors in the 4 runtimes.
 Kubernetes was considered and rejected: a single host with Compose is enough for the
 expected load, and the containers are already stateless (NFR-26) should the platform
 ever need an orchestrator.
@@ -629,7 +625,7 @@ stated as such.
 | Fusion constant of RRF | k = 60 | the value recommended by the method's authors [@cormack2009rrf]. Confirmed in @sec:eval-search |
 | HNSW index | m = 16, ef_construction = 64 | pgvector's defaults, a balanced recall–build-time setting [@pgvector2026; @malkov2018hnsw] |
 | Embedding width | 1,536 | supported output width of the model [@geminiembeddings]. Fixed by the schema |
-| Premium AI allowance | 20,000 tokens a day | product decision: about twenty long replies or sixty inline edits, a working day |
+| Premium AI allowance | 20,000 tokens a day | product decision: about 20 long replies or 60 inline edits, a working day |
 | Voice billing | 200 tokens per started minute, at most 5 minutes | product decision, so that dictation consumes the same allowance as typing |
 | Preview price | 10% of the article's price | product decision, credited towards the purchase |
 | Platform fee | 20% of each stage, rounded down | product decision. Computed in integer basis points so that no amount is ever a float |
@@ -643,7 +639,7 @@ stated as such.
 
 : Main parameters of the system and their justification {#tbl:parameters}
 
-The table shows three kinds of justification. The retrieval parameters are set by
+The table shows 3 kinds of justification. The retrieval parameters are set by
 measurement or by the literature, and Chapter 6 checks them. The security parameters
 follow published guidance. The economic parameters (prices, fee, credits, thresholds)
 are product decisions: they have no "correct" value, and they are named constants in
@@ -666,19 +662,19 @@ bypass the API, so token refresh and error handling are written once.
 
 ### Backend
 
-@fig:arch-backend shows the backend, which runs as two processes from the same image.
+@fig:arch-backend shows the backend, which runs as 2 processes from the same image.
 
 ![Logical backend architecture](../diagrams/fig-3-2-architecture-backend/fig-3-2-architecture-backend.png){#fig:arch-backend}
 
 The **API** passes every request through a rate limiter, then the guards composed by
 `@Auth()`, into feature modules by domain. The **worker** runs from the same image and
-consumes six queues: embeddings, analytics, marketplace, AI tokens, documents and
+consumes 6 queues: embeddings, analytics, marketplace, AI tokens, documents and
 model checks. Everything slow or scheduled lives in the worker, so no API response
 waits for background work (NFR-27).
 
 ## Physical architecture
 
-@fig:arch-physical shows the deployment of the eight services on one host.
+@fig:arch-physical shows the deployment of the 8 services on one host.
 
 ![Physical architecture](../diagrams/fig-3-3-architecture-physical/fig-3-3-architecture-physical.png){#fig:arch-physical}
 
@@ -703,11 +699,11 @@ traced to its commit.
 This chapter situated the project, showed that no existing family of solutions
 combines AI writing grounded in the writer's own work, buyer-facing analytics and a
 licensing market, and justified the use of Scrum and its adaptation to a one-person
-project. It then identified the five actors, specified {{FRS}} functional and 37
+project. It then identified the 5 actors, specified {{FRS}} functional and 37
 non-functional requirements with the way each is verified, presented the global use
 case and class diagrams, and organised the work into a backlog of {{STORIES}} user
-stories delivered by nine sprints in four releases. Finally, it presented the working
+stories delivered by 9 sprints in 4 releases. Finally, it presented the working
 environment, compared the technological choices with their alternatives, justified
 the main parameters of the system, and described its logical and physical
-architecture and its delivery pipeline. The following chapters present the four
+architecture and its delivery pipeline. The following chapters present the 4
 releases, starting with the functional foundation.

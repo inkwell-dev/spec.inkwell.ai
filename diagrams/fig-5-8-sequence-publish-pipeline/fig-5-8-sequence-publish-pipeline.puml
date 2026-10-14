@@ -57,7 +57,7 @@ deactivate K
 
 Q -> K : extract-writer-memory
 activate K
-K -> D : Read the writer's ten most recent published articles
+K -> D : Read the writer's 10 most recent published articles
 activate D
 D --> K : Corpus sample
 deactivate D

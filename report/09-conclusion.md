@@ -1,11 +1,11 @@
 # General conclusion and perspectives {.unnumbered}
 
-This project set out to connect two groups the existing platforms leave apart:
+This project set out to connect 2 groups the existing platforms leave apart:
 independent writers, who lack an assistant that writes in their own voice and a direct
 way to be paid for quality, and magazines, which lack objective evidence to judge a
 writer before buying. Inkwell.ai answers both with one platform.
 
-Over nine two-week sprints in four releases, the project delivered:
+Over 9 2-week sprints in 4 releases, the project delivered:
 
 - a **writing environment**: a rich-text editor with automatic saving and images, and
   an AI assistant grounded in the writer's own published work through
@@ -18,13 +18,13 @@ Over nine two-week sprints in four releases, the project delivered:
   dashboards and to magazines as an evaluation report completed by AI portfolio
   insights.
 - a **marketplace**: an eligibility gate, magazine subscriptions with monthly credits,
-  a two-stage exclusive purchase and the magazine's own publication, with every credit
-  movement written to a ledger inside one transaction and three balance invariants
+  a 2-stage exclusive purchase and the magazine's own publication, with every credit
+  movement written to a ledger inside one transaction and 3 balance invariants
   asserted after every money-moving test.
 - a **social layer** (likes, threaded comments, comment likes, reposts, follows,
   saves, blocks, sharing and live notifications) and the **moderation** console.
 - the **engineering around it**: a containerised stack started by one command, a
-  continuous-integration pipeline with strict typing, zero lint warnings and a
+  continuous-integration pipeline with strict typing, 0 lint warnings and a
   schema-drift check, 796 backend tests, a demonstration corpus and a production-ready
   stack.
 
@@ -38,7 +38,7 @@ Beyond the product, the project was an exercise in engineering discipline:
 requirements stated per actor with stable identifiers, non-functional requirements tied
 to the mechanism that provides them and to the way they are verified, business rules
 proven by tests (including tests designed to fail when the code is sabotaged) and
-claims checked by measurement, which in two cases corrected the project itself.
+claims checked by measurement, which in 2 cases corrected the project itself.
 
 ## Limitations {.unnumbered}
 
@@ -58,12 +58,12 @@ Some points remain open and are stated as such.
    critical, accessibility violations: insufficient contrast and icon-only links
    without a name (NFR-37).
 6. **Session revocation.** Refresh tokens are stateless: a password change does not
-   revoke one already issued, which stays valid until its seven days expire. A ban is
-   enforced at the next refresh, within fifteen minutes.
+   revoke one already issued, which stays valid until its 7 days expire. A ban is
+   enforced at the next refresh, within 15 minutes.
 7. **Test coverage of the analytics.** The aggregation queries have no unit tests. They
    are verified only end to end and by measurement.
 8. **Search under quota exhaustion.** When the embedding provider's quota is exhausted,
-   search falls back to keywords only after about six seconds of retries.
+   search falls back to keywords only after about 6 seconds of retries.
 
 ## Perspectives {.unnumbered}
 
