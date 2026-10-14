@@ -355,28 +355,6 @@ Examples:
 > `/u/*` and `/m/*`; the last three are read-only with a "← Back to console" link.
 > Settings hides Blocked accounts. Signing in as an admin lands on `/admin/reports`.
 
--------|------|-------|
-| Admin Panel | ADMIN | `/admin` |
-| Reports Queue | ADMIN | `/admin` (section) |
-| User Management | ADMIN | `/admin` (section) |
-| Grant Eligibility | ADMIN | `/admin` (section) |
-
-> `/admin` is one scrolling page with stacked sections, not a set of sub-routes. The
-> moderation surface is small enough that splitting it across three URLs would add
-> navigation without adding capability, and an admin working a queue wants the user
-> table on the same screen.
->
-> **Article Management is not here.** It was specified as `/admin/articles` and never
-> built. Article removal is report-driven: an admin removes an article from the row of
-> the report that flagged it, backed by `DELETE /admin/articles/:id`. There is no
-> browse-all-articles surface and no `GET /admin/articles` endpoint behind one.
->
-> This is a deliberate product position rather than an omission — you moderate what
-> someone flags, not the whole corpus — and `10-requirements.md` agrees: FR-51 to FR-55
-> cover the report queue, dismissal, deletion, user search, plan editing and eligibility
-> grants, and none of them asks for a corpus browser. Recorded as future work in the
-> report's perspectives section rather than dropped silently.
-
 ---
 
 ## 7. 🔧 Figma Plugin
