@@ -190,20 +190,12 @@ out by hand, in the project repository, versioned beside the code they describe.
 
 ## Identification of the actors {#sec:actors}
 
-The platform has five actors. @tbl:actors lists them with the way each is represented
-in the data model, because the actors are not invented for the analysis: they follow
-from two properties every account carries: its **account type** (personal or
-magazine) and its **role** (reader, writer or administrator).
+The platform has five actors. @fig:actors presents them with the way each is
+represented in the data model, because the actors are not invented for the analysis:
+they follow from two properties every account carries: its **account type** (personal
+or magazine) and its **role** (reader, writer or administrator).
 
-| # | Actor | Data-model representation | Definition |
-|:--|:----------------|:-----------------------|:--------------------------------------------|
-| A1 | Visitor | no account | Unauthenticated. Browses the public feed and reads free articles; cannot interact. |
-| A2 | Reader | personal account | Reads and interacts: likes, comments, reposts, saves, follows, blocks, reports. On the premium plan, also reads premium articles and uses the AI assistant. |
-| A3 | Writer | personal account, role writer | Everything a reader does, plus drafting, publishing and analysing their own articles. Once eligible, also publishes premium articles and lists on the marketplace. |
-| A4 | Magazine | magazine account | Subscribes, then browses writers, reads evaluation reports, previews, buys and publishes licensed articles. |
-| A5 | Administrator | personal account, role admin | Works the moderation queue, manages users and grants eligibility manually. |
-
-: Actors of the system {#tbl:actors}
+![Actors of the system](../diagrams/fig-1-13-actors/fig-1-13-actors.png){#fig:actors height=60%}
 
 Three further properties change what an actor may do without making it a different
 actor: a reader's **plan** (free or premium), a writer's **marketplace eligibility**,

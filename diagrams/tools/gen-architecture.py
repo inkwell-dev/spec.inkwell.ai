@@ -69,12 +69,14 @@ class Figure:
         self.cells.append(self._vertex(cid, html, style, x, y, w, h))
         return cid
 
-    def edge(self, src, tgt, label='', exit=None, entry=None, points=(), dashed=False, at=0):
+    def edge(self, src, tgt, label='', exit=None, entry=None, points=(), dashed=False, at=0, lift=0):
         """An orthogonal arrow. The label is HTML (a <br> breaks it); exit/entry
         are (x, y) fractions of the source and target boxes; points are
         waypoints that fix the route of the arrow; at moves the label along
         the arrow (-1 at the source, 0 in the middle, 1 at the target), so the
-        labels of neighbouring arrows do not overlap."""
+        labels of neighbouring arrows do not overlap; lift raises the label
+        above the arrow by that many pixels, for an arrow too short to carry
+        its label on the line."""
         cid = self._id()
         style = ('edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;'
                  'strokeWidth=1.5;strokeColor=#333333;jumpStyle=arc;jumpSize=10;'
@@ -87,7 +89,8 @@ class Figure:
             style += 'dashed=1;'
         pts = ''.join(f'<mxPoint x="{px}" y="{py}"/>' for px, py in points)
         geom = (f'<mxGeometry x="{at}" relative="1" as="geometry">'
-                + (f'<Array as="points">{pts}</Array>' if pts else '') + '</mxGeometry>')
+                + (f'<Array as="points">{pts}</Array>' if pts else '')
+                + (f'<mxPoint x="0" y="{-lift}" as="offset"/>' if lift else '') + '</mxGeometry>')
         self.cells.append(f'<mxCell id="{cid}" value="{escape(label)}" style="{style}" '
                           f'edge="1" parent="1" source="{src}" target="{tgt}">{geom}</mxCell>')
         return cid
