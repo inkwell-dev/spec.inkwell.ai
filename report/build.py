@@ -140,7 +140,7 @@ for n in range(1, 10):
     t.append(f'| | **{len(sel)} stories** | | **{sprint_pts[n]}** |')
     includes[f'sprint-{n}'] = '\n'.join(t) + f'\n\n: Sprint {n} backlog {{#tbl:sprint-{n}}}'
 
-assert len(stories) == 74, len(stories)
+assert len(stories) == 77, len(stories)
 
 # ── Numbers the prose quotes, checked against the generated tables ───────────
 FACTS = {
