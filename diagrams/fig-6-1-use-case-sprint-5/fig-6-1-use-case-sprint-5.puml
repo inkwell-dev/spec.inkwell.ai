@@ -33,6 +33,7 @@ rectangle {
   usecase "Grant eligibility\nmanually" as ELIG
   usecase "Manage users" as USERS
   usecase "Manage all\narticles" as ARTICLES
+  usecase "Ban a user" as UBAN
   usecase "Classify content\nat publish time" as CLASSIFY
 }
 
@@ -53,6 +54,7 @@ AD --> ARTICLES
 MOD1 --|> MOD
 MOD2 --|> MOD
 MOD3 --|> MOD
+USERS <.. UBAN : <<extend>>
 
 SUBSCRIBE ..> GRANT : <<include>>
 SUBSCRIBE ..> AUTH : <<include>>
