@@ -46,23 +46,15 @@ transactions. Three observations motivated it.
 
 ### Study of existing solutions {#sec:existing}
 
-The solutions close to the project fall into five families. **Publishing platforms**
-such as Medium pay writers from a pool of reader subscriptions
-[@medium2026partner]. **Newsletter platforms** (Substack, Ghost and beehiiv) let a
-writer charge readers directly [@substack2026; @ghost2026], and beehiiv adds an AI
-writing assistant to its editor [@beehiiv2026]. **Freelance marketplaces** such as
-Contently and Upwork connect clients with writers for *commissioned* work: the article
-does not yet exist when it is bought, and the platform holds no engagement data on
-the writer's published pieces [@contently2026; @upwork2026]. **AI writing
-assistants** such as Grammarly and Notion AI improve or generate text inside a
-document [@grammarly2026; @notionai2026]. Finally, **source-grounded assistants**
-(NotebookLM, ChatGPT with uploaded files, Perplexity Spaces) answer from documents the
-user uploads and cite the passages they used [@notebooklm2024; @chatgptfiles2026;
-@perplexity2026].
-
-@tbl:existing compares these families on the criteria the project targets. Each cell
-records what the product's own documentation states; "partial" means the capability
-exists in a restricted form, explained below the table.
+The solutions close to the project fall into 5 families. **Publishing platforms** such
+as Medium pay writers from a pool of reader subscriptions [@medium2026partner].
+**Newsletter platforms** let a writer charge readers directly [@substack2026; @ghost2026].
+**Freelance marketplaces** sell *commissioned* work, so the article does not exist yet
+when it is bought [@contently2026; @upwork2026]. **AI writing assistants** improve or
+generate text in a document [@grammarly2026; @notionai2026], and **source-grounded
+assistants** answer from uploaded documents and cite them [@notebooklm2024;
+@chatgptfiles2026; @perplexity2026]. @tbl:existing compares the families, from each
+product's own documentation.
 
 | Criterion | Medium | Newsletter platforms¹ | Freelance markets² | Writing assistants³ | Grounded assistants⁴ | **Inkwell.ai** |
 |:------------------------------------|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|
@@ -79,19 +71,12 @@ exists in a restricted form, explained below the table.
 
 ¹ Substack, Ghost, beehiiv. ² Contently, Upwork. ³ Grammarly, Notion AI. ⁴ NotebookLM, ChatGPT with files, Perplexity Spaces.
 
-Two cells need a word. beehiiv is the only newsletter platform of the three with an
-assistant in its editor, hence "partial" for that family. The source-grounded
-assistants could be grounded in a writer's published work only if the writer
-uploaded it by hand, and they are separate from any editor or publishing workflow.
-
-The decisive cells are the last three rows. Citing uploaded documents, taken alone, is
-**not** distinctive: the source-grounded assistants already do it, and Inkwell.ai
-borrows the idea. What no family offers is the *combination*: an assistant grounded
-in the writer's own published corpus inside the editor where the writing happens,
-analytics presented to a buyer as evidence, and a market in which a publication
-licenses an existing article. Each family covers one or two of these needs; the
-platforms that pay writers do not give buyers evidence, and the tools that ground
-answers in sources do not publish or pay.
+"Partial" marks a restricted form: beehiiv is the only newsletter platform with an
+assistant in its editor [@beehiiv2026], and a grounded assistant knows a writer's work
+only if it is uploaded by hand. What no family offers is the combination of the last
+3 rows: an assistant grounded in the writer's published work inside the editor,
+analytics shown to a buyer as evidence, and a market that licenses existing articles.
+Citing uploaded documents is not new in itself, and Inkwell.ai borrows the idea.
 
 ### Problem statement and proposed solution
 
