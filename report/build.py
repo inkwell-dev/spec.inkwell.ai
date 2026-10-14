@@ -125,8 +125,8 @@ for e in re.split(r'\n### ', backlog)[1:]:
               for s in rs]
 TOTAL_PTS = sum(s['pts'] for s in stories)
 summary = ['| Epic | Stories | Points | Share of points |', '|:------------------------------------|:-:|:-:|:-:|']
-summary += [f'| {n} | {c} | {p} | {100 * p / TOTAL_PTS:.0f} % |' for n, c, p in epic_rows]
-summary.append(f'| **Total** | **{len(stories)}** | **{TOTAL_PTS}** | 100 % |')
+summary += [f'| {n} | {c} | {p} | {100 * p / TOTAL_PTS:.0f}% |' for n, c, p in epic_rows]
+summary.append(f'| **Total** | **{len(stories)}** | **{TOTAL_PTS}** | 100% |')
 includes['backlog-summary'] = '\n'.join(summary) + '\n\n: Product backlog by epic {#tbl:backlog-summary}'
 includes['backlog-annex'] = '\n'.join(annex)
 
