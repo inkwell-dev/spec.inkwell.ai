@@ -38,7 +38,8 @@ estimate held is discussed with the velocity in @sec:velocity.
 Without an active subscription a magazine can only subscribe; with one, it browses,
 previews and buys articles exclusively, tops up credits and publishes from its
 library, every credit movement in one transaction. A writer lists an article when
-`[writer is eligible]`; the administrator moderates and grants eligibility. The
+`[writer is eligible]`; the administrator moderates, grants eligibility and removes
+articles, in a console of their own. The
 subscription is the wall in front of the marketplace.
 
 **Business rules.** The marketplace is governed by the rules of @tbl:rules. They are
@@ -101,7 +102,11 @@ reports.
 After publication a classifier reviews the article and, if it flags it, files a
 pending report without blocking publication; readers report articles, users or
 comments. The administrator dismisses, removes the article or bans the author (in
-effect within fifteen minutes, NFR-09). A false positive costs a dismissed report,
+effect within fifteen minutes, NFR-09). The administrator works only in a dedicated
+console, with four sections: Reports, with the pending count, Users, Articles and
+Settings. It offers no reader or writer feature, and the API enforces it: every reader
+and writer action answers an administrator with a 403, and their analytics events are
+ignored (FR-90). A false positive costs a dismissed report,
 never a refused article; @sec:eval-moderation measures the classifier.
 
 **Activity diagram: the article access decision.** @fig:act-access shows the decision
@@ -211,20 +216,29 @@ down), 44 to the writer (FR-37). The arithmetic of @tbl:rules is visible line by
 as US-42 asks. A sold article names its owner and can no longer be withdrawn or
 deleted (FR-72).
 
-The administrator closes the sprint. @fig:admin-grant shows a manual eligibility grant,
-@fig:admin-users user management and @fig:admin-reports the report queue.
+The administrator closes the sprint, in the console. @fig:admin-grant shows a manual
+eligibility grant, @fig:admin-users the user directory, @fig:admin-reports the report
+queue and @fig:admin-articles the article directory.
 
 ![Administration: manual eligibility grant](../figures/screens/admin-01-eligibility-grant.png){#fig:admin-grant}
 
-![Administration: user management](../figures/screens/admin-02-user-table.png){#fig:admin-users}
+![Administration: the user directory](../figures/screens/admin-02-user-table.png){#fig:admin-users}
 
 ![Administration: the report queue](../figures/screens/admin-03-report-queue.png){#fig:admin-reports}
 
-The grant records who made a writer eligible (FR-55); the user table searches accounts
-and edits a plan (FR-53, FR-54); the report queue offers the four actions of
+![Administration: the article directory](../figures/screens/admin-04-articles.png){#fig:admin-articles}
+
+The grant records who made a writer eligible (FR-55); the user directory searches
+accounts and edits a plan (FR-53, FR-54), and bans from the directory itself (FR-89).
+Ban is not offered on an administrator, on the signed-in administrator or on an account
+already banned, and is confirmed in place. The report queue offers the four actions of
 @fig:seq-moderation (FR-51, FR-52). Its second report has no reporter: the classifier
 filed it (FR-57), and the administrator's note explains why the article stayed: the
-decision the design reserves for a person.
+decision the design reserves for a person. The article directory lists every published
+article, active or removed, and searches by title or author (FR-88). A removed article
+is one an administrator removed or its author deleted. Remove is confirmed in place.
+Articles and profiles open read-only from the console, so the administrator reads
+without being offered a reader's actions.
 
 ## Sprint 6: Tests, demonstration and deployment {#sec:sprint6}
 

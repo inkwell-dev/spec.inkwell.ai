@@ -325,6 +325,32 @@ Client Event → Batched POST `/analytics/events` → `analytics_events` table (
 - Role-based access control (RBAC)
 - Guards: `JwtAuthGuard`, `RolesGuard`, `PlansGuard`, `AccountTypeGuard`
 - Subscription guard for magazine marketplace endpoints
+- `NotForAdminsGuard` *(2026-10-14)* — see below
+
+#### Keeping the administrator out of reader and writer routes *(2026-10-14)*
+
+`@Auth()` accepts `notForAdmins: true`. The decorator emits a metadata flag and
+`NotForAdminsGuard` answers a token whose role is `admin` with **403 "Not available to
+administrators"**. The role comes from the JWT payload, like the other guards, so there
+is no query. A route without the option is unchanged. The routes with a bespoke guard
+stack (`ai/chat`, `ai/inline`, `ai/transcribe`, `ai/speak`, `ai/speech-availability`)
+carry the guard explicitly in their `@UseGuards(...)`, after `JwtAuthGuard`.
+
+Refused for an admin: every writing route (articles, documents, tags), every AI route,
+writer data (analytics, earnings, eligibility), every social action (like, comment,
+repost, save, follow, block, report), and the plan routes. Also refused, beyond the
+first list: `GET /articles/id/:id`, `GET /articles/following`, `GET /me/saved` and
+`GET /me/blocks`. Allowed: `auth/*`, `PATCH /users/me`, `POST /uploads/presign`, the
+public reads, the viewer-status reads (the follow status read supplies public follower
+counts), notifications reads and every `admin/*` route.
+
+`POST /analytics/events` stays open for anonymous visitors; when the token carries the
+`admin` role the batch is accepted and **nothing is stored**.
+
+> **The rule: a new writing or social endpoint must set `notForAdmins: true`. Nothing
+> finds an unmarked one automatically.** There is no route-inventory test and no default
+> deny; an endpoint added without the option is open to an administrator until someone
+> notices. Review a new endpoint against this line.
 
 ---
 

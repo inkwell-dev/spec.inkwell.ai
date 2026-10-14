@@ -224,7 +224,7 @@ Examples:
 | Marketplace Article — Not Previewed | MAGAZINE | Title + excerpt + price, preview CTA (10%), purchase CTA (100%) |
 | Marketplace Article — Previewed | MAGAZINE | Full content + "Purchase remaining 90%" CTA |
 | Marketplace Article — Purchased | MAGAZINE | Full content + "In library" badge |
-| Article | ADMIN | Full content + moderate controls |
+| Article | ADMIN | Full content, read-only, "← Back to console" link (amended 2026-10-14; was moderate controls) |
 
 ### Search & Discovery
 | Frame | Role | Route |
@@ -248,7 +248,7 @@ Examples:
 | Writer Profile (own) | WRITER | + Edit profile + eligibility progress |
 | Writer Profile (others) | WRITER | + Follow button |
 | Writer Profile — Evaluation | MAGAZINE | Audience, Content, Quality, AI Portfolio Insights + marketplace articles with preview/purchase CTAs |
-| Writer Profile | ADMIN | + Ban / moderate controls |
+| Writer Profile | ADMIN | Read-only, "← Back to console" link; Ban lives in the console's Users table (amended 2026-10-14) |
 
 ### Magazine Profile `/m/[slug]`
 | Frame | Role | Notes |
@@ -257,7 +257,7 @@ Examples:
 | Magazine Profile (Library) | READER FREE | + Follow |
 | Magazine Profile (Library) | READER PREMIUM | + Follow |
 | Magazine Profile (own) | MAGAZINE | + Manage library |
-| Magazine Profile | ADMIN | + Moderate controls |
+| Magazine Profile | ADMIN | Read-only, "← Back to console" link (amended 2026-10-14) |
 
 ### Article Editor `/editor/[id]`
 | Frame | Role | Notes |
@@ -325,29 +325,35 @@ Examples:
 > section to magazine accounts and a Password section only to accounts that have a
 > password (an OAuth account has none).
 
-### Admin `/admin`
+### Admin console `/admin/…`
 | Frame | Role | Route |
 |-------|------|-------|
-| Admin Panel | ADMIN | `/admin` |
-| Reports Queue | ADMIN | `/admin` (section) |
-| User Management | ADMIN | `/admin` (section) |
-| Grant Eligibility | ADMIN | `/admin` (section) |
+| Reports Queue | ADMIN | `/admin/reports` (`/admin` redirects here) |
+| User Management, Grant Eligibility | ADMIN | `/admin/users` |
+| Article Management | ADMIN | `/admin/articles` |
+| Settings | ADMIN | `/settings` |
 
-> `/admin` is one scrolling page with stacked sections, not a set of sub-routes. The
-> moderation surface is small enough that splitting it across three URLs would add
-> navigation without adding capability, and an admin working a queue wants the user
-> table on the same screen.
+> *Rewritten 2026-10-14.* The earlier design was one scrolling `/admin` page, and
+> Article Management was left out as report-driven only. The console replaced both
+> (FR-88…FR-90): an administrator uses none of the reader and writer interface, so each
+> section is its own page.
 >
-> **Article Management is not here.** It was specified as `/admin/articles` and never
-> built. Article removal is report-driven: an admin removes an article from the row of
-> the report that flagged it, backed by `DELETE /admin/articles/:id`. There is no
-> browse-all-articles surface and no `GET /admin/articles` endpoint behind one.
+> **The shell.** Sidebar on desktop, drawer on mobile: **Reports** (with the pending
+> report count), **Users**, **Articles**, a separator, **Settings**. The navbar carries
+> the logo, the theme toggle and the avatar menu with **Settings** and **Log out** only
+> — no search, no Write button, no notification bell, no Your profile, no Dashboard. On
+> mobile a bottom tab bar offers Reports · Users · Articles.
 >
-> This is a deliberate product position rather than an omission — you moderate what
-> someone flags, not the whole corpus — and `10-requirements.md` agrees: FR-51 to FR-55
-> cover the report queue, dismissal, deletion, user search, plan editing and eligibility
-> grants, and none of them asks for a corpus browser. Recorded as future work in the
-> report's perspectives section rather than dropped silently.
+> **Articles.** A search box ("Search title or author"), the pills Active · Removed ·
+> All, and under them the hint *"Removed articles were taken down by an admin or deleted
+> by their author."* Rows show the title (linked while live), the author's avatar and
+> name, a Public or Marketplace badge, the publish date and a Removed badge; Remove
+> confirms in place. Load more pages the list.
+>
+> **Keeping the admin in the console.** The edge proxy redirects an admin from any other
+> page to `/admin/reports`. Allowed: `/admin*`, `/settings` (exact), `/articles/*`,
+> `/u/*` and `/m/*`; the last three are read-only with a "← Back to console" link.
+> Settings hides Blocked accounts. Signing in as an admin lands on `/admin/reports`.
 
 ---
 

@@ -36,7 +36,7 @@ design system already uses (`9-design.md` §5.3), which in turn mirrors the
 | A2 | Reader | `account_type='personal'` | Reads and interacts socially. **On the premium plan** (`plan='premium'`) also reads premium articles and has the daily AI allowance. |
 | A3 | Writer | `role='writer'` | A2 plus drafting, publishing and editing their own articles. **When eligible** (`is_marketplace_eligible=true`) also publishes premium articles and lists on the marketplace. |
 | A4 | Magazine | `account_type='magazine'` | Subscribes, browses writers, reads evaluation reports and licenses articles. **With an active subscription** (`subscription_status='active'`) reaches the marketplace; without one, only the subscription wall. |
-| A5 | Administrator | `role='admin'` | Moderation queue, user management, manual eligibility grants. |
+| A5 | Administrator | `role='admin'` | Works in a dedicated console: moderation queue, user directory with ban, article list with removal, manual eligibility grants. Uses none of the reader or writer features, and the API refuses them (FR-90). |
 
 **Notes that matter for the use case diagram.**
 
@@ -189,13 +189,22 @@ report's sprint numbering (§5), not the calendar sprint.
 |----|-------------|----------|--------|
 | FR-51 | Review a queue of reports on articles, users and comments | Must | 5 |
 | FR-52 | Dismiss a report, delete the reported article, or ban its author | Must | 5 |
-| FR-53 | List and search users, filtered by role and by active/banned | Should | 5 |
+| FR-53 | List and search users, filtered by role and by active/banned, and act on them from the directory | Should | 5 |
 | FR-54 | Edit a user's plan (both directions), logged | Should | 5 |
 | FR-55 | Grant marketplace eligibility manually, with an audit-log entry | Must | 5 |
+| FR-88 | List and search published articles, active or removed, and remove one | Must | 5 |
+| FR-89 | Ban a user from the user directory | Must | 5 |
+| FR-90 | Work in a dedicated console; the API refuses an administrator every reader and writer action | Must | 5 |
 
 > **Refusals enforced server-side**, each with a test pinning it: `admin` is not an
 > assignable role; an admin's role is not editable; you cannot edit your own role
 > or plan; you cannot edit a banned account; a magazine cannot be given a role.
+>
+> **Added 2026-10-14 — the console (FR-88…FR-90).** An administrator no longer uses the
+> reader and writer interface. The API answers an admin token 403 "Not available to
+> administrators" on every writing, AI, writer-data, social and plan route, and stores
+> none of an admin's analytics events. Each such route opts in with `notForAdmins: true`;
+> there is no automatic check for a route added later without it (`4-system-architecture.md`).
 
 ### 2.6 Cross-cutting
 
@@ -395,6 +404,9 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-46 | Remove an article or ban an author so that decisions are enforceable | A5 | Must | 3 | 5 |
 | US-47 | Grant eligibility manually so that a promising writer is not held back by a counter | A5 | Must | 3 | 5 |
 | US-48 | Search and filter users so that I can act on the right account | A5 | Should | 5 | 5 |
+| US-75 | Search the published articles, active or removed, and remove one, so that I can act on content no report has flagged | A5 | Must | 5 | 5 |
+| US-76 | Ban a user from the directory so that I can act on an account without first finding a report | A5 | Must | 3 | 5 |
+| US-77 | Work in a console that holds only moderation so that I am never offered, or allowed, the reader and writer features | A5 | Must | 5 | 5 |
 | US-56 | Block an account so that I stop seeing someone without having to explain myself | A2 | Must | 5 | 7 |
 
 ### E9: Quality and operations (technical stories)
@@ -409,7 +421,7 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-54 | Lower the eligibility thresholds under a flag so that the gate can be crossed live | Must | 2 | 6 |
 | US-55 | Serve the product at a public URL over TLS | Must | 8 | 6 |
 
-**74 stories, 9 epics, 350 points** (recounted 2026-10-11: US-66…US-72 moved from E5 to E3, where the assistant's stories belong; US-73 and US-74 added, because FR-60 and FR-61 had no story).
+**77 stories, 9 epics, 363 points** (recounted 2026-10-14 after US-75…US-77, 13 points, were added to E8; recounted 2026-10-11: US-66…US-72 moved from E5 to E3, where the assistant's stories belong; US-73 and US-74 added, because FR-60 and FR-61 had no story).
 
 ---
 
@@ -525,6 +537,8 @@ it.
   One frame in §6 was **removed rather than built**: an admin Article Management page at
   `/admin/articles`. Moderation is report-driven by design and FR-51–FR-55 never asked
   for a corpus browser. Recorded as future work rather than dropped silently.
+  *Superseded 2026-10-14: the page was built after all, as the console's Articles
+  section (FR-88).*
 - **Added 2026-09-04 — FR-59's comment half has no control.** The `report_target_type`
   enum carries `comment`, the admin queue renders it, and FR-51 promises a queue over
   "articles, users and comments" — but the product surfaces a report control on
@@ -579,6 +593,12 @@ it.
   The general lesson is the one the 2026-08-23 entry already half-learned: this file is
   not evidence about the system it describes. The claim was settled by reading the query
   builder, not by re-reading the requirement.
+- **Added 2026-10-14 — the users directory pages by growing `limit` and stops at 100
+  rows.** The console's Users table does not step through pages the way its Articles
+  list does: it asks for a larger `limit` each time, and the API caps `limit` at 100, so
+  an administrator cannot reach a directory row past the hundredth. The Articles list
+  was built with page stepping and does not have the problem. Recorded rather than fixed:
+  it was found while building the console (FR-89) and is not part of that ticket.
 - **NFR-37** (Lighthouse, `axe-core`) is the only unsatisfied requirement.
 - **Open:** the AI token top-up (US absent by design — the decision and the column
   shape to build are recorded on the item in `0-phase-plan.md` Phase 5).
