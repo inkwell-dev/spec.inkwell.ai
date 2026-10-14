@@ -55,6 +55,6 @@ note over R, D
   the selection again after the stream let any click or blur move
   it, so "Replace" could silently overwrite different text.
   The allowance is checked once, before the call. A reply may cost
-  more than what remained; the balance then stops at zero.
+  more than what remained. The balance then stops at zero.
 end note
 @enduml

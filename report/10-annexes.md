@@ -20,7 +20,7 @@ sprints is delivered in two steps, as explained in the release chapters.
 
 This annex gives the full product backlog of @sec:backlog, epic by epic, sorted by
 identifier. Each story is stated as *"As an ⟨actor⟩, I want ⟨goal⟩ so that
-⟨benefit⟩"*; the actor column gives the actor of @fig:actors, and the technical
+⟨benefit⟩"*. The actor column gives the actor of @fig:actors, and the technical
 stories of E9 have none.
 
 <!-- INCLUDE:backlog-annex -->

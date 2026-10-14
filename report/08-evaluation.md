@@ -2,7 +2,7 @@
 
 ## Introduction {.unnumbered}
 
-The release chapters showed what the platform does; this chapter measures how well it
+The release chapters showed what the platform does. This chapter measures how well it
 does it. It evaluates the three components whose quality cannot be read off a screen
 (the retrieval behind the assistant, the hybrid search and the moderation classifier),
 then the performance and accessibility of the platform, and finally the delivery
@@ -18,14 +18,14 @@ repository (`eval/`) so that it can be repeated.
 (coastal craft, inference systems, cities, fermentation, orchestral music, analogue
 photography): **56 published articles split into 1,202 embedded passages**. The
 restriction is imposed by the embedding provider's free tier, which allows about a
-thousand embeddings a day; it keeps the evaluation within one day's quota.
+thousand embeddings a day. It keeps the evaluation within one day's quota.
 
 **Questions.** The evaluation set is a *known-item* set: 30 target passages chosen from
 the corpus, five per subject, each asked twice: once with the passage's own
 distinctive words (the *keyword* query) and once as a paraphrase that avoids them (the
 *paraphrase* query). A passage or an article is relevant when it contains the target
 passage. Three targets turned out to appear in none of their writer's embedded
-articles and were dropped, leaving **27 targets and 54 queries**; because the seeded
+articles and were dropped, leaving **27 targets and 54 queries**. Because the seeded
 corpus reuses paragraphs across a writer's articles, a target appears on average in 5.9
 articles. The queries were written before any result was seen.
 
@@ -33,12 +33,12 @@ articles. The queries were written before any result was seen.
 [@manning2008ir; @voorhees1999trec; @jarvelin2002ndcg]:
 
 - **hit@k**: the share of queries for which at least one relevant item is among the
-  first *k* results;
+  first *k* results.
 - **MRR** (mean reciprocal rank): the mean of 1/*r*, where *r* is the rank of the first
-  relevant result (0 when there is none); 1.00 means the first result is always
-  relevant;
-- **precision@5**: the share of relevant items among the passages returned;
-- **recall@10**: the share of the relevant articles found in the first ten results;
+  relevant result (0 when there is none). A score of 1.00 means the first result
+  is always relevant.
+- **precision@5**: the share of relevant items among the passages returned.
+- **recall@10**: the share of the relevant articles found in the first ten results.
 - **nDCG@10**: a rank-weighted score that rewards relevant results placed higher.
 
 The evaluation reuses the production code: queries are embedded by the platform's own
@@ -73,13 +73,13 @@ writer retrieve nothing, where a floor of 0.50 would have fed five irrelevant pa
 to the model every time.
 
 The table also shows that 0.60 is not the best value. Raising the floor to **0.65**
-keeps every hit and refuses 98% of off-topic questions; only at 0.70 do relevant
+keeps every hit and refuses 98% of off-topic questions. Only at 0.70 do relevant
 passages start to be lost. The similarities explain why: the best relevant passage
 scored between 0.66 and 0.84, and the best off-topic passage between 0.52 and 0.66, so
 the two ranges barely touch at 0.65. The measurement therefore supports raising the
 floor from 0.60 to 0.65, which is listed among the perspectives. Precision stays near
 0.6 at every floor because a target appears in about six articles but only some of
-them are among the five passages returned; it is not a sign of irrelevant results.
+them are among the five passages returned. It is not a sign of irrelevant results.
 
 ## Hybrid search {#sec:eval-search}
 
@@ -109,8 +109,8 @@ is ranked first. The value k = 60 recommended by the method's authors
 changes nothing.
 
 The limits of this evaluation must be stated. The corpus is small and synthetic, built
-by a seed that reuses paragraphs; the queries were written by the author, who knew the
-corpus; and a known-item set rewards finding one passage, not judging the usefulness of
+by a seed that reuses paragraphs. The queries were written by the author, who knew the
+corpus, and a known-item set rewards finding one passage, not judging the usefulness of
 an answer. The results show that retrieval and fusion behave as designed on this
 corpus, not how they would score on a public benchmark.
 
@@ -120,7 +120,7 @@ ranking: about 0.3 s in total, dominated by the call to the embedding provider. 
 behaviour was also measured that the design did not intend. When the provider's daily
 quota is exhausted, each search spends about **6.3 s** retrying the embedding three
 times before falling back to keyword search. The fallback works, since the results are still
-returned, but the retries make it slow; failing fast once the quota is known to be
+returned, but the retries make it slow. Failing fast once the quota is known to be
 exhausted, and caching the embeddings of frequent queries, are listed among the
 perspectives.
 
@@ -142,7 +142,7 @@ because of their subject. The production service was called on each text three t
 : Confusion matrix of the moderation classifier (identical in the three runs) {#tbl:eval-moderation}
 
 The classifier reaches a **precision of 0.93** and a **recall of 1.00** (F1 0.96), and
-named the right category for all 13 violating texts; the three runs gave identical
+named the right category for all 13 violating texts. The three runs gave identical
 results. Its single false positive is instructive: instructions for killing a landed
 fish quickly, classified as violence. It is a hard negative about hunting, the kind of text
 the instruction to judge content rather than subject is meant to pass. The policy
@@ -156,7 +156,7 @@ the provider, so that every call failed and the service, which fails open by des
 passed every article without a word in the logs. The classifier was moved to
 `gpt-oss-20b`, with an output budget large enough for a reasoning model, and the
 results above are those of the corrected service. The lesson is that a fail-open
-component needs a liveness check of its own; the daily model check of the worker now
+component needs a liveness check of its own. The daily model check of the worker now
 exercises the classifier at the budget it is called with.
 
 ## Performance and accessibility {#sec:eval-perf}
@@ -200,7 +200,7 @@ designed widths [@axecore; @wcag22]. @tbl:eval-lighthouse gives the results.
 : Lighthouse scores and axe-core violations of the public pages {#tbl:eval-lighthouse}
 
 NFR-37 is **partly met**. No page has a critical accessibility violation, at either
-width; every page scores above 90 for accessibility, and between 93 and 98 for
+width. Every page scores above 90 for accessibility, and between 93 and 98 for
 performance on desktop. On the mobile preset, which simulates a slow device and
 network, the pages score 63 to 75: their largest element is painted after about six
 seconds, because the page loads its fonts, cover image and interactive controls before
@@ -215,7 +215,7 @@ that search engines index the articles rather than lists of them.
 
 ## Test coverage
 
-@tbl:tests in @sec:sprint6 gave the test suites; their coverage was interpreted there.
+@tbl:tests in @sec:sprint6 gave the test suites. Their coverage was interpreted there.
 In short, the 796 backend tests execute 48.5% of the backend's lines, concentrated on
 the rules that move money or remove content (moderation 92%, purchases 77%), while the
 analytics aggregation is verified by the measurements above rather than by unit
@@ -261,25 +261,25 @@ split Sprint 5 in two.
 | Release | What worked | What to improve | Action taken |
 |:------|:--------------------------------|:--------------------------------|:--------------------------------|
 | R1 | The ledger checks and the one-command stack existed before any feature that needed them | The editor waited six weeks for the design track | Later releases built on the design system and needed no separate design track |
-| R2 | Rollups kept dashboards fast as events accumulated | The embedding provider's quota limits backfills and search under load | Embed one writer at a time; a query-embedding cache listed as a perspective |
-| R3 | Every money rule is tested, including tests designed to fail under sabotage | Sprint 5 was overloaded; the aggregation has no unit tests; hosting was not done | Plan by measured velocity; aggregation tests listed as the first perspective |
+| R2 | Rollups kept dashboards fast as events accumulated | The embedding provider's quota limits backfills and search under load | Embed one writer at a time. A query-embedding cache listed as a perspective |
+| R3 | Every money rule is tested, including tests designed to fail under sabotage | Sprint 5 was overloaded. The aggregation has no unit tests. Hosting was not done | Plan by measured velocity. Aggregation tests listed as the first perspective |
 | R4 | Voice and documents reused the AI pipeline, so they were small | A provider withdrew a model and the fail-open classifier hid it | A daily check exercises every model as it is called |
 
 : Retrospective by release {#tbl:retro}
 
 The retrospective shows a pattern. The rules written down early (the ledger
-invariants, the access decision, the definition of done) held for the whole project;
-what went wrong came from outside the code: the quotas and model changes of the AI
+invariants, the access decision, the definition of done) held for the whole project.
+What went wrong came from outside the code: the quotas and model changes of the AI
 providers, and the time an individual project leaves for hosting. Those are the points
 the perspectives address.
 
 ## Conclusion {.unnumbered}
 
 The evaluation confirmed the main design decisions with measurements: retrieval finds a
-relevant passage for 89% of questions and its floor refuses most off-topic ones;
-hybrid search keeps all relevant articles even when the searcher's words differ from
-the author's; the moderation classifier reaches a precision of 0.93 and a recall of
-1.00; the API answers in tens of milliseconds; and 98% of the planned points were
+relevant passage for 89% of questions and its floor refuses most off-topic ones.
+Hybrid search keeps all relevant articles even when the searcher's words differ from
+the author's. The moderation classifier reaches a precision of 0.93 and a recall of
+1.00. The API answers in tens of milliseconds, and 98% of the planned points were
 delivered. It also found what remains to be done: a higher similarity floor, a faster
 fallback when the embedding quota is exhausted, better mobile performance and contrast,
 tests for the aggregation, and the public hosting of the platform.

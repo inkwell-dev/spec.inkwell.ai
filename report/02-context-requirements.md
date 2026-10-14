@@ -33,7 +33,7 @@ transactions. Three observations motivated it.
 
 - **Writing assistants are generic.** Mainstream assistants draft, shorten and change
   the tone of a text from a description of what is wanted [@grammarly2026;
-  @notionai2026; @beehiiv2026]; none of those cited learns from what the writer has
+  @notionai2026; @beehiiv2026]. None of those cited learns from what the writer has
   already published, so they write *for* the writer rather than *like* the writer.
 - **Engagement data is collected, but not offered as evidence.** Platforms measure
   reading in detail: Medium pays its writers according to members' reading time,
@@ -91,9 +91,9 @@ an existing article, with the money recorded in a way both parties can trust.
 Inkwell.ai answers the three levels with one platform: an **editor with an AI
 assistant** that retrieves passages from the writer's own articles and attached
 documents, decides per request whether to answer or to write into the draft, and
-cites its sources by page; an **analytics pipeline** that turns reading events into
+cites its sources by page, an **analytics pipeline** that turns reading events into
 per-article and per-writer metrics, presented to the writer and, as an evaluation
-report with AI portfolio insights, to magazines; and a **marketplace** where
+report with AI portfolio insights, to magazines, and a **marketplace** where
 subscribed magazines preview an article for 10% of its price, buy the remaining 90%
 for exclusive rights and publish it under their own masthead, every credit movement
 being written to a ledger inside one database transaction.
@@ -124,7 +124,7 @@ applied.
 
 ![The Scrum framework, as practised in this project](../diagrams/fig-1-1-scrum-framework/fig-1-1-scrum-framework.png){#fig:scrum height=45%}
 
-The backlog feeds sprint planning; each two-week sprint ends with an increment checked
+The backlog feeds sprint planning. Each two-week sprint ends with an increment checked
 against the definition of done, a review and a retrospective whose actions return to
 the next planning. For this project the unit of progress is therefore the increment:
 every sprint leaves the platform runnable and tested.
@@ -139,7 +139,7 @@ person. The adaptation, and its limits, were the following.
   estimates and executes the work: there is no team discussion to correct an
   optimistic estimate, which shows in the uneven sprint loads discussed in
   @sec:velocity.
-- **Events.** Sprint planning, the sprint review and the retrospective were kept; the
+- **Events.** Sprint planning, the sprint review and the retrospective were kept. The
   daily scrum, which synchronises a team, has no purpose for one person and was
   replaced by a written log of what was done and what blocked. Its limit is the loss
   of a daily outside view.
@@ -161,7 +161,7 @@ items form the minimum usable subset that the delivery guarantees [@dsdm2014]. S
 are estimated in **story points** on a Fibonacci-like scale (1, 2, 3, 5, 8, 13),
 relative to the simplest story: the gaps between values grow with size because
 estimating larger work is less precise, which is the reason for the scale
-[@cohn2005]. Points measure relative size, not hours; their sum per sprint gives the
+[@cohn2005]. Points measure relative size, not hours. Their sum per sprint gives the
 velocity reported in @sec:velocity.
 
 ### Modelling language
@@ -200,7 +200,7 @@ and its duties are moderation and management, not an extension of reading or wri
 The functional requirements are stated per actor, each with a stable identifier, a
 MoSCoW priority and the sprint that delivers it. Identifiers are stable rather than
 sequential: a requirement added later keeps the next free number and is listed beside
-the feature it belongs to. @tbl:fr-summary summarises them; the full statements are
+the feature it belongs to. @tbl:fr-summary summarises them. The full statements are
 given in Annex A.
 
 <!-- INCLUDE:fr-summary -->
@@ -212,9 +212,9 @@ from one pillar would break another. The Should and Could requirements are the
 comforts that make each feature pleasant rather than possible: search and browsing
 by tag, live comment previews, voice, sharing. The writers carry the most
 requirements (31), because the editor, the assistant, the analytics and the earnings
-all belong to them; the administrator carries the fewest (5), all delivered in one
+all belong to them. The administrator carries the fewest (5), all delivered in one
 sprint. A requirement listed under two sprints is delivered in two steps, the
-second sprint completing the rule the first one prepared; Chapters 2 to 5 say which
+second sprint completing the rule the first one prepared. Chapters 2 to 5 say which
 part each sprint delivers.
 
 ## Non-functional requirements {#sec:nfr}
@@ -231,12 +231,12 @@ attribute. Identifiers are stable, as for the functional requirements.
 | NFR-01 | Passwords stored as bcrypt hashes, cost factor 12 | authentication module, following [@owasppasswords] | inspection |
 | NFR-02 | Access tokens expire after 15 minutes, refresh tokens after 7 days | signed JWTs [@rfc7519] | inspection |
 | NFR-03 | Every protected route passes one composed guard stack | one `@Auth()` decorator composing six guards | inspection |
-| NFR-04 | Authorisation is decided server-side; the client is told the verdict | the article access decision; locked content arrives as `null` | test |
+| NFR-04 | Authorisation is decided server-side. The client is told the verdict | the article access decision. Locked content arrives as `null` | test |
 | NFR-05 | Per-address rate limits, tighter on credential routes | 60 requests/min, 10/min on sign-in, 5/min on registration | measurement |
 | NFR-06 | Financial operations are idempotent under retry | a unique idempotency key on every ledger transaction | test |
 | NFR-07 | Uploads are presigned, time-limited and never routed through the API | 10-minute presigned upload URL | inspection |
 | NFR-08 | Datastore ports bind to the loopback interface only | Compose port bindings on `127.0.0.1` | inspection |
-| NFR-09 | A ban takes effect within 15 minutes at most | refused at sign-in, Google sign-in and refresh; an access token lasts 15 minutes | test |
+| NFR-09 | A ban takes effect within 15 minutes at most | refused at sign-in, Google sign-in and refresh. An access token lasts 15 minutes | test |
 | NFR-10 | No stored HTML is ever rendered as markup | no raw-HTML rendering in the frontend | inspection |
 | | **Performance** | | |
 | NFR-11 | Semantic retrieval stays sub-linear as the corpus grows | HNSW index (m = 16, ef_construction = 64) [@malkov2018hnsw] | measurement |
@@ -274,14 +274,14 @@ attribute. Identifiers are stable, as for the functional requirements.
 : Non-functional requirements and how each is verified {#tbl:nfr}
 
 Of the 37 requirements, seven are verified by an automated test and six by a
-measurement in Chapter 6; two are enforced by the continuous-integration pipeline.
+measurement in Chapter 6. Two are enforced by the continuous-integration pipeline.
 The others rest on inspection: they are properties of configuration (port bindings,
 nginx buffering, Compose dependencies) rather than of behaviour, and a test would only
 restate the configuration. Five are not fully met and are stated as such: NFR-14
 (offset pagination), NFR-23 (no queue is configured with retries, so a failed job is
 not attempted again), NFR-25 (readiness ignores Redis), NFR-28 (horizontal scaling is
 designed for but was never exercised) and NFR-37 (met on desktop and for critical
-violations, not on mobile; see @sec:eval-perf). They return as limitations in the
+violations, not on mobile, see @sec:eval-perf). They return as limitations in the
 general conclusion.
 
 ## Global use case diagram {#sec:uc-global}
@@ -300,7 +300,7 @@ per-sprint diagrams of Chapters 2 to 5.
 ## Global class diagram {#sec:classes-global}
 
 @fig:classes-global gives the data model: thirty persisted tables with domain types,
-the main operations of each class, and the enumerations along the bottom; audit
+the main operations of each class, and the enumerations along the bottom. Audit
 columns are omitted. It is also printed on a fold-out page.
 
 ![Global class diagram](../diagrams/fig-1-12-classes-global/fig-1-12-classes-global.png){#fig:classes-global .foldout .here height=88%}
@@ -318,7 +318,7 @@ The product backlog expresses the requirements as user stories of the form *"As 
 ⟨actor⟩, I want ⟨goal⟩ so that ⟨benefit⟩"*, grouped into nine epics, prioritised with
 MoSCoW and estimated in story points relative to the simplest story (US-01). The
 backlog counts **{{STORIES}} stories for {{POINTS}} points**. @tbl:backlog-summary
-summarises it by epic; the full backlog is given in Annex B.
+summarises it by epic. The full backlog is given in Annex B.
 
 <!-- INCLUDE:backlog-summary -->
 
@@ -338,7 +338,7 @@ pillars, AI and the marketplace, take almost two fifths of the points.
 The stories are delivered in four releases of two or three sprints each, every sprint
 lasting two weeks. @tbl:release-plan gives the plan with the points committed per
 sprint. The foundation week and the three-sprint design track are not sprints,
-because they deliver no user-facing increment; they are presented with the working
+because they deliver no user-facing increment. They are presented with the working
 environment in @sec:environment.
 
 | Release | Sprint | Dates | Goal | Points |
@@ -485,7 +485,7 @@ and the assistant are interactive applications.
 
 *Alternatives considered:* Remix, Nuxt (Vue), a client-only React application.
 
-Server rendering per route for public pages and a request proxy for protected routes, in the most used React framework [@nextjsdocs; @stateofjs2024]; a client-only application would serve empty HTML to search engines.
+Server rendering per route for public pages and a request proxy for protected routes, in the most used React framework [@nextjsdocs; @stateofjs2024]. A client-only application would serve empty HTML to search engines.
 :::
 
 ::: {.tech logo="Logos/typescript_logo.png"}
@@ -493,7 +493,7 @@ Server rendering per route for public pages and a request proxy for protected ro
 
 *Alternatives considered:* JavaScript.
 
-One typed language from the database schema to the browser; the API client types are generated from the backend (NFR-30).
+One typed language from the database schema to the browser. The API client types are generated from the backend (NFR-30).
 :::
 
 ::: {.tech logo="Logos/tailwindcss_logo.png"}
@@ -501,7 +501,7 @@ One typed language from the database schema to the browser; the API client types
 
 *Alternatives considered:* CSS modules, a component library such as MUI.
 
-The Figma tokens map directly to utility classes; headless primitives give accessible dialogs and menus without imposing a visual style.
+The Figma tokens map directly to utility classes. Headless primitives give accessible dialogs and menus without imposing a visual style.
 :::
 
 ::: {.tech logo="Logos/tiptap_logo.png"}
@@ -539,7 +539,7 @@ store, which must hold relational data, full-text search and vector search.
 
 *Alternatives considered:* Express or Fastify alone.
 
-Modules, dependency injection, guards and OpenAPI generation built in [@nestjsdocs]; the same modules serve the API and the worker. Fastify is faster in raw benchmarks [@techempower2025], but the API's latency is dominated by the database and the model calls (@sec:eval-perf), not by the HTTP layer.
+Modules, dependency injection, guards and OpenAPI generation built in [@nestjsdocs]. The same modules serve the API and the worker. Fastify is faster in raw benchmarks [@techempower2025], but the API's latency is dominated by the database and the model calls (@sec:eval-perf), not by the HTTP layer.
 :::
 
 ::: {.tech logo="Logos/postegreSQL_logo.png"}
@@ -555,7 +555,7 @@ Relational data, full-text search and vector search in one database [@pgvector20
 
 *Alternatives considered:* Prisma, TypeORM.
 
-SQL-shaped, type-safe queries with explicit migrations [@drizzledocs]; the purchase transaction needs `SELECT … FOR UPDATE` and the search needs `ts_rank` and vector operators, which Drizzle writes directly.
+SQL-shaped, type-safe queries with explicit migrations [@drizzledocs]. The purchase transaction needs `SELECT … FOR UPDATE` and the search needs `ts_rank` and vector operators, which Drizzle writes directly.
 :::
 
 ::: {.tech logo="Logos/redis_logo.png"}
@@ -563,7 +563,7 @@ SQL-shaped, type-safe queries with explicit migrations [@drizzledocs]; the purch
 
 *Alternatives considered:* RabbitMQ, PostgreSQL-based queues.
 
-Repeatable jobs, priorities and a separate worker process on one Redis instance [@bullmqdocs]; Redis also carries the notification fan-out.
+Repeatable jobs, priorities and a separate worker process on one Redis instance [@bullmqdocs]. Redis also carries the notification fan-out.
 :::
 
 ::: {.tech logo="Logos/minio_logo.png"}
@@ -571,7 +571,7 @@ Repeatable jobs, priorities and a separate worker process on one Redis instance 
 
 *Alternatives considered:* storing files in PostgreSQL, a cloud bucket.
 
-The S3 API, so the same presigned-upload code runs against a cloud bucket in production; files never pass through the API.
+The S3 API, so the same presigned-upload code runs against a cloud bucket in production. Files never pass through the API.
 :::
 
 ::: {.tech logo="Logos/padlock_logo.png"}
@@ -590,9 +590,9 @@ answering makes the assistant feel broken, whatever its quality.
 
 | Use | Model | Alternatives considered | Deciding criteria |
 |:--------------------|:-----------------------|:--------------------|:-----------------------------------|
-| Chat, writing, inline actions, insights, writer memory | Groq `gpt-oss-120b`, then `gpt-oss-20b`, then Google `gemini-3.5-flash` | OpenAI API, a single provider | Groq serves open-weight models on dedicated inference hardware with a generous free tier [@groqdocs]; a second provider makes an outage degrade the assistant only (NFR-24) |
-| Embeddings | Google `gemini-embedding-001`, 1,536 dimensions | OpenAI embeddings, a local model | separate task types for queries and documents [@geminiembeddings]; its free tier covered the corpus |
-| Speech-to-text | Groq `whisper-large-v3-turbo` | browser speech recognition | same provider as the chat; multilingual; works in every browser |
+| Chat, writing, inline actions, insights, writer memory | Groq `gpt-oss-120b`, then `gpt-oss-20b`, then Google `gemini-3.5-flash` | OpenAI API, a single provider | Groq serves open-weight models on dedicated inference hardware with a generous free tier [@groqdocs]. A second provider makes an outage degrade the assistant only (NFR-24) |
+| Embeddings | Google `gemini-embedding-001`, 1,536 dimensions | OpenAI embeddings, a local model | separate task types for queries and documents [@geminiembeddings]. Its free tier covered the corpus |
+| Speech-to-text | Groq `whisper-large-v3-turbo` | browser speech recognition | same provider as the chat, multilingual, works in every browser |
 | Text-to-speech | Google `gemini-2.5-flash-preview-tts` | browser speech synthesis | a natural voice, identical in every browser |
 | Moderation at publish | Groq `gpt-oss-20b` | a dedicated safety model (`gpt-oss-safeguard-20b`) | measured: precision 0.93 and recall 1.00 on a labelled set, while the dedicated model exceeded the time budget (@sec:eval-moderation) |
 
@@ -601,14 +601,14 @@ answering makes the assistant feel broken, whatever its quality.
 The chain of chat models is what makes a provider outage degrade the assistant only:
 the first chunk of a response is pulled before anything is sent to the browser, so a
 refusal from one model can still be answered by the next. The moderation classifier is
-the one choice settled by measurement rather than by documentation; Chapter 6 reports
+the one choice settled by measurement rather than by documentation. Chapter 6 reports
 the measurement.
 
 ### Infrastructure and quality
 
 **Docker Compose** runs eight services: nginx, web, api, worker, a one-shot migration
 service, PostgreSQL, Redis and MinIO. **nginx** terminates TLS and routes traffic.
-**GitHub Actions** runs the quality gates and builds the images; **GHCR** stores them.
+**GitHub Actions** runs the quality gates and builds the images. **GHCR** stores them.
 **Jest** tests the backend against a real PostgreSQL database, **Playwright** drives a
 real browser end to end, and **Sentry** captures errors in the four runtimes.
 Kubernetes was considered and rejected: a single host with Compose is enough for the
@@ -625,15 +625,15 @@ stated as such.
 |:----------------------|:--------------------|:--------------------------------------------|
 | Passages retrieved per question | 5 | enough context for an answer while keeping the prompt near 2,000 tokens (NFR-13) |
 | Similarity floor for retrieval and search | 0.60 | measured: relevant passages score 0.66–0.84 and off-topic ones 0.52–0.66 (@sec:eval-rag) |
-| Chunk length | 120 – 1,200 characters, prefixed by the nearest heading | a paragraph is the unit of meaning; shorter fragments embed poorly, longer ones mix topics |
-| Fusion constant of RRF | k = 60 | the value recommended by the method's authors [@cormack2009rrf]; confirmed in @sec:eval-search |
+| Chunk length | 120 – 1,200 characters, prefixed by the nearest heading | a paragraph is the unit of meaning. Shorter fragments embed poorly, longer ones mix topics |
+| Fusion constant of RRF | k = 60 | the value recommended by the method's authors [@cormack2009rrf]. Confirmed in @sec:eval-search |
 | HNSW index | m = 16, ef_construction = 64 | pgvector's defaults, a balanced recall–build-time setting [@pgvector2026; @malkov2018hnsw] |
-| Embedding width | 1,536 | supported output width of the model [@geminiembeddings]; fixed by the schema |
+| Embedding width | 1,536 | supported output width of the model [@geminiembeddings]. Fixed by the schema |
 | Premium AI allowance | 20,000 tokens a day | product decision: about twenty long replies or sixty inline edits, a working day |
 | Voice billing | 200 tokens per started minute, at most 5 minutes | product decision, so that dictation consumes the same allowance as typing |
 | Preview price | 10% of the article's price | product decision, credited towards the purchase |
-| Platform fee | 20% of each stage, rounded down | product decision; computed in integer basis points so that no amount is ever a float |
-| Monthly credits | 500 per subscription | product decision; unspent credits roll over |
+| Platform fee | 20% of each stage, rounded down | product decision. Computed in integer basis points so that no amount is ever a float |
+| Monthly credits | 500 per subscription | product decision. Unspent credits roll over |
 | Eligibility thresholds | 5,000 unique readers and 1,000 reactions | product decision: high enough that eligibility signals a real audience |
 | Token lifetimes | 15 minutes (access), 7 days (refresh) | a short access token bounds how long a ban or a stolen token stays valid (NFR-09) |
 | Rate limits | 60/min, 10/min on sign-in, 5/min on registration | enough for a reader, too few for password guessing |
@@ -694,7 +694,7 @@ one attack surface and one place to configure TLS and timeouts.
 ![CI/CD pipeline](../diagrams/fig-3-4-architecture-cicd/fig-3-4-architecture-cicd.png){#fig:arch-cicd}
 
 A push to `main` runs the quality gates, then builds an image tagged `latest` and with
-the commit hash; the deployment workflow pulls it, migrates, restarts the services
+the commit hash. The deployment workflow pulls it, migrates, restarts the services
 and checks their health. No image skips the gates, and every deployed version can be
 traced to its commit.
 

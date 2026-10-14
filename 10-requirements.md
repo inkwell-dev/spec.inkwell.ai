@@ -70,7 +70,7 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-71 | Not see a marketplace listing on the writer's public profile at all, the exceptions being the article's own author and an administrator | Must | 5 |
 | FR-75 | Read a magazine's published articles on its public profile, paginated, without an account | Must | 5 |
 | FR-76 | See both the writer and the publishing magazine named on a licensed article, each linking to its own profile | Must | 5 |
-| FR-77 | Preview a writer or magazine from any byline by hovering it (name, bio, counts and a follow control for a writer; logo, description and founding date for a magazine) without leaving the page | Should | 8 |
+| FR-77 | Preview a writer or magazine from any byline by hovering it (name, bio, counts and a follow control for a writer, and logo, description and founding date for a magazine) without leaving the page | Should | 8 |
 | FR-04 | Register as a personal account, or as a magazine account | Must | 1 |
 | FR-05 | Authenticate by email/password or Google OAuth | Must | 1 |
 | FR-06 | Search articles and writers, and browse by tag | Should | 4 |
@@ -122,19 +122,19 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-23 | Publish an article, choosing its placement: public or marketplace | Must | 1, 5 |
 | FR-24 | Choose a visibility for public articles: free or premium | Must | 1, 5 |
 | FR-25 | Update or soft-delete an own article | Must | 1 |
-| FR-26 | Switch an article from marketplace to public (one-way; the reverse is refused) | Should | 5 |
+| FR-26 | Switch an article from marketplace to public (one-way: the reverse is refused) | Should | 5 |
 | FR-27 | Converse with an AI assistant grounded in the writer's **own** published corpus | Must | 2, 4 |
 | FR-28 | Apply an inline AI action to a text selection: reformulate, shorten, expand, simplify, improve | Must | 2 |
 | FR-29 | See which passages the assistant retrieved, grouped by source article | Should | 4 |
 | FR-30 | Insert an AI response into the document at the cursor | Must | 2 |
 | FR-78 | The assistant decides, per message, whether to answer in the panel or write into the document — *superseding the manual insert of FR-30 (2026-09-14)* | Must | 8 |
-| FR-79 | Written text streams into the document at the cursor or over the selection, marked and protected until the writer keeps or discards it; Keep is one undo step; Discard restores what it replaced | Must | 8 |
+| FR-79 | Written text streams into the document at the cursor or over the selection, marked and protected until the writer keeps or discards it. Keep is one undo step, and Discard restores what it replaced | Must | 8 |
 | FR-80 | Show the pipeline's real steps as they run, with counts, and a one-line recap after a write | Must | 8 |
-| FR-81 | The assistant is a panel docked beside the editor with Chat and Sources tabs; it collapses to a rail that carries the live step, and opens as a bottom sheet below desktop width *(amended 2026-09-20; was a floating dock)* | Should | 8 |
+| FR-81 | The assistant is a panel docked beside the editor with Chat and Sources tabs. It collapses to a rail that carries the live step, and opens as a bottom sheet below desktop width *(amended 2026-09-20; was a floating dock)* | Should | 8 |
 | FR-82 | Record a prompt with the microphone (≤ 5 min) and have it transcribed into the assistant's input, editable, billed at 200 tokens a minute against the daily allowance | Should | 8 |
-| FR-83 | Hear each assistant reply read aloud, with a persisted mute; the control exists only when the key can speak | Could | 8 |
+| FR-83 | Hear each assistant reply read aloud, with a persisted mute. The control exists only when the key can speak | Could | 8 |
 | FR-84 | Upload PDF, DOCX, TXT or MD reference documents (≤ 10 MB, ≤ 200 pages, 20 per writer) into a private library, with text extracted and embedded by the worker and a readable failure reason when it cannot be | Must | 9 |
-| FR-85 | Attach library documents to an article from the assistant and detach them; attachments are saved immediately | Must | 9 |
+| FR-85 | Attach library documents to an article from the assistant and detach them. Attachments are saved immediately | Must | 9 |
 | FR-86 | The assistant draws on attached documents for both answers and writes, cites passages inline as [Title, p. N], and shows the passages used with a link opening the file at the page | Must | 9 |
 | FR-87 | A document is the writer's alone: it never feeds writer memory, Portfolio Insights or search, and another account cannot read, attach or discover it | Must | 9 |
 | FR-31 | See the remaining AI token balance, updated after each action | Must | 2 |
@@ -194,7 +194,7 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-55 | Grant marketplace eligibility manually, with an audit-log entry | Must | 5 |
 | FR-88 | List and search published articles, active or removed, and remove one | Must | 5 |
 | FR-89 | Ban a user from the user directory | Must | 5 |
-| FR-90 | Work in a dedicated console; the API refuses an administrator every reader and writer action | Must | 5 |
+| FR-90 | Work in a dedicated console. The API refuses an administrator every reader and writer action | Must | 5 |
 
 > **Refusals enforced server-side**, each with a test pinning it: `admin` is not an
 > assignable role; an admin's role is not editable; you cannot edit your own role
@@ -210,8 +210,8 @@ report's sprint numbering (§5), not the calendar sprint.
 
 | ID | Requirement | Priority | Sprint |
 |----|-------------|----------|--------|
-| FR-56 | Every article body access decision is taken server-side against the article access decision (the activity diagram of Sprint 5); locked content arrives as null | Must | 5 |
-| FR-57 | Content is classified at publish time; a flag files a pending report but never blocks publication | Should | 5 |
+| FR-56 | Every article body access decision is taken server-side against the article access decision (the activity diagram of Sprint 5), and locked content arrives as null | Must | 5 |
+| FR-57 | Content is classified at publish time. A flag files a pending report but never blocks publication | Should | 5 |
 | FR-58 | Any credit movement writes ledger rows inside one transaction, under a row lock | Must | 5 |
 | FR-59 | Report an article, a user or a comment | Must | 5 |
 

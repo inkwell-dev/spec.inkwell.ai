@@ -48,7 +48,7 @@ end note
 
 note as N2
   Citations appear only when attached documents
-  supplied passages; with none attached, the assistant
+  supplied passages. With none attached, the assistant
   writes from the writer's published work (FR-86).
 end note
 @enduml

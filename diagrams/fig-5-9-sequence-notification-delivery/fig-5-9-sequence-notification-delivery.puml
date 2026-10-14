@@ -60,7 +60,7 @@ group Reconnection
 end
 
 note over U, W
-  Delivery is best-effort; the database is the record. The
+  Delivery is best-effort. The database is the record. The
   bell reads the persisted list on load, so a notification
   missed while offline is never lost, only delayed.
 end note

@@ -5,8 +5,8 @@
 The last release deepens what the platform already did. Sprint 7 completes the social
 layer with comment likes, follower lists, blocking, saving and sharing. Sprint 8
 reworks the assistant: it now decides on each request whether to answer or to write
-into the document, shows its real pipeline as it runs, and accepts and speaks voice;
-the feed card becomes interactive. Sprint 9 gives the writer a private library of
+into the document, shows its real pipeline as it runs, and accepts and speaks voice.
+The feed card becomes interactive. Sprint 9 gives the writer a private library of
 reference documents that the assistant can draw on and cite by page.
 
 ## Sprint 7: Comment likes, lists, block, save and share {#sec:sprint7}
@@ -31,10 +31,10 @@ report.
 
 ![Use case diagram, Sprint 7](../diagrams/fig-7-1-use-case-sprint-7/fig-7-1-use-case-sprint-7.png){#fig:uc-s7}
 
-Sharing and the follower lists need no account; following from a list extends
-viewing it; liking a comment and saving include a notification. A block hides two
+Sharing and the follower lists need no account. Following from a list extends
+viewing it. Liking a comment and saving include a notification. A block hides two
 accounts from each other and is lifted only in the blocker's settings, and saves are
-private. Liking, following and sharing are public signals; saving and blocking are
+private. Liking, following and sharing are public signals. Saving and blocking are
 private choices only their author sees.
 
 ### Design
@@ -45,8 +45,8 @@ private choices only their author sees.
 
 Comment likes, blocks and saves are many-to-many associations, each with an
 association class (`CommentLike`, `Block`, `Save`), created by the operations this
-sprint adds to `User`; each is a join table with a unique pair, so a
-repeated request is a no-op; a block works both ways, and comment likes never count
+sprint adds to `User`. Each is a join table with a unique pair, so a
+repeated request is a no-op. A block works both ways, and comment likes never count
 towards eligibility. No existing class changed: the social layer grew by association
 only, without reopening the marketplace rules.
 
@@ -86,7 +86,7 @@ turn the follow relationship of Sprint 3 into a way to discover people through p
 ### Sprint backlog
 
 The goal of Sprint 8 is that readers react, repost and comment from the feed card, see
-recent comments and preview any byline; and that the assistant decides whether to
+recent comments and preview any byline, and that the assistant decides whether to
 answer or to write into the document, writes into a protected range the writer keeps or
 discards, shows its steps as they run, sits in a panel docked beside the editor,
 accepts dictated prompts and reads its replies aloud. @tbl:sprint-8 lists the stories.
@@ -105,7 +105,7 @@ editor extension as well as a new kind of model call.
 ![Use case diagram, Sprint 8](../diagrams/fig-7-3-use-case-sprint-8/fig-7-3-use-case-sprint-8.png){#fig:uc-s8}
 
 Briefing the assistant specialises into an answer or a write into the document, and
-includes the live steps and the allowance; dictation and replies read aloud extend
+includes the live steps and the allowance. Dictation and replies read aloud extend
 it. The assistant chooses per message, replacing the manual insert of Sprint 2
 (FR-78 supersedes FR-30).
 
@@ -117,7 +117,7 @@ it. The assistant chooses per message, replacing the manual insert of Sprint 2
 
 The system reads the draft, the voice profile and any documents, reporting each
 stage. One routing call answers in the panel or calls `write_to_article`, then adds a
-recap; tokens are settled at the end. The panel shows real steps because each stage
+recap. Tokens are settled at the end. The panel shows real steps because each stage
 is part of the response stream (FR-80).
 
 **Sequence diagram: writing into the document.** @fig:seq-write shows the write.
@@ -160,14 +160,14 @@ the panel lists its steps and a recap, and the tinted paragraph offers *Keep* an
 ![The live step on the collapsed panel](../figures/screens/writer-15-ai-rail-live-step.png){#fig:rail}
 
 With the panel collapsed to a rail, the editor takes the full width and a write still
-streams into the document; the rail keeps the chat, the sources and the voice controls
+streams into the document. The rail keeps the chat, the sources and the voice controls
 one click away, and its marker signals activity (FR-81). A slow step is therefore never
 mistaken for a frozen screen, as US-67 requires.
 
 Voice input is not a separate screen: it lives in the same composer, behind the
 microphone at its bottom left (visible in @fig:keep-discard). While recording, the
 composer shows *Listening… speak your prompt*, the elapsed time and controls to confirm
-or cancel; the transcript then fills the composer, editable, before anything is sent
+or cancel. The transcript then fills the composer, editable, before anything is sent
 (FR-82). The round trip behind it is the one in @fig:seq-voice. Dictation uses the same
 allowance as typing: voice is a way to write a prompt, not a separate conversation.
 
@@ -192,7 +192,7 @@ the end of the writing of this report.
 
 ![Use case diagram, Sprint 9](../diagrams/fig-7-7-use-case-sprint-9/fig-7-7-use-case-sprint-9.png){#fig:uc-s9}
 
-Managing the library specialises into uploading, retrying and deleting; uploading
+Managing the library specialises into uploading, retrying and deleting. Uploading
 includes extracting, chunking and embedding. Attaching is extended by detaching, and
 asking the assistant by citing *[Title, p. N]*. Documents are PDF, DOCX, TXT or
 Markdown, under 10 MB and 200 pages, 20 per writer. A document is private: it never
@@ -204,7 +204,7 @@ feeds the voice profile, insights or search (FR-87).
 
 ![Class diagram, Sprint 9](../diagrams/fig-7-8-classes-sprint-9/fig-7-8-classes-sprint-9.png){#fig:classes-s9}
 
-A `Document` carries its status, counts and a readable error; each `DocumentChunk`
+A `Document` carries its status, counts and a readable error. Each `DocumentChunk`
 keeps its page, and documents attach to articles many-to-many. The status only moves
 forward, except a retry. A citation is a property of the data: the page travels with
 the chunk to the prompt.
@@ -215,7 +215,7 @@ companion of the publishing pipeline of @fig:seq-publish.
 ![Sequence diagram: document upload and ingestion](../diagrams/fig-7-9-sequence-document-ingestion/fig-7-9-sequence-document-ingestion.png){#fig:seq-ingest .foldout .sideways height=88%}
 
 The file goes straight to a private bucket through a presigned URL, never through the
-API. Registration checks it and the 20-document limit; the worker extracts the text
+API. Registration checks it and the 20-document limit. The worker extracts the text
 page by page and chunks, embeds and marks it ready in one transaction, or refuses it
 with a reason. No document is half usable.
 
@@ -226,7 +226,7 @@ with a reason. No document is half usable.
 ![The document library, one document refused with its reason](../figures/screens/writer-16-document-library.png){#fig:documents}
 
 The library lists each document's type, pages, status, size and upload time against
-the limit of 20 (FR-84). One document is extracting; the other is refused ("This
+the limit of 20 (FR-84). One document is extracting. The other is refused ("This
 document has no text to read") with a retry: failures are stated in words the writer
 can act on.
 
@@ -236,7 +236,7 @@ can act on.
 
 The tab separates the documents attached to this article from the writer's whole
 library, where a checkbox attaches or detaches each ready document and a failed one is
-shown with its reason; the attachment is saved immediately (FR-85). Attaching per article is what keeps the assistant's material
+shown with its reason. The attachment is saved immediately (FR-85). Attaching per article is what keeps the assistant's material
 relevant: notes for one piece are not fed into another.
 
 @fig:cited shows a reply citing its source.

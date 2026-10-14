@@ -59,7 +59,7 @@ Independent writers have tools to publish but few ways to be paid for quality, a
 magazines that want to commission them have no objective way to judge a writer before
 buying. This report presents **Inkwell.ai**, a two-sided web platform that addresses
 both sides. Writers draft in a rich-text editor beside an AI assistant grounded in
-their own published work and in reference documents they upload; it answers in a
+their own published work and in reference documents they upload. It answers in a
 panel or writes directly into the document, cites its sources by page, and accepts
 spoken prompts. Every published article feeds an event-based analytics pipeline whose
 audience, content and quality signals, together with AI-generated portfolio insights,

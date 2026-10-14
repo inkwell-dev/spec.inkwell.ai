@@ -13,10 +13,10 @@ deployable production stack. Both sprints follow the same four steps as the othe
 
 ### Sprint backlog
 
-The goal of Sprint 5 is that readers upgrade to premium; that magazines subscribe and
-receive monthly credits; that eligible writers list articles; that magazines preview,
+The goal of Sprint 5 is that readers upgrade to premium, that magazines subscribe and
+receive monthly credits, that eligible writers list articles, that magazines preview,
 buy and publish them under their own masthead, every credit movement recorded in a
-ledger; that writers see their earnings; and that administrators moderate.
+ledger, that writers see their earnings, and that administrators moderate.
 @tbl:sprint-5 lists the stories.
 
 <!-- INCLUDE:sprint-5 -->
@@ -35,10 +35,10 @@ estimate held is discussed with the velocity in @sec:velocity.
 
 ![Use case diagram, Sprint 5](../diagrams/fig-6-1-use-case-sprint-5/fig-6-1-use-case-sprint-5.png){#fig:uc-s5}
 
-Without an active subscription a magazine can only subscribe; with one, it browses,
+Without an active subscription a magazine can only subscribe. With one, it browses,
 previews and buys articles exclusively, tops up credits and publishes from its
 library, every credit movement in one transaction. A writer lists an article when
-`[writer is eligible]`; the administrator moderates, grants eligibility and removes
+`[writer is eligible]`. The administrator moderates, grants eligibility and removes
 articles, in a console of their own. The
 subscription is the wall in front of the marketplace.
 
@@ -47,12 +47,12 @@ part of the analysis because every screen and every test of the sprint applies t
 
 | Rule | Value | Justification |
 |:----------------------|:--------------------------------|:--------------------------------|
-| Eligibility to list or publish premium | 5,000 identified unique readers **and** 1,000 reactions (likes and comments) across the writer's public articles, lifetime; or a manual grant by an administrator; never revoked automatically | both an audience and a response to it, so neither a viral article nor a small circle of friends qualifies alone; never revoked, so a writer's listings do not disappear in a quiet month |
-| Magazine subscription | monthly; 500 credits a month; unspent credits roll over | a predictable budget (US-36); roll-over, so a magazine is not pushed to spend |
+| Eligibility to list or publish premium | 5,000 identified unique readers **and** 1,000 reactions (likes and comments) across the writer's public articles, lifetime, or a manual grant by an administrator, never revoked automatically | both an audience and a response to it, so neither a viral article nor a small circle of friends qualifies alone. Never revoked, so a writer's listings do not disappear in a quiet month |
+| Magazine subscription | monthly, 500 credits a month, unspent credits roll over | a predictable budget (US-36). Roll-over, so a magazine is not pushed to spend |
 | Preview unlock | 10% of the article's price, credited towards the purchase | cheap enough to read before deciding, and never lost if the magazine buys |
-| Full purchase | the remaining 90%; exclusive | exclusivity is what a publication pays for; the preview is deducted so the total is the price |
-| Platform fee | 20% of each stage, rounded down; the writer receives the rest | rounded down so that the writer, not the platform, keeps the indivisible credit |
-| Publication | a separate act of the owning magazine: the article becomes public and free, its price is cleared and the magazine is recorded as publisher | buying is not publishing; the magazine decides when its masthead appears (US-63) |
+| Full purchase | the remaining 90%, exclusive | exclusivity is what a publication pays for. The preview is deducted so the total is the price |
+| Platform fee | 20% of each stage, rounded down. The writer receives the rest | rounded down so that the writer, not the platform, keeps the indivisible credit |
+| Publication | a separate act of the owning magazine: the article becomes public and free, its price is cleared and the magazine is recorded as publisher | buying is not publishing. The magazine decides when its masthead appears (US-63) |
 
 : Marketplace rules and their justification {#tbl:rules}
 
@@ -80,7 +80,7 @@ licence.
 
 Each stage is one transaction: it locks the article (409 if already owned) and the
 credit balance (402 if too low), moves the credits and writes the ledger rows. The
-row lock rules out a double purchase or double spend (NFR-20); the idempotency key, a
+row lock rules out a double purchase or double spend (NFR-20), and the idempotency key, a
 retried request charging twice (NFR-06).
 
 **Activity diagram: the eligibility gate.** @fig:act-eligibility shows how a writer
@@ -89,7 +89,7 @@ becomes eligible.
 ![Activity diagram: the marketplace eligibility gate](../diagrams/fig-6-4-activity-eligibility-gate/fig-6-4-activity-eligibility-gate.png){#fig:act-eligibility}
 
 After each aggregation the worker marks the writers above both thresholds eligible
-and logs the metric snapshot; an administrator can also grant eligibility, with the
+and logs the metric snapshot. An administrator can also grant eligibility, with the
 same audit entry. Comment likes and reposts do not count, so other people's activity
 cannot move a threshold. Every eligible writer can be traced to the numbers or the
 person that made them eligible.
@@ -113,7 +113,7 @@ taken server-side for every article body.
 
 The author and administrators always read. A marketplace body reaches only a
 subscribed magazine that previewed or bought it, a premium body only the premium plan
-or a subscribed magazine; otherwise the content is `null`. The server decides, so a
+or a subscribed magazine. Otherwise the content is `null`. The server decides, so a
 modified client cannot read what it has not paid for.
 
 **State diagram: the article lifecycle.** @fig:state-article shows the states an
@@ -122,7 +122,7 @@ article goes through.
 ![State diagram: the article lifecycle](../diagrams/fig-6-8-state-article-lifecycle/fig-6-8-state-article-lifecycle.png){#fig:state-article}
 
 A draft is published as free, premium or listed. A listing can become public (never
-the reverse) or be deleted while unsold; a purchase makes it *owned*, and the
+the reverse) or be deleted while unsold. A purchase makes it *owned*, and the
 magazine's publication public. No transition can destroy what a magazine paid for,
 which enforces the exclusivity of @tbl:rules.
 
@@ -133,7 +133,7 @@ premium article opened by a visitor.
 
 ![A premium article behind the paywall](../figures/screens/guest-06-article-premium-paywall.png){#fig:paywall}
 
-The visitor sees the title, the author and the opening; the body is withheld by the
+The visitor sees the title, the author and the opening. The body is withheld by the
 access decision of @fig:act-access (FR-03, FR-16). It never reaches the browser, so
 inspecting the page cannot reveal it.
 
@@ -165,7 +165,7 @@ decides.
 
 Each listing shows its writer, topics and price, and two buttons: *Preview* at 10% of
 the price (14 credits for an article at 140) and *Buy* at the full price (FR-47). The
-listing page shows the excerpt only; the body stays locked, as @fig:act-access
+listing page shows the excerpt only. The body stays locked, as @fig:act-access
 requires, until the magazine pays.
 
 @fig:preview-confirm shows the confirmation of a preview unlock.
@@ -250,7 +250,7 @@ the rules that move money before more features are built on top of them.
 
 ### Analysis
 
-A technical sprint has no new actor-facing use case; its analysis states what must be
+A technical sprint has no new actor-facing use case. Its analysis states what must be
 verified and what must be deployable. Three needs follow from the previous sprints.
 
 - **Proof of the money rules.** The ledger, the prices and the exclusivity of Sprint 5
@@ -270,16 +270,16 @@ verified and what must be deployable. Three needs follow from the previous sprin
 ![Test strategy](../diagrams/fig-6-7-test-strategy/fig-6-7-test-strategy.png){#fig:test-strategy}
 
 **Unit and service tests** run against a real database, each in a rolled-back
-transaction; **integration tests** go through the API; **end-to-end tests** drive a
+transaction. **Integration tests** go through the API. **End-to-end tests** drive a
 browser. The **ledger harness** and a **price sweep** from 1 to 300 credits guard the
 money. The database is never mocked: the guarantees under test live in it.
 
 **Deployment.** The deployment follows the physical architecture of @fig:arch-physical
 and the pipeline of @fig:arch-cicd: multi-stage images for the API and worker (one
-image, two entry points) and for the Next.js server in standalone mode; a production
-Compose file in which only nginx is published, with certificates from Let's Encrypt;
-a one-shot migration service that must succeed before the API and worker start; and
-health and readiness endpoints checked by Compose and by the deployment workflow.
+image, two entry points) and for the Next.js server in standalone mode, a production Compose file in which only nginx is published (with
+certificates from Let's Encrypt), a one-shot migration service that must succeed before
+the API and worker start, and health and readiness endpoints checked by Compose and by
+the deployment workflow.
 
 ### Realisation
 

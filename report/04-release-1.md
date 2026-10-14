@@ -3,7 +3,7 @@
 ## Introduction {.unnumbered}
 
 The first release lays the foundation every later feature depends on. Sprint 1
-delivers the data model, authentication and the core of article management; Sprint 2
+delivers the data model, authentication and the core of article management. Sprint 2
 delivers the rich-text editor, the first version of the AI assistant and the capture
 of reading events that the analytics of Release 2 will aggregate. Each sprint is
 presented in the same four steps: its backlog, the analysis, the design and the
@@ -14,9 +14,9 @@ realisation.
 ### Sprint backlog
 
 The goal of Sprint 1 is that a visitor can register and sign in, by password or with
-Google; that a writer can create, edit, publish and delete articles, choosing their
-placement and visibility; that a visitor can browse the public feed and read free
-articles; and that the ledger invariant harness exists before any feature moves money.
+Google, that a writer can create, edit, publish and delete articles, choosing their
+placement and visibility, that a visitor can browse the public feed and read free
+articles, and that the ledger invariant harness exists before any feature moves money.
 @tbl:sprint-1 lists the stories committed.
 
 <!-- INCLUDE:sprint-1 -->
@@ -32,8 +32,7 @@ later sprint is built and verified with them.
 
 ![Use case diagram, Sprint 1](../diagrams/fig-4-1-use-case-sprint-1/fig-4-1-use-case-sprint-1.png){#fig:uc-s1}
 
-Registering specialises into a personal or a magazine account; managing one's
-articles into drafting, editing, publishing and deleting, with publishing including a
+Registering specialises into a personal or a magazine account, and managing one's articles into drafting, editing, publishing and deleting, with publishing including a
 placement and a visibility. From the first sprint, account type and placement, the
 two properties the marketplace rests on, are already in place.
 
@@ -74,7 +73,7 @@ two properties the marketplace rests on, are already in place.
 The description shows the scope of Sprint 1 for publishing: the placement and the
 visibility are stored and validated, but nobody yet acts on them. From Sprint 5, the
 premium visibility and the marketplace placement are reserved to eligible writers
-(FR-35, FR-36), which adds a refusal at step 3; FR-23 and FR-24 are therefore
+(FR-35, FR-36), which adds a refusal at step 3. FR-23 and FR-24 are therefore
 delivered in two steps, and the backlog records both sprints.
 
 ### Design
@@ -83,8 +82,8 @@ delivered in two steps, and the backlog records both sprints.
 
 ![Class diagram, Sprint 1](../diagrams/fig-4-2-classes-sprint-1/fig-4-2-classes-sprint-1.png){#fig:classes-s1}
 
-The `User` carries its account type, provider, role and plan; the `MagazineProfile`
-adds a magazine's name, slug and branding; the `Article` carries its status,
+The `User` carries its account type, provider, role and plan. The `MagazineProfile`
+adds a magazine's name, slug and branding. The `Article` carries its status,
 placement, visibility and search vector. One `User` class serves every kind of
 account, the differences held in attributes, which is what lets one authentication
 path serve every actor.
@@ -95,7 +94,7 @@ that keeps a session alive.
 ![Sequence diagram: sign in and silent refresh](../diagrams/fig-4-3-sequence-authentication/fig-4-3-sequence-authentication.png){#fig:seq-auth}
 
 Sign-in is rate-limited (429 after ten attempts a minute) and returns a 15-minute
-access token and a 7-day refresh token; an expired access token is refreshed and the
+access token and a 7-day refresh token. An expired access token is refreshed and the
 request retried transparently. A long writing session is never interrupted (US-04),
 yet a revoked token lasts fifteen minutes at most (NFR-09).
 
@@ -152,7 +151,7 @@ for which Release 3 adds the paywall.
 ![Profile settings](../figures/screens/reader-04-settings.png){#fig:settings}
 
 A signed-in user edits the display name, bio, location, website and profile picture
-(FR-07); the picture is uploaded straight to object storage through a presigned URL
+(FR-07). The picture is uploaded straight to object storage through a presigned URL
 (NFR-07). *Save changes* stays disabled until something changes, so a click never sends
 an empty update.
 
@@ -161,8 +160,8 @@ an empty update.
 ### Sprint backlog
 
 The goal of Sprint 2 is that a writer drafts in a rich-text editor with automatic
-saving and images; that a premium writer converses with an AI assistant and applies
-inline AI actions to a selection, within a daily token allowance; and that every
+saving and images, that a premium writer converses with an AI assistant and applies
+inline AI actions to a selection, within a daily token allowance, and that every
 article page records reading events. @tbl:sprint-2 lists the stories.
 
 <!-- INCLUDE:sprint-2 -->
@@ -180,10 +179,10 @@ they could be estimated with confidence.
 ![Use case diagram, Sprint 2](../diagrams/fig-4-4-use-case-sprint-2/fig-4-4-use-case-sprint-2.png){#fig:uc-s2}
 
 Writing specialises into formatting, inserting an image and setting a cover, and
-includes the automatic save; using the assistant specialises into chatting and inline
+includes the automatic save. Using the assistant specialises into chatting and inline
 actions and includes the daily allowance, so no path to a model goes uncounted.
 Reading an article includes recording reading events. Upgrading from the interface
-arrives in Sprint 5; here premium accounts come from the seed.
+arrives in Sprint 5. Here premium accounts come from the seed.
 
 ### Design
 
@@ -192,7 +191,7 @@ arrives in Sprint 5; here premium accounts come from the seed.
 ![Class diagram, Sprint 2](../diagrams/fig-4-5-classes-sprint-2/fig-4-5-classes-sprint-2.png){#fig:classes-s2}
 
 Each AI call is logged as an `AiInteraction` with its action, tokens and model, and
-reading is recorded as `AnalyticsEvent` rows; the user carries the remaining daily
+reading is recorded as `AnalyticsEvent` rows. The user carries the remaining daily
 allowance. Cost and reading are both append-only, so the allowance can be audited and
 every metric of Release 2 is computed from events recorded from this sprint on.
 
@@ -217,7 +216,7 @@ Capture starts here so that real data accumulates before the dashboards of Relea
 
 ![The rich-text editor with the assistant panel](../figures/screens/writer-03-editor.png){#fig:editor}
 
-The draft is edited as rich text (emphasis, headings, lists, quotes, code, images;
+The draft is edited as rich text (emphasis, headings, lists, quotes, code, images:
 FR-18, FR-20) and saved automatically, as the *Saved* label shows (FR-19). The
 assistant sits beside the text, not on another page: help arrives where the writing
 happens.
@@ -227,7 +226,7 @@ happens.
 ![The publish dialog: placement, visibility, tags and excerpt](../figures/screens/writer-04-publish-dialog.png){#fig:publish-dialog}
 
 Every choice of @tbl:uc-publish is on one screen (placement, visibility, cover, tags
-and excerpt; FR-21, FR-23, FR-24), so publishing is a single confirmed act and not a
+and excerpt: FR-21, FR-23, FR-24), so publishing is a single confirmed act and not a
 sequence of settings pages.
 
 The assistant is shown in two states. @fig:ai-panel shows the panel before a question

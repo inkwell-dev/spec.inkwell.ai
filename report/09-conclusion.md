@@ -12,17 +12,17 @@ Over nine two-week sprints in four releases, the project delivered:
   retrieval-augmented generation, which decides per request whether to answer or to
   write into the document, writes into a protected range the writer keeps or discards,
   shows its real pipeline as it runs, accepts dictated prompts, reads its replies
-  aloud, and cites reference documents to the page;
+  aloud, and cites reference documents to the page.
 - an **analytics pipeline**: reading events captured in the browser, aggregated
   incrementally into per-article and per-writer metrics, presented to writers as
   dashboards and to magazines as an evaluation report completed by AI portfolio
-  insights;
+  insights.
 - a **marketplace**: an eligibility gate, magazine subscriptions with monthly credits,
   a two-stage exclusive purchase and the magazine's own publication, with every credit
   movement written to a ledger inside one transaction and three balance invariants
-  asserted after every money-moving test;
+  asserted after every money-moving test.
 - a **social layer** (likes, threaded comments, comment likes, reposts, follows,
-  saves, blocks, sharing and live notifications) and the **moderation** console;
+  saves, blocks, sharing and live notifications) and the **moderation** console.
 - the **engineering around it**: a containerised stack started by one command, a
   continuous-integration pipeline with strict typing, zero lint warnings and a
   schema-drift check, 796 backend tests, a demonstration corpus and a production-ready
@@ -50,7 +50,7 @@ Some points remain open and are stated as such.
 2. **Background job retries.** No queue is configured with retries, so a job that fails
    (an embedding during a provider outage, for instance) is not attempted again
    (NFR-23).
-3. **Pagination.** Lists are paginated by offset; a cursor-based scheme would stay
+3. **Pagination.** Lists are paginated by offset. A cursor-based scheme would stay
    stable when new rows are inserted while a reader scrolls (NFR-14).
 4. **Readiness.** The readiness endpoint checks PostgreSQL but not Redis (NFR-25).
 5. **Mobile performance and accessibility.** On the mobile preset the article pages
@@ -60,7 +60,7 @@ Some points remain open and are stated as such.
 6. **Session revocation.** Refresh tokens are stateless: a password change does not
    revoke one already issued, which stays valid until its seven days expire. A ban is
    enforced at the next refresh, within fifteen minutes.
-7. **Test coverage of the analytics.** The aggregation queries have no unit tests; they
+7. **Test coverage of the analytics.** The aggregation queries have no unit tests. They
    are verified only end to end and by measurement.
 8. **Search under quota exhaustion.** When the embedding provider's quota is exhausted,
    search falls back to keywords only after about six seconds of retries.
