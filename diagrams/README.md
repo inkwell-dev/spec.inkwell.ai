@@ -66,7 +66,7 @@ diagrams/
 ├── Makefile
 ├── tools/                               the draw.io generators
 │   ├── gen-method-figures.py
-│   ├── gen-architecture.py
+│   ├── gen-architecture.py              the four architecture figures
 │   └── gen-use-cases.py                 use case .puml → laid-out .drawio
 └── fig-5-4-sequence-ai-chat-rag/
     ├── fig-5-4-sequence-ai-chat-rag.puml
