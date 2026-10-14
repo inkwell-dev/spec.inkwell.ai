@@ -80,7 +80,7 @@ rectangle "Inkwell.ai" {
   usecase "Manage users" as A_USERS
   usecase "Grant eligibility" as A_GRANT
   usecase "Change a user's plan" as A_PLAN
-  usecase "Delete" as A_UDELETE
+  usecase "Ban a user" as A_UDELETE
   usecase "Manage all articles" as A_ARTICLES
   usecase "Delete" as A_ADELETE
 }
