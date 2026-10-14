@@ -317,7 +317,7 @@ general conclusion.
 @fig:uc-global gives the use cases of the five actors. At this size it is printed on
 a fold-out page.
 
-![Global use case diagram](../diagrams/fig-1-11-use-case-global/fig-1-11-use-case-global.png){#fig:uc-global .foldout height=88%}
+![Global use case diagram](../diagrams/fig-1-11-use-case-global/fig-1-11-use-case-global.png){#fig:uc-global .foldout .here height=88%}
 
 Each actor's use cases hang below it, each base use case with its extensions
 beside it, and the reader and the writer inherit the use cases of the actors to
@@ -334,7 +334,7 @@ the per-sprint diagrams of Chapters 2 to 5, which refine each sprint's share.
 the main operations of each class, and the enumerations along the bottom; audit
 columns are omitted. It is also printed on a fold-out page.
 
-![Global class diagram](../diagrams/fig-1-12-classes-global/fig-1-12-classes-global.png){#fig:classes-global .foldout height=88%}
+![Global class diagram](../diagrams/fig-1-12-classes-global/fig-1-12-classes-global.png){#fig:classes-global .foldout .here height=88%}
 
 One `User` class serves every account, told apart by type, role and plan, and
 `Article` is the other hub. Social interactions that carry data of their own (likes,
