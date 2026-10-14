@@ -39,14 +39,35 @@ two properties the marketplace rests on, are already in place.
 
 **Textual description.** @tbl:uc-publish details the central use case of the sprint.
 
-| Item | Description |
-|:----------------------|:----------------------------------------------------------|
-| Use case | Publish an article |
-| Actor | Writer (A3) |
-| Pre-condition | The writer is signed in and owns a draft |
-| Post-condition | The article is published with its placement, visibility, slug and reading time |
-| Main scenario | 1. The writer opens the publish dialog. 2. The writer chooses a placement (public or marketplace) and, for a public article, a visibility (free or premium), and sets the cover, tags and excerpt. 3. The system checks the choices. 4. The system publishes the article and computes its word count and reading time. 5. The article appears in the feed (public) or is kept for the marketplace (marketplace). |
-| Alternative scenario | 3a. A marketplace placement without a price: the system refuses and keeps the draft. |
++------------------------+--------------------------------------------------------------------+
+| Item                   | Description                                                        |
++========================+====================================================================+
+| Use case               | Publish an article                                                 |
++------------------------+--------------------------------------------------------------------+
+| Actor                  | Writer (A3)                                                        |
++------------------------+--------------------------------------------------------------------+
+| Pre-condition          | The writer is signed in and owns a draft                           |
++------------------------+--------------------------------------------------------------------+
+| Post-condition         | The article is published with its placement, visibility, slug and  |
+|                        | reading time                                                       |
++------------------------+--------------------------------------------------------------------+
+| Main scenario          | 1\. The writer opens the publish dialog.                           |
+|                        |                                                                    |
+|                        | 2\. The writer chooses a placement (public or marketplace) and, for|
+|                        |    a public article, a visibility (free or premium), and sets the  |
+|                        |    cover, tags and excerpt.                                        |
+|                        |                                                                    |
+|                        | 3\. The system checks the choices.                                 |
+|                        |                                                                    |
+|                        | 4\. The system publishes the article and computes its word count   |
+|                        |    and reading time.                                               |
+|                        |                                                                    |
+|                        | 5\. The article appears in the feed (public) or is kept for the    |
+|                        |    marketplace (marketplace).                                      |
++------------------------+--------------------------------------------------------------------+
+| Alternative scenario   | 3a. A marketplace placement without a price: the system refuses    |
+|                        | and keeps the draft.                                               |
++------------------------+--------------------------------------------------------------------+
 
 : Textual description of "Publish an article" {#tbl:uc-publish}
 
