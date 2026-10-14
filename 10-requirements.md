@@ -593,6 +593,12 @@ it.
   The general lesson is the one the 2026-08-23 entry already half-learned: this file is
   not evidence about the system it describes. The claim was settled by reading the query
   builder, not by re-reading the requirement.
+- **Added 2026-10-14 — the users directory pages by growing `limit` and stops at 100
+  rows.** The console's Users table does not step through pages the way its Articles
+  list does: it asks for a larger `limit` each time, and the API caps `limit` at 100, so
+  an administrator cannot reach a directory row past the hundredth. The Articles list
+  was built with page stepping and does not have the problem. Recorded rather than fixed:
+  it was found while building the console (FR-89) and is not part of that ticket.
 - **NFR-37** (Lighthouse, `axe-core`) is the only unsatisfied requirement.
 - **Open:** the AI token top-up (US absent by design — the decision and the column
   shape to build are recorded on the item in `0-phase-plan.md` Phase 5).

@@ -423,12 +423,35 @@ User clicks "Report"
 
 ### 11.2 Admin Review
 
-Admin accesses reports  
-→ Reviews content or user  
+*Rewritten 2026-10-14: the administrator works in a console (FR-88…FR-90).*
+
+Admin signs in  
+→ Lands on **Reports** (`/admin/reports`); any reader or writer page redirects there  
+→ Reviews the reported content or user  
 → Chooses action:
-- Ignore  
+- Ignore (dismiss)  
 - Delete content  
 - Ban user  
+
+### 11.3 Admin Acts Without a Report
+
+Admin opens **Users**  
+→ Searches, filters by role or active/banned  
+→ Clicks **Ban** on a row, clicks again to confirm  
+→ Row shows the Banned badge  
+
+Admin opens **Articles**  
+→ Searches by title or author, picks Active, Removed or All  
+→ Clicks **Remove** on an active row, clicks again to confirm  
+→ Row shows the Removed badge ("taken down by an admin or deleted by their author")  
+
+### 11.4 Admin Reads Content
+
+From a row in the console, admin opens an article or a profile  
+→ Page is read-only, with "← Back to console"  
+→ No reaction, comment, follow, block, report or upgrade control is shown, and the API
+would refuse each  
+→ No analytics event is recorded  
 
 ---
 

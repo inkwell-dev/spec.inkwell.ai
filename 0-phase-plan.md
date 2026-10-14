@@ -617,7 +617,7 @@ Same pattern as Phases Q and I: the surfaces looked finished, and the gaps were 
 
 ### Moderation
 - [x] Reports module — POST /reports (article, user or comment), admin GET /admin/reports
-- [x] Admin panel (`/admin`):
+- [x] Admin panel (`/admin`) — *since 2026-10-14 a console of four sections: Reports, Users, Articles, Settings (FR-88…FR-90)*:
   - [x] Reports queue with target preview, status filters, and the report's own audit trail
   - [x] Actions: dismiss / delete article / ban user (soft delete)
   - [x] User management table with role/plan editing — *2026-08-15. New `GET /admin/users` (paginated, searchable on username/name/email, filterable by role and by active/banned) and `PATCH /admin/users/:id`. Banned accounts are visible on request: they are soft-deleted and so excluded from every other read path, but reviewing a ban after the fact is the part of moderation most worth being able to do.*
@@ -797,8 +797,11 @@ Phase 5 screen has been looked at in a browser.**
 - [x] `POST /auth/password` — the first credential-changing endpoint in the product. It
       does **not** invalidate other sessions, and the copy says so: there is no
       refresh-token store to revoke against (see NFR-02).
+- [x] Admin Article Management (`/admin/articles`) — **built 2026-10-14** as the
+      Articles section of the admin console (FR-88; `GET /admin/articles`). The note
+      below records the earlier decision not to build it.
 - [ ] ~~Admin Article Management (`/admin/articles`)~~ — **not built, and removed from
-      §6.** Moderation is report-driven: an admin removes an article from the row of the
+      §6.** *(Superseded 2026-10-14, see above.)* Moderation is report-driven: an admin removes an article from the row of the
       report that flagged it. `10-requirements.md` agrees — FR-51 to FR-55 never ask for
       a corpus browser. Recorded as future work in the report's perspectives section
       rather than dropped silently.

@@ -1219,10 +1219,34 @@ direction.
 
 ### 8.2 Admin Capabilities
 
-Admins can:
-- Delete articles
-- Ban users
-- Review reports
+*Rewritten 2026-10-14 around the console (FR-88…FR-90).* An administrator works in a
+dedicated console, not in the reader and writer interface. It has four sections:
+
+- **Reports** — the queue of reports on articles, users and comments, with the
+  pending count beside it. An admin dismisses a report, removes the reported
+  article, or bans its author.
+- **Users** — grant marketplace eligibility, then a table of accounts searchable and
+  filterable by role and by active/banned. **Ban** sits on the row and confirms in
+  place (first click arms, second click acts). It is not offered on an admin's row, on
+  the admin's own row, or on a banned row.
+- **Articles** — a list of **published** articles, searchable by title or by author
+  username or name, with pills Active · Removed · All. **Remove** sits on active rows
+  and confirms in place. Under the pills: *"Removed articles were taken down by an
+  admin or deleted by their author."* — both set the same `deleted_at`, so the list
+  does not tell them apart. Drafts never appear.
+- **Settings** — the account settings every account has; Blocked accounts is hidden,
+  because an admin cannot block.
+
+Nothing else. An admin has no feed, Discover, search, notifications page, editor,
+dashboard, subscription page, Write button or bell. An article page and a profile page
+open **read-only** from a link in the console, with a "← Back to console" link: no
+Like, Comment, Repost, Save, Follow, Block, Report or Upgrade control. The API enforces
+the same boundary and answers an admin 403 "Not available to administrators" on every
+writing, AI, writer-data, social and plan route (`4-system-architecture.md` §10). An
+admin's analytics events are discarded, so the console never counts as a reader.
+
+An article removed by an admin is not restored: as with a ban, there is no undo in the
+product, and the author is not notified.
 
 ---
 
