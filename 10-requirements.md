@@ -122,6 +122,7 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-23 | Publish an article, choosing its placement: public or marketplace | Must | 1, 5 |
 | FR-24 | Choose a visibility for public articles: free or premium | Must | 1, 5 |
 | FR-25 | Update or soft-delete an own article | Must | 1 |
+| FR-91 | A sold article cannot be edited or deleted by its writer, who is shown which magazine bought it | Must | 5 |
 | FR-26 | Switch an article from marketplace to public (one-way: the reverse is refused) | Should | 5 |
 | FR-27 | Converse with an AI assistant grounded in the writer's **own** published corpus | Must | 2, 4 |
 | FR-28 | Apply an inline AI action to a text selection: reformulate, shorten, expand, simplify, improve | Must | 2 |
@@ -321,6 +322,7 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-11 | Choose at publish time whether an article is public or for sale | A3 | Must | 5 | 1 |
 | US-12 | Restrict an article to premium readers so that my best work is worth a subscription | A3 | Should | 3 | 5 |
 | US-13 | See word count and reading time so that I can judge length as I write | A3 | Could | 1 | 2 |
+| US-78 | Edit or delete my article from my list, its page or the editor so that my work is mine to correct and withdraw | A3 | Must | 5 | 5 |
 
 ### E3: AI assistance
 
@@ -421,7 +423,7 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-54 | Lower the eligibility thresholds under a flag so that the gate can be crossed live | Must | 2 | 6 |
 | US-55 | Serve the product at a public URL over TLS | Must | 8 | 6 |
 
-**77 stories, 9 epics, 363 points** (recounted 2026-10-14 after US-75…US-77, 13 points, were added to E8; recounted 2026-10-11: US-66…US-72 moved from E5 to E3, where the assistant's stories belong; US-73 and US-74 added, because FR-60 and FR-61 had no story).
+**78 stories, 9 epics, 368 points** (recounted 2026-10-21 after US-78, 5 points, was added to E2; recounted 2026-10-14 after US-75…US-77, 13 points, were added to E8; recounted 2026-10-11: US-66…US-72 moved from E5 to E3, where the assistant's stories belong; US-73 and US-74 added, because FR-60 and FR-61 had no story).
 
 ---
 
@@ -599,6 +601,24 @@ it.
   an administrator cannot reach a directory row past the hundredth. The Articles list
   was built with page stepping and does not have the problem. Recorded rather than fixed:
   it was found while building the console (FR-89) and is not part of that ticket.
+- **Delivered 2026-10-21 — FR-25 had no interface.** "Update or soft-delete an own
+  article" was met by the API alone: `PATCH` and `DELETE` existed, and a writer could
+  reach neither a button to edit a published article nor one to delete any article.
+  It is now met in three places (My articles, the article page, the editor), under
+  FR-91 and US-78 (`2-features.md` §2.3, §2.5). Specified with it: the slug is fixed
+  once published, a published article is saved by an explicit Update with autosave
+  off, and a sold article is locked (409).
+
+  Two defects in the editor were found and fixed in the same delivery, and are
+  recorded because both lost writers' text. (a) **The editor PATCHed on every open.**
+  Autosave was armed on first render, before the article had loaded, so a load slower
+  than 1.5 s wrote an empty document over the article; even a fast load bumped
+  `updated_at` and re-queued an embedding. It now saves nothing on open, and its
+  "already saved" fingerprint is taken from the editor's own normalised JSON.
+  (b) **A reopened draft could hydrate stale text.** Reopening a draft within the
+  query cache's lifetime loaded the cached copy, which predated the last autosaves,
+  and autosave then wrote that older text over the newer work. Each autosave now
+  writes into the editor's cache.
 - **NFR-37** (Lighthouse, `axe-core`) is the only unsatisfied requirement.
 - **Open:** the AI token top-up (US absent by design — the decision and the column
   shape to build are recorded on the item in `0-phase-plan.md` Phase 5).
