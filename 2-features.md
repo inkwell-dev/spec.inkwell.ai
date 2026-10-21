@@ -27,7 +27,7 @@ The platform uses **TipTap (ProseMirror)** as the rich text editor. Article cont
 
 #### Fields:
 - Title
-- Slug (auto-generated from title, unique, indexed — used for SEO-friendly URLs `/articles/[slug]`)
+- Slug (auto-generated from title, unique, indexed — used for SEO-friendly URLs `/articles/[slug]`). It follows the title while the article is a draft and is **fixed once published** (§2.3)
 - Thumbnail (image upload)
 - Excerpt (short summary)
 - Content (TipTap JSON)
@@ -45,6 +45,8 @@ The platform uses **TipTap (ProseMirror)** as the rich text editor. Article cont
 - Articles are automatically saved as drafts during editing
 - No manual save required
 - Drafts persist across sessions
+- Autosave applies to **drafts only**. A published article is never saved behind the writer's back (§2.3)
+- Opening the editor writes nothing. A save happens only after the writer has changed something
 
 ---
 
@@ -53,7 +55,25 @@ The platform uses **TipTap (ProseMirror)** as the rich text editor. Article cont
 Users can:
 - Publish articles immediately
 - Keep articles as drafts
-- Update already published articles
+- Update already published articles — explicitly (below)
+
+**Updating a published article is an explicit act, as of 2026-10-21.** A published
+article opens in the same editor under the heading *Edit published article*, with
+autosave **off** and **Update** in the place of Publish. Update is enabled only
+once the title or body has changed, and saves exactly those two; readers see
+nothing of the edit until Update is pressed, and the editor warns before the tab is
+closed with unsaved changes. The excerpt, cover and tags are not editable after
+publish — a follow-up, not a decision. Each Update re-embeds the article once, and
+re-runs the content check made at publish (FR-57, §8), in the background, so a writer
+never waits on it; a flag files a pending report worded "on update" and never
+blocks the save.
+
+**The slug is frozen at publish.** A published article's URL is in the feed, in
+search, in notifications, in reposts and saved lists and in links pasted outside
+the product, and no redirect table exists, so a regenerated slug would answer 404 to
+every one of them. A draft has no audience, so its slug keeps following its title
+until it is published. The status that decides this is read under the same row lock
+as the edit.
 
 ---
 
@@ -178,7 +198,7 @@ For articles with `placement = marketplace`, the following state applies:
 State per magazine–article pair:
 - **Not previewed** — magazine has not unlocked this article yet
 - **Previewed** — magazine paid the preview fee (10%) and can read the full article; credits are held toward the purchase
-- **Purchased** — magazine paid the remaining 90%; article is in their library with republish rights
+- **Purchased** — magazine paid the remaining 90%; article is in their library with republish rights; the writer can no longer edit or delete it (§2.5)
 
 The fourth state belongs to the **article**, not to a pair:
 
@@ -219,6 +239,29 @@ back what was sold, so the delete is refused while any full purchase exists.
 Administrative removal through the moderation queue (§8.2) is deliberately
 **not** blocked: moderation authority overrides the commercial guarantee, because
 the alternative is content that cannot be taken down because somebody bought it.
+
+**A sold article cannot be edited either, as of 2026-10-21.** A full purchase
+buys the article as it was bought (§2.4.1); a writer who could rewrite it
+afterwards would hand the magazine something other than what it paid for. So
+`PATCH /articles/:id` answers **409** — `This article has already been purchased
+exclusively by a magazine and can no longer be edited` — and the **whole** patch
+is refused, title, body, excerpt and cover alike, under the same row-lock
+discipline as delete and the placement switch, so a purchase that commits while an
+edit waits still wins. An edit that races a soft delete from another tab answers
+404: the row is re-read under the lock. A previewed-but-unbought article stays
+editable and deletable, with no notice to the previewing magazines.
+
+The writer is told, and only the writer: `isSold` and `soldTo { name, slug }` ride
+on `GET /articles/me`, on `GET /articles/id/:id` and on `GET /articles/:slug` when
+the viewer is the author; for anyone else the keys are absent, so silence cannot be
+read as "not sold". The interface shows **Sold to <magazine>**, disables Edit and
+Delete, and opens the editor read-only.
+
+**The writer's controls are in three places.** In *My articles*, a ⋯ menu on each
+row: Edit, View (published only) and Delete. On the article page, an author bar:
+Edit, and ⋯ → Delete, with **Report** hidden on one's own article. In the editor
+header, Delete — worded *Discard draft* on a draft. Delete always asks first, and
+afterwards from the article page or the editor the writer lands on *My articles*.
 
 ---
 
@@ -305,7 +348,7 @@ Discard removes exactly what was written and restores any replaced selection;
 Keep accepts it as one undo step, so a single Ctrl+Z afterwards takes the whole
 write back. The panel refuses a new message while a write awaits that decision,
 and autosave is suspended for the same span so a half-written article is never
-persisted. Closing the tab mid-write asks first.
+persisted (autosave runs on drafts only; a published article is saved by Update, §2.3). Closing the tab mid-write asks first.
 
 **The panel shows what is happening, not a spinner.** Each turn is a card
 listing the pipeline's real steps as they run — reading the draft, loading the

@@ -145,7 +145,7 @@ Constraints:
 - If `placement = 'marketplace'` then `marketplace_price > 0` and `visibility IS NULL`
 - If `placement = 'public'` then `visibility IS NOT NULL` and `marketplace_price IS NULL`
 - Writer must have `is_marketplace_eligible = TRUE` to publish with `placement = 'marketplace'` or `visibility = 'premium'`
-- `slug` auto-generated from title with collision suffix
+- `slug` auto-generated from title with collision suffix; follows the title while `status = 'draft'` and is frozen once published (no redirect table exists)
 - `placement` can change from `'marketplace'` → `'public'` (one-way; reverse is blocked by application layer)
 
 Indexes:

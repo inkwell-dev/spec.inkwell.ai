@@ -92,6 +92,30 @@ IF publish:
     - Preview price shown automatically (10% of price)
     - Article does NOT appear in public feed; visible only to subscribed magazines  
 
+### Edit / delete an article
+
+Writer opens **My articles**, their own article page, or the editor  
+→ Controls, by place:
+- My articles → ⋯ on the row: Edit, View (published only), Delete
+- Article page → author bar: Edit, ⋯ → Delete (Report is not offered on one's own article)
+- Editor → header: Delete (*Discard draft* on a draft)
+
+IF the article is sold (a magazine bought it outright):  
+→ Row and page show **Sold to <magazine>**; Edit and Delete are disabled  
+→ Editor opens read-only  
+→ (the API refuses a PATCH or DELETE with 409 regardless)
+
+ELSE IF edit:  
+→ Draft → editor autosaves as before; slug follows the title  
+→ Published → editor opens as *Edit published article*, autosave off  
+→ Writer changes title or body → **Update** enabled  
+→ Update → readers see the change; the article is re-embedded and re-checked in the background; slug unchanged  
+→ Leaving with unsaved changes asks first  
+
+ELSE IF delete:  
+→ Confirmation dialog states the consequences  
+→ Confirm → article soft-deleted; from the article page or editor the writer lands on My articles  
+
 ---
 
 ## 5. 🤖 AI Chat Assistant Flow
