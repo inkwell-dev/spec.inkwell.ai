@@ -54,11 +54,11 @@ number of events behind it.
 **Sequence diagram: from reading events to metrics.** @fig:seq-aggregation follows a
 reading event to the dashboard.
 
-![Sequence diagram: analytics aggregation](../diagrams/fig-5-3-sequence-analytics-aggregation/fig-5-3-sequence-analytics-aggregation.png){#fig:seq-aggregation .foldout height=88%}
+![Sequence diagram: analytics aggregation](../diagrams/fig-5-3-sequence-analytics-aggregation/fig-5-3-sequence-analytics-aggregation.png){#fig:seq-aggregation .foldout .here height=88%}
 
 The API takes the reader's identity from the access token, never from the request.
-Every 5 minutes the worker processes only the new events into the per-article and
-per-writer rollups and rechecks eligibility. Dashboards read only the rollups and stay
+Every 5 minutes the worker processes only the new events into the per-article rollups,
+and every 15 minutes it derives the per-writer rollups from them. Dashboards read only the rollups and stay
 fast (NFR-15, NFR-16), at the price of a 5-minute delay.
 
 The metrics the aggregation produces are those of the evaluation report, defined in
@@ -200,7 +200,7 @@ re-embedding on each publication does.
 **Sequence diagram: what publishing sets in motion.** @fig:seq-publish shows the
 background pipeline a publication starts.
 
-![Sequence diagram: the publishing pipeline](../diagrams/fig-5-8-sequence-publish-pipeline/fig-5-8-sequence-publish-pipeline.png){#fig:seq-publish .foldout .sideways height=88%}
+![Sequence diagram: the publishing pipeline](../diagrams/fig-5-8-sequence-publish-pipeline/fig-5-8-sequence-publish-pipeline.png){#fig:seq-publish .foldout .sideways .here height=88%}
 
 The API saves the article and queues an embedding job. The worker replaces the
 article's chunks (passages of 120 to 1,200 characters, each prefixed with its nearest

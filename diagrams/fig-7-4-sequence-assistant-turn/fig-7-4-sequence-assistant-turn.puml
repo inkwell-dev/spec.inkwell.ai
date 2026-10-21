@@ -45,7 +45,7 @@ alt the model answers in the panel
 else the model calls write_to_article(placement, brief)
   L --> A : Tool call
   A --> P : Step "thinking" done
-  ref over P, D : In-document write (figure 7.5)
+  ref over P, D : In-document write (figure 5.9)
   A -> L : Continue the turn with the tool's result
   L --> A : One-line recap
   A --> P : The recap

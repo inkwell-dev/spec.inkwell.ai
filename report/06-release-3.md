@@ -68,7 +68,7 @@ product decisions, kept as named constants (@sec:parameters).
 ![Class diagram, Sprint 5](../diagrams/fig-6-2-classes-sprint-5/fig-6-2-classes-sprint-5.png){#fig:classes-s5}
 
 A `Purchase` records a stage (preview or full purchase) with the credits paid, the
-fee and the payout, and writes 3 `Transaction` rows: the magazine's debit, the
+fee and the payout, and writes up to 3 `Transaction` rows: the magazine's debit, the
 writer's payout and the platform fee. No balance is stored without its explanation:
 credit balances and earnings are caches of these rows, which the ledger invariants
 check (NFR-19).
@@ -76,7 +76,7 @@ check (NFR-19).
 **Sequence diagram: the purchase.** @fig:seq-purchase shows the 3 calls of a
 licence.
 
-![Sequence diagram: preview, purchase and publication](../diagrams/fig-6-3-sequence-two-stage-purchase/fig-6-3-sequence-two-stage-purchase.png){#fig:seq-purchase .foldout .sideways height=88%}
+![Sequence diagram: preview, purchase and publication](../diagrams/fig-6-3-sequence-two-stage-purchase/fig-6-3-sequence-two-stage-purchase.png){#fig:seq-purchase .foldout .sideways .here height=88%}
 
 Each stage is one transaction: it locks the article (409 if already owned) and the
 credit balance (402 if too low), moves the credits and writes the ledger rows. The
@@ -88,7 +88,7 @@ becomes eligible.
 
 ![Activity diagram: the marketplace eligibility gate](../diagrams/fig-6-4-activity-eligibility-gate/fig-6-4-activity-eligibility-gate.png){#fig:act-eligibility}
 
-After each aggregation the worker marks the writers above both thresholds eligible
+Every 20 minutes a scheduled job marks the writers above both thresholds eligible
 and logs the metric snapshot. An administrator can also grant eligibility, with the
 same audit entry. Comment likes and reposts do not count, so other people's activity
 cannot move a threshold. Every eligible writer can be traced to the numbers or the

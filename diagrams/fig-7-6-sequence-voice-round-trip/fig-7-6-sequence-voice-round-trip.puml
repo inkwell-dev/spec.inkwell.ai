@@ -41,7 +41,7 @@ else accepted
 end
 
 R -> P : Send the brief
-ref over P, D : Assistant turn (figure 7.4)
+ref over P, D : Assistant turn (figure 5.8)
 
 opt the key can speak, and the writer has not muted
   P -> A : POST /ai/speak with the reply's text

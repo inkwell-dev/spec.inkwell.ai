@@ -131,7 +131,7 @@ the writer owns.
 
 **Sequence diagram: voice.** @fig:seq-voice shows the voice round trip.
 
-![Sequence diagram: the voice round trip](../diagrams/fig-7-6-sequence-voice-round-trip/fig-7-6-sequence-voice-round-trip.png){#fig:seq-voice .foldout height=88%}
+![Sequence diagram: the voice round trip](../diagrams/fig-7-6-sequence-voice-round-trip/fig-7-6-sequence-voice-round-trip.png){#fig:seq-voice .foldout .here height=88%}
 
 A recording of up to 5 minutes is transcribed with Whisper and billed 200 tokens
 per started minute, the transcript landing in the composer. The duration billed is
@@ -181,7 +181,7 @@ and writes, citing each passage by document and page. @tbl:sprint-9 lists the st
 
 <!-- INCLUDE:sprint-9 -->
 
-The sprint commits {{S9PTS}} points, the lightest load of the project after Sprint 7:
+The sprint commits {{S9PTS}} points, the lightest load of the project:
 the ingestion reuses the chunking and embedding pipeline of Sprint 4, so most of the
 work is the extraction of text page by page and the citation format. It ran alongside
 the end of the writing of this report.
@@ -212,7 +212,7 @@ the chunk to the prompt.
 **Sequence diagram: ingestion.** @fig:seq-ingest shows a document's path, the
 companion of the publishing pipeline of @fig:seq-publish.
 
-![Sequence diagram: document upload and ingestion](../diagrams/fig-7-9-sequence-document-ingestion/fig-7-9-sequence-document-ingestion.png){#fig:seq-ingest .foldout .sideways height=88%}
+![Sequence diagram: document upload and ingestion](../diagrams/fig-7-9-sequence-document-ingestion/fig-7-9-sequence-document-ingestion.png){#fig:seq-ingest .foldout .sideways .here height=88%}
 
 The file goes straight to a private bucket through a presigned URL, never through the
 API. Registration checks it and the 20-document limit. The worker extracts the text

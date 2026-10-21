@@ -37,14 +37,25 @@ group Scheduled, every 5 minutes
   deactivate K
 end
 
-group Scheduled, offset to land just after the article rollup
+group Scheduled, every 15 minutes, just after an article rollup
   K -> D : Read the per-article metrics and the social tables
   activate K
   activate D
   D --> K : Rows
   K -> K : Compute the audience, content and quality rollups
   K -> D : Upsert the 3 per-writer metric rows
-  K -> K : Recheck marketplace eligibility
+  deactivate D
+  deactivate K
+end
+
+' Eligibility is a separate marketplace job (marketplace.processor.ts), reading
+' the raw events and the social tables rather than the rollups.
+group Scheduled, every 20 minutes
+  K -> D : Count identified readers and reactions\nof the writers not yet eligible
+  activate K
+  activate D
+  D --> K : Counts
+  K -> D : Mark the writers above both thresholds eligible
   deactivate D
   deactivate K
 end

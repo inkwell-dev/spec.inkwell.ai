@@ -17,7 +17,7 @@ repository (`eval/`) so that it can be repeated.
 @sec:sprint6, restricted to 6 writers, one for each of the corpus's 6 subjects
 (coastal craft, inference systems, cities, fermentation, orchestral music, analogue
 photography): **56 published articles split into 1,202 embedded passages**. The
-restriction is imposed by the embedding provider's free tier, which allows about 1,000 embeddings a day. It keeps the evaluation within one day's quota.
+restriction is imposed by the embedding provider's free tier, which allows about 1,000 embeddings a day: the passages were embedded ahead of the evaluation, and the evaluation itself embeds only its 54 queries, well within one day's quota.
 
 **Questions.** The evaluation set is a *known-item* set: 30 target passages chosen from
 the corpus, 5 per subject, each asked twice: once with the passage's own
@@ -239,18 +239,18 @@ points delivered under that definition.
 | Sprint 7 | {{S7PTS}} | {{S7PTS}} |  |
 | Sprint 8 | {{S8PTS}} | {{S8PTS}} |  |
 | Sprint 9 | {{S9PTS}} | {{S9PTS}} |  |
-| **Total** | **{{POINTS}}** | **342** | 98% of the committed points |
+| **Total** | **{{POINTS}}** | **355** | 98% of the committed points. US-14 (13 points) spans Sprints 2 and 4 and is counted once |
 
 : Committed and delivered points per sprint {#tbl:velocity}
 
 The plan was followed sprint for sprint: 98% of the points were delivered, and the only
 gap is the public hosting of US-55. The table shows, however, that the loads were
-uneven, from 16 to 85 points for sprints of the same length. That spread is a
+uneven, from {{S9PTS}} to {{S5PTS}} points for sprints of the same length. That spread is a
 consequence of estimating alone: without a team to challenge a figure, the marketplace
 of Sprint 5 was planned as one block because its stories share one ledger, and the
 light sprints of Release 4 reflect stories that reused existing pipelines and a release
 that ran alongside the writing of this report. A velocity averaged over the project
-(about 38 points per sprint) would have been the better planning figure, and would have split Sprint 5 into 2 parts.
+(about 40 points per sprint) would have been the better planning figure, and would have split Sprint 5 into 2 parts.
 
 **Retrospective.** @tbl:retro summarises what each release taught.
 

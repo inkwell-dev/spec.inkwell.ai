@@ -210,8 +210,8 @@ from one pillar would break another. The Should and Could requirements are the
 comforts that make each feature pleasant rather than possible: search and browsing
 by tag, live comment previews, voice, sharing. The writers carry the most
 requirements (31), because the editor, the assistant, the analytics and the earnings
-all belong to them. The administrator carries the fewest (5), all delivered in one
-sprint. A requirement listed under 2 sprints is delivered in 2 steps, the
+all belong to them. The administrator carries 8, all delivered in one sprint, and
+the cross-cutting requirements are the fewest (4). A requirement listed under 2 sprints is delivered in 2 steps, the
 second sprint completing the rule the first one prepared. Chapters 2 to 5 say which
 part each sprint delivers.
 
@@ -306,7 +306,7 @@ columns are omitted. It is also printed on a fold-out page.
 One `User` class serves every account, told apart by type, role and plan, and `Article`
 is the other hub. Social interactions that carry data of their own (likes, saves,
 reposts, comment likes, follows, blocks) are association classes, stored as join tables
-with a unique pair. A `Purchase` records 2 or 3 `Transaction` rows from which every
+with a unique pair. A `Purchase` records up to 3 `Transaction` rows from which every
 balance can be recomputed (NFR-19), and dashboards read the metric rollups, never raw
 events (NFR-15).
 
@@ -321,13 +321,13 @@ summarises it by epic. The full backlog is given in Annex B.
 <!-- INCLUDE:backlog-summary -->
 
 The distribution of points shows where the effort lies. The AI assistance epic is the
-heaviest (21% of the points) although it is not the largest in stories: its stories
+heaviest (20% of the points) although it is not the largest in stories: its stories
 (retrieval grounded in the writer's corpus, writing into the document, voice, the
 document library) are few but each is large, because each joins a model call to the
-editor and to the data model. The marketplace comes next (18%), for the same reason
+editor and to the data model. The marketplace comes next (17%), for the same reason
 applied to money: a small number of stories, each guarded by transactions, locks and
 ledger checks. The social epic has the most stories but small ones, and the technical
-epic E9 (12%) is the price of a platform that runs, migrates and is tested with one
+epic E9 (11%) is the price of a platform that runs, migrates and is tested with one
 command. In short, the effort follows the product's ambition: 2 of its 3
 pillars, AI and the marketplace, take almost 40% of the points.
 
@@ -354,7 +354,7 @@ environment in @sec:environment.
 : Release plan {#tbl:release-plan}
 
 The order of the releases follows the layering argued in @sec:method: each release
-needs the data the previous one produces. The loads are uneven. Sprint 5 commits 85
+needs the data the previous one produces. The loads are uneven. Sprint 5 commits {{S5PTS}}
 points against an average near 40, because the marketplace stories (subscription,
 credits, preview, purchase, publication, earnings) share one transaction model and
 were planned together rather than split across 2 sprints. Sprints 6, 7 and 9 are
@@ -560,7 +560,7 @@ SQL-shaped, type-safe queries with explicit migrations [@drizzledocs]. The purch
 
 *Alternatives considered:* RabbitMQ, PostgreSQL-based queues.
 
-Repeatable jobs, priorities and a separate worker process on one Redis instance [@bullmqdocs]. Redis also carries the notification fan-out.
+Repeatable jobs, priorities and a separate worker process on one Redis instance [@bullmqdocs].
 :::
 
 ::: {.tech logo="Logos/minio_logo.png"}

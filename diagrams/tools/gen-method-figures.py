@@ -56,7 +56,7 @@ def write(name, title, cells, w, h):
 
 # ── Figure 1.1 — the Scrum framework, as practised here ──────────────────────
 c = [
-    cell("pb", "Product backlog&lt;br&gt;&lt;br&gt;74 user stories in 9 epics,&lt;br&gt;"
+    cell("pb", "Product backlog&lt;br&gt;&lt;br&gt;77 user stories in 9 epics,&lt;br&gt;"
                "ordered by MoSCoW priority,&lt;br&gt;estimated in story points",
          60, 250, 230, 150, BOX + AMBER),
     cell("plan", "Sprint planning&lt;br&gt;&lt;br&gt;pull the next slice,&lt;br&gt;set the sprint goal",
@@ -71,11 +71,9 @@ c = [
     cell("review", "Sprint review", 640, 300, 220, 60, BOX + BLUE),
     cell("retro", "Retrospective", 900, 300, 200, 60, BOX + BLUE),
     cell("roles", "The 3 Scrum roles, and how they collapse here&lt;br&gt;&lt;br&gt;"
-                  "Product Owner · Scrum Master · Development Team: on this project all 3 "
-                  "are the same person. The academic supervisor acts as Product Owner at sprint "
-                  "boundaries, reviewing each increment against the backlog. Stated in §1.4.2 "
-                  "rather than left implied, because it is the first thing an examiner asks about "
-                  "a solo Scrum project.",
+                  "Product Owner · Scrum Master · Developers: the author holds the Scrum Master "
+                  "and Developer accountabilities. The academic supervisor acts as Product Owner "
+                  "at sprint boundaries, accepting or returning each increment against the backlog.",
          60, 470, 1080, 130, NOTE + AMBER),
     edge("a1", "pb", "plan", "highest priority first", EH),
     edge("a2", "plan", "sb", "commit", EV),
@@ -124,7 +122,7 @@ c = [
          400, 120, 380, 90, HEAD + AMBER),
     cell("int", "Integration through the API&lt;br&gt;auth → publish → purchase → verify the ledger",
          310, 240, 560, 90, HEAD + BLUE),
-    cell("unit", "Unit and service tests&lt;br&gt;the bulk of 792 backend tests in 51 suites, run against a real PostgreSQL",
+    cell("unit", "Unit and service tests&lt;br&gt;the bulk of 796 backend tests in 52 suites, run against a real PostgreSQL",
          220, 360, 740, 90, HEAD + GREEN),
     cell("ledger", "Ledger invariant harness&lt;br&gt;&lt;br&gt;34 tests, most of them&lt;br&gt;"
                    "negative: a fixture builds&lt;br&gt;a coherent purchase, then&lt;br&gt;"

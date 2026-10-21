@@ -21,8 +21,8 @@ articles, and that the ledger invariant harness exists before any feature moves 
 
 <!-- INCLUDE:sprint-1 -->
 
-The sprint commits {{S1PTS}} points, close to the average of the project. Almost a
-fifth of them (US-49, US-50, US-51) produce nothing a user sees (the invariant harness,
+The sprint commits {{S1PTS}} points, close to the average of the project. Almost
+half of them (US-49, US-50, US-51) produce nothing a user sees (the invariant harness,
 the one-command stack and the quality gates) and were placed first on purpose: every
 later sprint is built and verified with them.
 
@@ -84,7 +84,7 @@ delivered in 2 steps, and the backlog records both sprints.
 
 The `User` carries its account type, provider, role and plan. The `MagazineProfile`
 adds a magazine's name, slug and branding. The `Article` carries its status,
-placement, visibility and search vector. One `User` class serves every kind of
+placement and visibility. One `User` class serves every kind of
 account, the differences held in attributes, which is what lets one authentication
 path serve every actor.
 
