@@ -107,13 +107,18 @@ shipped in. Use it; do not re-derive sprint membership from git dates.
 
 | Chapter | Content | Figures |
 |---|---|---|
-| **Ch.1** | context, methodology (Scrum adapted to one person, MoSCoW, points) and requirements — actors, FRs (summary; full list in Annex A), NFRs with verification, global use cases and classes, backlog (summary; full in Annex B), release plan, Gantt | `fig-1-1`, `fig-1-2`, `fig-2-1` … `fig-2-4` |
-| **Ch.2** | working environment, technology choices against alternatives, parameters and their justification, architecture | `fig-3-1` … `fig-3-4` |
-| **Ch.3** | Sprint 1 (schema, auth, article core) · Sprint 2 (editor, AI, event capture) | `fig-4-1` … `fig-4-6` |
-| **Ch.4** | Sprint 3 (social, notifications, analytics) · Sprint 4 (RAG, insights, search) | `fig-5-1` … `fig-5-9` |
-| **Ch.5** | Sprint 5 (marketplace, premium, moderation) · Sprint 6 (tests, demo, deploy) | `fig-6-1` … `fig-6-8` |
-| **Ch.6** | Sprint 7 · Sprint 8 · Sprint 9 | `fig-7-1` … `fig-7-9` |
-| **Ch.7** | evaluation — RAG, hybrid search, moderation, performance, accessibility, velocity, retrospective (scripts and results in `backend.inkwell.ai/eval/`) | — |
+| **Ch.1** | *Preliminary study and system design*: context, methodology (Scrum adapted to one person, MoSCoW, points) and requirements — actors, FRs (summary; full list in Annex A), NFRs with verification, global use cases and classes, backlog (summary; full in Annex B), release plan, Gantt — then working environment, technology choices against alternatives, parameters and their justification, architecture | `fig-1-1`, `fig-1-2`, `fig-2-1` … `fig-2-4`, `fig-3-1` … `fig-3-4` |
+| **Ch.2** | Sprint 1 (schema, auth, article core) · Sprint 2 (editor, AI, event capture) | `fig-4-1` … `fig-4-6` |
+| **Ch.3** | Sprint 3 (social, notifications, analytics) · Sprint 4 (RAG, insights, search) | `fig-5-1` … `fig-5-9` |
+| **Ch.4** | Sprint 5 (marketplace, premium, moderation) · Sprint 6 (tests, demo, deploy) | `fig-6-1` … `fig-6-8` |
+| **Ch.5** | Sprint 7 · Sprint 8 · Sprint 9 | `fig-7-1` … `fig-7-9` |
+| **Ch.6** | evaluation — RAG, hybrid search, moderation, performance, accessibility, velocity, retrospective (scripts and results in `backend.inkwell.ai/eval/`) | — |
+
+**Restructured again 2026-10-14:** the old Chapters 1 and 2 were merged into one
+chapter, *Preliminary study and system design* (`02-context-requirements.md`; the
+chapter file `03-environment-architecture.md` is gone), so every later chapter moved
+down one and the evaluation is now Chapter 6. The 2026-10-11 note below keeps the
+older numbering.
 
 **Restructured 2026-10-11 after the supervisor's review** (`report/SUPERVISOR-REVIEW.md`):
 the old Chapter 1 became the first part of Chapter 1, every chapter after it moved
@@ -121,7 +126,7 @@ down one, and the evaluation became Chapter 7. Figure *files* keep their old
 numbers; the report numbers figures by order of appearance (pandoc-crossref). The
 report is built with `report/make-pdf.sh` (pandoc → LuaLaTeX).
 
-Chapter 6's three sprints (Release 4), per `10-requirements.md` §2:
+Chapter 5's three sprints (Release 4), per `10-requirements.md` §2:
 
 | Sprint | Requirements | What shipped |
 |---|---|---|

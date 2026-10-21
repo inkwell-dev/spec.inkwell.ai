@@ -54,7 +54,7 @@ note as N1
 end note
 
 note as N2
-  Dictation is billed at 200 tokens a minute; reading
+  Dictation is billed at 200 tokens a minute. Reading
   a reply aloud is free and rate-limited instead, and
   is offered only when the key can speak (FR-82, FR-83).
 end note

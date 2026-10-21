@@ -53,7 +53,7 @@ LG -[hidden]down- R
 
 note as N1
   Reading events are recorded for every reader,
-  authenticated or not; a guest is counted as a
+  authenticated or not. A guest is counted as a
   view but never as an identified reader.
 end note
 note right of AI : [plan = premium]

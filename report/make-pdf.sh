@@ -23,7 +23,7 @@ COMMON="-F pandoc-crossref --citeproc --bibliography=../references.bib --csl=../
   --resource-path=/data/report:/data/report/build --metadata-file=../metadata.yaml"
 
 $PANDOC report-latex.md $COMMON --top-level-division=chapter --number-sections \
-  -H ../latex/header.tex --lua-filter=../latex/pin-screens.lua --lua-filter=../latex/grid-tables.lua --lua-filter=../latex/foldouts.lua --pdf-engine=lualatex -o Inkwell-PFE-Report.pdf
+  -H ../latex/header.tex --lua-filter=../latex/tech-rows.lua --lua-filter=../latex/pin-screens.lua --lua-filter=../latex/grid-tables.lua --lua-filter=../latex/foldouts.lua --pdf-engine=lualatex -o Inkwell-PFE-Report.pdf
 [ -n "${DRAFT:-}" ] || $PANDOC report-docx.md $COMMON --top-level-division=chapter --number-sections \
-  -o Inkwell-PFE-Report.docx
+  --lua-filter=../latex/tech-rows.lua -o Inkwell-PFE-Report.docx
 echo "built: $(pwd)/build/Inkwell-PFE-Report.pdf and .docx"

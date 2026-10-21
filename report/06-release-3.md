@@ -4,26 +4,26 @@
 
 The third release delivers the reason the analytics exist: the marketplace. Sprint 5
 adds the premium plan, magazine subscriptions and credits, the eligibility gate, the
-two-stage purchase with exclusive rights, the magazine's own act of publishing, and the
+2-stage purchase with exclusive rights, the magazine's own act of publishing, and the
 moderation console. Sprint 6 is a technical sprint: it delivers no new screen, but the
 test strategy that proves the business rules of Sprint 5, a demonstration corpus, and a
-deployable production stack. Both sprints follow the same four steps as the others.
+deployable production stack. Both sprints follow the same 4 steps as the others.
 
 ## Sprint 5: Marketplace, subscriptions, premium and moderation {#sec:sprint5}
 
 ### Sprint backlog
 
-The goal of Sprint 5 is that readers upgrade to premium; that magazines subscribe and
-receive monthly credits; that eligible writers list articles; that magazines preview,
+The goal of Sprint 5 is that readers upgrade to premium, that magazines subscribe and
+receive monthly credits, that eligible writers list articles, that magazines preview,
 buy and publish them under their own masthead, every credit movement recorded in a
-ledger; that writers see their earnings; and that administrators moderate.
+ledger, that writers see their earnings, and that administrators moderate.
 @tbl:sprint-5 lists the stories.
 
 <!-- INCLUDE:sprint-5 -->
 
 The sprint commits {{S5PTS}} points, about twice the average of the other sprints. The
 load was accepted rather than split because the marketplace stories form one
-transaction model: a preview, a purchase, a publication and an earnings line are four
+transaction model: a preview, a purchase, a publication and an earnings line are 4
 views of the same ledger rows, and delivering half of them would have left money that
 could be spent but not accounted for. The ledger harness of Sprint 1 and the screens of
 the design track had removed most of the uncertainty in advance. How far this
@@ -35,10 +35,10 @@ estimate held is discussed with the velocity in @sec:velocity.
 
 ![Use case diagram, Sprint 5](../diagrams/fig-6-1-use-case-sprint-5/fig-6-1-use-case-sprint-5.png){#fig:uc-s5}
 
-Without an active subscription a magazine can only subscribe; with one, it browses,
+Without an active subscription a magazine can only subscribe. With one, it browses,
 previews and buys articles exclusively, tops up credits and publishes from its
 library, every credit movement in one transaction. A writer lists an article when
-`[writer is eligible]`; the administrator moderates, grants eligibility and removes
+`[writer is eligible]`. The administrator moderates, grants eligibility and removes
 articles, in a console of their own. The
 subscription is the wall in front of the marketplace.
 
@@ -47,12 +47,12 @@ part of the analysis because every screen and every test of the sprint applies t
 
 | Rule | Value | Justification |
 |:----------------------|:--------------------------------|:--------------------------------|
-| Eligibility to list or publish premium | 5,000 identified unique readers **and** 1,000 reactions (likes and comments) across the writer's public articles, lifetime; or a manual grant by an administrator; never revoked automatically | both an audience and a response to it, so neither a viral article nor a small circle of friends qualifies alone; never revoked, so a writer's listings do not disappear in a quiet month |
-| Magazine subscription | monthly; 500 credits a month; unspent credits roll over | a predictable budget (US-36); roll-over, so a magazine is not pushed to spend |
+| Eligibility to list or publish premium | 5,000 identified unique readers **and** 1,000 reactions (likes and comments) across the writer's public articles, lifetime, or a manual grant by an administrator, never revoked automatically | both an audience and a response to it, so neither a viral article nor a small circle of friends qualifies alone. Never revoked, so a writer's listings do not disappear in a quiet month |
+| Magazine subscription | monthly, 500 credits a month, unspent credits roll over | a predictable budget (US-36). Roll-over, so a magazine is not pushed to spend |
 | Preview unlock | 10% of the article's price, credited towards the purchase | cheap enough to read before deciding, and never lost if the magazine buys |
-| Full purchase | the remaining 90%; exclusive | exclusivity is what a publication pays for; the preview is deducted so the total is the price |
-| Platform fee | 20% of each stage, rounded down; the writer receives the rest | rounded down so that the writer, not the platform, keeps the indivisible credit |
-| Publication | a separate act of the owning magazine: the article becomes public and free, its price is cleared and the magazine is recorded as publisher | buying is not publishing; the magazine decides when its masthead appears (US-63) |
+| Full purchase | the remaining 90%, exclusive | exclusivity is what a publication pays for. The preview is deducted so the total is the price |
+| Platform fee | 20% of each stage, rounded down. The writer receives the rest | rounded down so that the writer, not the platform, keeps the indivisible credit |
+| Publication | a separate act of the owning magazine: the article becomes public and free, its price is cleared and the magazine is recorded as publisher | buying is not publishing. The magazine decides when its masthead appears (US-63) |
 
 : Marketplace rules and their justification {#tbl:rules}
 
@@ -68,19 +68,19 @@ product decisions, kept as named constants (@sec:parameters).
 ![Class diagram, Sprint 5](../diagrams/fig-6-2-classes-sprint-5/fig-6-2-classes-sprint-5.png){#fig:classes-s5}
 
 A `Purchase` records a stage (preview or full purchase) with the credits paid, the
-fee and the payout, and writes three `Transaction` rows: the magazine's debit, the
+fee and the payout, and writes up to 3 `Transaction` rows: the magazine's debit, the
 writer's payout and the platform fee. No balance is stored without its explanation:
 credit balances and earnings are caches of these rows, which the ledger invariants
 check (NFR-19).
 
-**Sequence diagram: the purchase.** @fig:seq-purchase shows the three calls of a
+**Sequence diagram: the purchase.** @fig:seq-purchase shows the 3 calls of a
 licence.
 
-![Sequence diagram: preview, purchase and publication](../diagrams/fig-6-3-sequence-two-stage-purchase/fig-6-3-sequence-two-stage-purchase.png){#fig:seq-purchase .foldout .sideways height=88%}
+![Sequence diagram: preview, purchase and publication](../diagrams/fig-6-3-sequence-two-stage-purchase/fig-6-3-sequence-two-stage-purchase.png){#fig:seq-purchase .foldout .sideways .here height=88%}
 
 Each stage is one transaction: it locks the article (409 if already owned) and the
 credit balance (402 if too low), moves the credits and writes the ledger rows. The
-row lock rules out a double purchase or double spend (NFR-20); the idempotency key, a
+row lock rules out a double purchase or double spend (NFR-20), and the idempotency key, a
 retried request charging twice (NFR-06).
 
 **Activity diagram: the eligibility gate.** @fig:act-eligibility shows how a writer
@@ -88,26 +88,23 @@ becomes eligible.
 
 ![Activity diagram: the marketplace eligibility gate](../diagrams/fig-6-4-activity-eligibility-gate/fig-6-4-activity-eligibility-gate.png){#fig:act-eligibility}
 
-After each aggregation the worker marks the writers above both thresholds eligible
-and logs the metric snapshot; an administrator can also grant eligibility, with the
+Every 20 minutes a scheduled job marks the writers above both thresholds eligible
+and logs the metric snapshot. An administrator can also grant eligibility, with the
 same audit entry. Comment likes and reposts do not count, so other people's activity
 cannot move a threshold. Every eligible writer can be traced to the numbers or the
 person that made them eligible.
 
-**Sequence diagram: moderation.** @fig:seq-moderation shows the two sources of
+**Sequence diagram: moderation.** @fig:seq-moderation shows the 2 sources of
 reports.
 
 ![Sequence diagram: reporting and moderation](../diagrams/fig-6-5-sequence-moderation/fig-6-5-sequence-moderation.png){#fig:seq-moderation}
 
-After publication a classifier reviews the article and, if it flags it, files a
-pending report without blocking publication; readers report articles, users or
-comments. The administrator dismisses, removes the article or bans the author (in
-effect within fifteen minutes, NFR-09). The administrator works only in a dedicated
-console, with four sections: Reports, with the pending count, Users, Articles and
-Settings. It offers no reader or writer feature, and the API enforces it: every reader
-and writer action answers an administrator with a 403, and their analytics events are
-ignored (FR-90). A false positive costs a dismissed report,
-never a refused article; @sec:eval-moderation measures the classifier.
+After publication a classifier reviews the article and, if it flags it, files a pending
+report without blocking publication. Readers report articles, users or comments. The
+administrator dismisses a report, removes the article or bans the author, in effect
+within 15 minutes (NFR-09), from a console that offers no reader or writer feature: the
+API refuses those features to an administrator, analytics included (FR-90). A false
+positive costs a dismissed report, never a refused article (@sec:eval-moderation).
 
 **Activity diagram: the article access decision.** @fig:act-access shows the decision
 taken server-side for every article body.
@@ -116,7 +113,7 @@ taken server-side for every article body.
 
 The author and administrators always read. A marketplace body reaches only a
 subscribed magazine that previewed or bought it, a premium body only the premium plan
-or a subscribed magazine; otherwise the content is `null`. The server decides, so a
+or a subscribed magazine. Otherwise the content is `null`. The server decides, so a
 modified client cannot read what it has not paid for.
 
 **State diagram: the article lifecycle.** @fig:state-article shows the states an
@@ -125,7 +122,7 @@ article goes through.
 ![State diagram: the article lifecycle](../diagrams/fig-6-8-state-article-lifecycle/fig-6-8-state-article-lifecycle.png){#fig:state-article}
 
 A draft is published as free, premium or listed. A listing can become public (never
-the reverse) or be deleted while unsold; a purchase makes it *owned*, and the
+the reverse) or be deleted while unsold. A purchase makes it *owned*, and the
 magazine's publication public. No transition can destroy what a magazine paid for,
 which enforces the exclusivity of @tbl:rules.
 
@@ -136,7 +133,7 @@ premium article opened by a visitor.
 
 ![A premium article behind the paywall](../figures/screens/guest-06-article-premium-paywall.png){#fig:paywall}
 
-The visitor sees the title, the author and the opening; the body is withheld by the
+The visitor sees the title, the author and the opening. The body is withheld by the
 access decision of @fig:act-access (FR-03, FR-16). It never reaches the browser, so
 inspecting the page cannot reveal it.
 
@@ -166,9 +163,9 @@ decides.
 
 ![A listing before preview](../figures/screens/magazine-02-listing-detail.png){#fig:listing}
 
-Each listing shows its writer, topics and price, and two buttons: *Preview* at 10% of
+Each listing shows its writer, topics and price, and 2 buttons: *Preview* at 10% of
 the price (14 credits for an article at 140) and *Buy* at the full price (FR-47). The
-listing page shows the excerpt only; the body stays locked, as @fig:act-access
+listing page shows the excerpt only. The body stays locked, as @fig:act-access
 requires, until the magazine pays.
 
 @fig:preview-confirm shows the confirmation of a preview unlock.
@@ -190,7 +187,7 @@ it and @fig:publish-library the act of publishing from it.
 The library separates what is owned but unpublished from what has been published, with
 the price paid and the purchase date of each article, and offers *Publish* only on the
 first tab (FR-50, FR-74). Publishing is confirmed separately (FR-73): buying and
-publishing are two decisions, as @tbl:rules requires.
+publishing are 2 decisions, as @tbl:rules requires.
 
 Once published, the article becomes public. @fig:licensed shows it, and
 @fig:magazine-profile the magazine's public profile.
@@ -201,7 +198,7 @@ Once published, the article becomes public. @fig:licensed shows it, and
 
 The licensed article names both the writer and the publishing magazine, each linking to
 its profile (FR-76), and the magazine's profile lists the articles it has published
-(FR-75). These two requirements are attributed to Sprint 5 because a licensed article
+(FR-75). These 2 requirements are attributed to Sprint 5 because a licensed article
 exists only from this sprint on: the licence buys the magazine a shelf, not just a file.
 
 The writer sees the other side of the same transactions. @fig:earnings shows the
@@ -228,17 +225,12 @@ queue and @fig:admin-articles the article directory.
 
 ![Administration: the article directory](../figures/screens/admin-04-articles.png){#fig:admin-articles}
 
-The grant records who made a writer eligible (FR-55); the user directory searches
-accounts and edits a plan (FR-53, FR-54), and bans from the directory itself (FR-89).
-Ban is not offered on an administrator, on the signed-in administrator or on an account
-already banned, and is confirmed in place. The report queue offers the four actions of
-@fig:seq-moderation (FR-51, FR-52). Its second report has no reporter: the classifier
-filed it (FR-57), and the administrator's note explains why the article stayed: the
-decision the design reserves for a person. The article directory lists every published
-article, active or removed, and searches by title or author (FR-88). A removed article
-is one an administrator removed or its author deleted. Remove is confirmed in place.
-Articles and profiles open read-only from the console, so the administrator reads
-without being offered a reader's actions.
+The grant records who made a writer eligible (FR-55). The user directory searches
+accounts, edits a plan and bans (FR-53, FR-54, FR-89). The report queue offers the 4
+actions of @fig:seq-moderation (FR-51, FR-52). Its second report was filed by the
+classifier (FR-57), and the administrator's note records why the article stayed. The
+article directory lists every published article, active or removed, searchable by title
+or author (FR-88). Articles and profiles open read-only from the console.
 
 ## Sprint 6: Tests, demonstration and deployment {#sec:sprint6}
 
@@ -258,8 +250,8 @@ the rules that move money before more features are built on top of them.
 
 ### Analysis
 
-A technical sprint has no new actor-facing use case; its analysis states what must be
-verified and what must be deployable. Three needs follow from the previous sprints.
+A technical sprint has no new actor-facing use case. Its analysis states what must be
+verified and what must be deployable. The previous sprints leave 3 needs.
 
 - **Proof of the money rules.** The ledger, the prices and the exclusivity of Sprint 5
   must be shown correct by tests that fail when the code is wrong, not merely pass
@@ -278,16 +270,16 @@ verified and what must be deployable. Three needs follow from the previous sprin
 ![Test strategy](../diagrams/fig-6-7-test-strategy/fig-6-7-test-strategy.png){#fig:test-strategy}
 
 **Unit and service tests** run against a real database, each in a rolled-back
-transaction; **integration tests** go through the API; **end-to-end tests** drive a
+transaction. **Integration tests** go through the API. **End-to-end tests** drive a
 browser. The **ledger harness** and a **price sweep** from 1 to 300 credits guard the
 money. The database is never mocked: the guarantees under test live in it.
 
 **Deployment.** The deployment follows the physical architecture of @fig:arch-physical
 and the pipeline of @fig:arch-cicd: multi-stage images for the API and worker (one
-image, two entry points) and for the Next.js server in standalone mode; a production
-Compose file in which only nginx is published, with certificates from Let's Encrypt;
-a one-shot migration service that must succeed before the API and worker start; and
-health and readiness endpoints checked by Compose and by the deployment workflow.
+image, 2 entry points) and for the Next.js server in standalone mode, a production Compose file in which only nginx is published (with
+certificates from Let's Encrypt), a one-shot migration service that must succeed before
+the API and worker start, and health and readiness endpoints checked by Compose and by
+the deployment workflow.
 
 ### Realisation
 
@@ -311,7 +303,7 @@ shared utilities at 73% and the data layer, where the ledger checks live, at 67%
 the code that moves money or removes content is the most tested, as the strategy
 intended. The AI module (21%), authentication (28%) and the analytics aggregation (0%)
 are the least covered: their logic is largely SQL and provider calls, verified by the
-end-to-end suite and by the measurements of Chapter 7 rather than by unit tests. Line
+end-to-end suite and by the measurements of Chapter 6 rather than by unit tests. Line
 coverage of 48.5% overall is therefore not a uniform level of confidence but a
 concentrated one, and extending it to the aggregation queries is the first
 improvement listed in the conclusion. The harness was itself validated by sabotage:
@@ -327,7 +319,7 @@ and 8,000 comments, with generated cover art and avatars. A fixed cast of named
 accounts makes every demonstration path reproducible, and a flag lowers the
 eligibility thresholds so that the gate can be crossed live (US-54). Every seeded date
 can be bounded below, so the corpus never predates the platform. The same corpus is
-the one evaluated in Chapter 7.
+the one evaluated in Chapter 6.
 
 **Deployment.** The production stack builds, migrates and starts with one command, and
 its pipeline runs from a push to a running service (US-52). The domain `inkwell-ai.me`
@@ -339,7 +331,7 @@ are not counted as delivered in the velocity of @sec:velocity.
 ## Conclusion {.unnumbered}
 
 Release 3 delivered the marketplace end to end: subscriptions and credits, the
-eligibility gate, the exclusive two-stage purchase, the magazine's own publication and
+eligibility gate, the exclusive 2-stage purchase, the magazine's own publication and
 the writer's itemised earnings, all on a ledger whose invariants are tested after every
 operation. It also delivered moderation, a test suite of 796 backend tests concentrated
 on the rules that move money, a demonstration corpus and a production-ready stack whose

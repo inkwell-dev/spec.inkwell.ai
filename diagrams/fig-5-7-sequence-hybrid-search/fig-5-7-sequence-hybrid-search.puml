@@ -32,7 +32,7 @@ else semantic branch
   deactivate D
 end
 
-A -> A : Fuse the two rankings\nscore = sum of 1 / (60 + rank)
+A -> A : Fuse the 2 rankings\nscore = sum of 1 / (60 + rank)
 A -> D : Load the merged articles
 activate D
 D --> A : Article rows

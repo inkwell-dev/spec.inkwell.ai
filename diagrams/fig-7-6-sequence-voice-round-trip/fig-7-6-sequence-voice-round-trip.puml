@@ -41,7 +41,7 @@ else accepted
 end
 
 R -> P : Send the brief
-ref over P, D : Assistant turn (figure 7.4)
+ref over P, D : Assistant turn (figure 5.8)
 
 opt the key can speak, and the writer has not muted
   P -> A : POST /ai/speak with the reply's text
@@ -58,7 +58,7 @@ end
 deactivate P
 
 note over R, D
-  Dictation costs tokens; listening does not. Reading aloud is rate-limited
+  Dictation costs tokens. Listening does not. Reading aloud is rate-limited
   per account instead, and the mute control exists only when
   GET /ai/speech-availability says the key can speak. The mute choice
   persists in the browser.

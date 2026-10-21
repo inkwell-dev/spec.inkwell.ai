@@ -59,7 +59,7 @@ one:
 	@echo "✓ $(F)"
 
 regen:
-	cd tools && python3 gen-architecture.py && python3 gen-use-cases.py
+	cd tools && python3 gen-architecture.py && python3 gen-actors.py && python3 gen-use-cases.py
 # Not in regen: fig-1-11 (hand-made in draw.io) and fig-1-12, whose layout tool
 # rewrites the drawing it reads. Run that one by hand, then review in draw.io:
 #   cd tools && python3 gen-class-global.py

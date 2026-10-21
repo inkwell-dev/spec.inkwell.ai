@@ -59,7 +59,7 @@ Independent writers have tools to publish but few ways to be paid for quality, a
 magazines that want to commission them have no objective way to judge a writer before
 buying. This report presents **Inkwell.ai**, a two-sided web platform that addresses
 both sides. Writers draft in a rich-text editor beside an AI assistant grounded in
-their own published work and in reference documents they upload; it answers in a
+their own published work and in reference documents they upload. It answers in a
 panel or writes directly into the document, cites its sources by page, and accepts
 spoken prompts. Every published article feeds an event-based analytics pipeline whose
 audience, content and quality signals, together with AI-generated portfolio insights,
@@ -68,51 +68,18 @@ monthly credits, preview an article for 10% of its price and buy the remainder f
 exclusive republication rights, every credit movement being recorded in a ledger whose
 invariants are tested after each operation.
 
-The platform was built over nine two-week Scrum sprints grouped into four releases,
+The platform was built over 9 2-week Scrum sprints grouped into 4 releases,
 with a Next.js 16 frontend, a NestJS 11 backend and worker, PostgreSQL 16 with
 pgvector, Redis and BullMQ, MinIO object storage and nginx, all containerised with
 Docker Compose, and with Groq and Gemini models orchestrated through the Vercel AI SDK.
 The backend suite counts 796 passing tests. Measured on a labelled set, retrieval
-returns a relevant passage in its top five for 89% of questions, hybrid search keeps
-every relevant article in its top ten even for paraphrased queries that defeat keyword
+returns a relevant passage in its top 5 for 89% of questions, hybrid search keeps
+every relevant article in its top 10 even for paraphrased queries that defeat keyword
 search, and the publish-time moderation classifier reaches a precision of 0.93 and a
 recall of 1.00.
 
 **Keywords:** writing marketplace, AI-assisted writing, retrieval-augmented generation,
 hybrid search, pgvector, analytics, article licensing, Scrum, NestJS, Next.js.
-
-# Résumé {.unnumbered}
-
-Les rédacteurs indépendants disposent d'outils pour publier, mais de peu de moyens
-d'être rémunérés pour la qualité de leur travail, et les magazines qui souhaitent leur
-confier des articles n'ont aucun moyen objectif d'évaluer un rédacteur avant d'acheter.
-Ce rapport présente **Inkwell.ai**, une plateforme web biface qui répond aux deux
-besoins. Les rédacteurs écrivent dans un éditeur de texte enrichi, aux côtés d'un
-assistant d'intelligence artificielle ancré dans leurs propres articles publiés et dans
-les documents de référence qu'ils déposent ; l'assistant répond dans un panneau ou écrit
-directement dans le document, cite ses sources à la page près et accepte des consignes
-dictées à la voix. Chaque article publié alimente une chaîne d'analyse fondée sur des
-événements, dont les indicateurs d'audience, de contenu et de qualité, complétés par une
-synthèse générée par l'IA, constituent un rapport d'évaluation sur lequel les magazines
-s'appuient pour décider. Les magazines s'abonnent, reçoivent des crédits mensuels,
-débloquent un aperçu pour 10 % du prix et achètent le reste pour obtenir des droits de
-republication exclusifs ; chaque mouvement de crédits est inscrit dans un grand livre
-dont les invariants sont vérifiés après chaque opération.
-
-La plateforme a été réalisée en neuf sprints Scrum de deux semaines, regroupés en
-quatre releases, avec un frontend Next.js 16, un backend et un worker NestJS 11,
-PostgreSQL 16 avec pgvector, Redis et BullMQ, le stockage objet MinIO et nginx, le tout
-conteneurisé avec Docker Compose, les modèles Groq et Gemini étant orchestrés par le
-Vercel AI SDK. La suite de tests du backend compte 796 tests réussis. Mesurée sur un
-jeu de données annoté, la recherche de passages renvoie un passage pertinent parmi les
-cinq premiers pour 89 % des questions, la recherche hybride conserve tous les articles
-pertinents parmi les dix premiers résultats, y compris pour des requêtes reformulées
-que la recherche par mots-clés ne trouve pas, et le classifieur de modération atteint
-une précision de 0,93 et un rappel de 1,00.
-
-**Mots-clés :** place de marché d'écriture, rédaction assistée par l'IA, génération
-augmentée par la recherche, recherche hybride, pgvector, analytique, licence
-d'articles, Scrum, NestJS, Next.js.
 
 <!-- LISTS -->
 

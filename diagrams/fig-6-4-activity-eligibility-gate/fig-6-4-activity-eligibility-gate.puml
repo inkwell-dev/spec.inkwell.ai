@@ -7,7 +7,7 @@ partition "Scheduled worker, every 20 minutes" {
   :Select writers who are not yet eligible\nand have at least one published public article;
   note right
     Writers with no published public article are
-    provably at zero on both counts. Excluding them
+    provably at 0 on both counts. Excluding them
     took this sweep from 22 minutes to 15 seconds.
   end note
   while (another candidate?) is (yes)

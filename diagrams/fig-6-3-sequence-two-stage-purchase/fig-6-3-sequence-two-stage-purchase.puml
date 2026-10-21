@@ -2,7 +2,7 @@
 ' Figure 6.3 – System sequence diagram: preview unlock then full purchase
 !include ../_style.puml
 !include ../_sequence.puml
-mainframe interaction SequenceDiagram Two-stage article purchase
+mainframe interaction SequenceDiagram 2-stage article purchase
 autonumber "0 :"
 
 participant "Magazine" as M
@@ -30,7 +30,7 @@ group One database transaction
     A -> D : Debit the magazine by 10% of the price
     A -> D : Credit the writer with the payout
     A -> D : Insert the purchase row, stage preview_unlock
-    A -> D : Insert three transaction rows\n(debit, writer payout, platform fee)
+    A -> D : Insert 3 transaction rows\n(debit, writer payout, platform fee)
     D --> A : Committed
   end
   end
@@ -60,7 +60,7 @@ group One database transaction
   A -> D : SELECT the credit balance FOR UPDATE
   A -> D : Debit the remaining amount, credit the writer
   A -> D : Insert the purchase row, stage full_purchase,\nlinked to the preview
-  A -> D : Insert three transaction rows
+  A -> D : Insert 3 transaction rows
   D --> A : Committed
   end
   deactivate D
@@ -84,6 +84,6 @@ note over M, D
   Measured on a 100-credit article: 445 to 435 for the preview,
   then 435 to 345 for the remainder. Ledger rows: 10 = 8 payout
   + 2 fee, then 90 = 72 payout + 18 fee. The row lock is what
-  stops two concurrent purchases spending the same credits.
+  stops 2 concurrent purchases spending the same credits.
 end note
 @enduml

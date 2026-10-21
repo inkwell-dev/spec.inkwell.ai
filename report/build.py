@@ -32,7 +32,7 @@ OUT = HERE / 'build'
 OUT.mkdir(exist_ok=True)
 
 FRONT = ['00-front.md']
-BODY = ['01-introduction.md', '02-context-requirements.md', '03-environment-architecture.md',
+BODY = ['01-introduction.md', '02-context-requirements.md',
         '04-release-1.md', '05-release-2.md', '06-release-3.md', '07-release-4.md',
         '08-evaluation.md', '09-conclusion.md']
 ANNEX = ['10-annexes.md']
@@ -125,8 +125,8 @@ for e in re.split(r'\n### ', backlog)[1:]:
               for s in rs]
 TOTAL_PTS = sum(s['pts'] for s in stories)
 summary = ['| Epic | Stories | Points | Share of points |', '|:------------------------------------|:-:|:-:|:-:|']
-summary += [f'| {n} | {c} | {p} | {100 * p / TOTAL_PTS:.0f} % |' for n, c, p in epic_rows]
-summary.append(f'| **Total** | **{len(stories)}** | **{TOTAL_PTS}** | 100 % |')
+summary += [f'| {n} | {c} | {p} | {100 * p / TOTAL_PTS:.0f}% |' for n, c, p in epic_rows]
+summary.append(f'| **Total** | **{len(stories)}** | **{TOTAL_PTS}** | 100% |')
 includes['backlog-summary'] = '\n'.join(summary) + '\n\n: Product backlog by epic {#tbl:backlog-summary}'
 includes['backlog-annex'] = '\n'.join(annex)
 
@@ -200,34 +200,73 @@ missing = [f for f in figure_files if not (HERE / f).exists()]
 assert not missing, missing
 
 # ── Title page and front matter ──────────────────────────────────────────────
+# The cover follows the house layout of TEK-UP reports: the school's logo and
+# the host company's in the top corners, the institution centred in bold, the
+# report type in small capitals, the author, the project title between double
+# rules with the Inkwell mark above it, the supervisors as label-left and
+# name-right rows, and the academic year at the foot. The cover alone is set in
+# Latin Modern, the reference cover's typeface, which has true small capitals.
+# LaTeX compiles in a temporary directory inside the pandoc container, where
+# the spec is mounted at /data, so the logos are given by absolute path.
 TITLE_LATEX = r'''```{=latex}
 \begin{titlepage}
-\centering\sffamily
-{\large\bfseries TEK-UP University\par}
-\vspace{2pt}
-{\normalsize GLSI (Software Engineering and Information Systems)\par}
-\vspace{3.2cm}
-{\Large\bfseries End-of-Studies Project Report\par}
-\vspace{6pt}
-{\normalsize Submitted in partial fulfilment of the requirements for the degree of\par}
-{\normalsize\bfseries National Engineering Diploma in Computer Science (GLSI)\par}
-\vspace{2.2cm}
-\rule{\linewidth}{0.6pt}\par\vspace{10pt}
-{\Huge\bfseries Inkwell.ai\par}
+\definecolor{coverrule}{HTML}{1F3A5F}
+\newcommand{\coverlogos}{/data/report/Logos}
+\newgeometry{top=2.0cm,bottom=2.0cm,left=2.6cm,right=2.6cm}
+\fontspec{Latin Modern Roman}[SmallCapsFont={Latin Modern Roman Caps}]
+% Logos: the school top left, the host company top right.
+\noindent
+\begin{minipage}[c]{0.5\textwidth}\raggedright
+\includegraphics[height=1.2cm,width=0.85\linewidth,keepaspectratio]{\coverlogos/tekup_logo.jpeg}
+\end{minipage}%
+\begin{minipage}[c]{0.5\textwidth}\raggedleft
+\includegraphics[height=1.15cm,width=0.85\linewidth,keepaspectratio]{\coverlogos/intuitiv_logo.png}
+\end{minipage}
+\par\vspace{0.9cm}
+\centering
+% The institution.
+{\bfseries\normalsize TEK-UP University\par}
+\vspace{5pt}
+{\bfseries\normalsize GLSI (Software Engineering and Information Systems)\par}
+\vspace{0.9cm}
+% The report.
+{\LARGE\scshape End-of-Studies Project Report\par}
 \vspace{8pt}
-{\Large An AI-powered writing marketplace connecting\\ independent writers and magazine publishers\par}
-\vspace{6pt}\rule{\linewidth}{0.6pt}\par
-\vspace{2.6cm}
-\begin{tabular}{rl}
-Carried out by: & \textbf{Oussama Bejaoui} \\[3pt]
-Academic supervisor: & \textbf{Mr. Bilel Zemzem} \\[3pt]
-Professional supervisor: & \textbf{Mr. Ramzy Chridi} \\[3pt]
+{\normalsize Submitted in partial fulfilment of the requirements for the degree of\par}
+\vspace{2pt}
+{\normalsize\bfseries National Engineering Diploma in Computer Science (GLSI)\par}
+\vspace{0.75cm}
+{\large\itshape Carried out by\par}
+\vspace{5pt}
+{\Large\bfseries Oussama Bejaoui\par}
+\vspace{0.8cm}
+% The project: the Inkwell mark above the title, between double rules.
+{\color{coverrule}\rule{\linewidth}{1.4pt}\par\vspace{5pt}\rule{\linewidth}{0.5pt}\par}
+\vspace{14pt}
+\includegraphics[height=1.6cm]{\coverlogos/inkwell_logo.png}\par
+\vspace{8pt}
+% As in the reference: the project's name in bold, leading the title.
+{\LARGE\setlength{\baselineskip}{1.35\baselineskip}\textbf{Inkwell.ai:} An AI-powered writing marketplace\\
+connecting independent writers and magazine publishers\par}
+\vspace{14pt}
+{\color{coverrule}\rule{\linewidth}{0.5pt}\par\vspace{5pt}\rule{\linewidth}{1.4pt}\par}
+\vspace{0.8cm}
+% The supervisors: label on the left, name on the right.
+{\normalsize
+\begin{tabular*}{0.96\linewidth}{@{\extracolsep{\fill}}lr@{}}
+Academic supervisor: & \textbf{Mr. Bilel Zemzem} \\[8pt]
+Professional supervisor: & \textbf{Mr. Ramzy Chridi} \\[8pt]
 Host organisation: & \textbf{Intuitiv Group} \\
-\end{tabular}
+\end{tabular*}\par}
 \vfill
+% The period and the academic year.
 {\normalsize Project period: 1 February 2026 – 31 July 2026\par}
-{\normalsize Academic year 2025–2026\par}
+\vspace{8pt}
+{\large\bfseries Academic year:\par}
+\vspace{3pt}
+{\large\bfseries 2025–2026\par}
 \end{titlepage}
+\restoregeometry
 ```'''
 
 LISTS_LATEX = '```{=latex}\n{\\setstretch{1.0}\\tableofcontents\\listoffigures\\listoftables}\n```\n'
