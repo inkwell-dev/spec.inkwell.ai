@@ -133,7 +133,7 @@ rail and re-expands it
 → Panel shows each step as it runs (draft · profile · thinking · [passages · writing]) — collapsed to the rail, the Chat icon carries the same step as a badge instead (a live word count while writing)  
 
 If it answers → the answer appears in the panel  
-If it writes → text streams into the document at the cursor (or over the selection), tinted  
+If it writes → text streams into the document at the cursor, after or over the blocks the request names, or over the selection (2026-10-22), tinted  
 → User may Stop  
 → Keep / Discard bar under the written text:
 - Keep — accepted as one undo step  

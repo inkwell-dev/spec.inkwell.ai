@@ -153,8 +153,51 @@ One request, one typed stream. The model **decides** whether a reply belongs in
 the document or in the panel, through a single tool:
 
 ```
-write_to_article({ placement: 'cursor' | 'replace_selection', brief: string })
+write_to_article({
+  placement: 'cursor' | 'replace_selection' | 'after_block' | 'replace_blocks',
+  block?: number,                       // after_block: the block the text goes after
+  fromBlock?: number, toBlock?: number, // replace_blocks: the first and last block replaced
+  brief: string,
+})
 ```
+
+*Extended 2026-10-22.* The schema is a **flat object**, not a discriminated
+union: the Groq-hosted models cope poorly with `anyOf` in tool schemas. Block
+numbers are **1-based positions in the request's `document.blocks`** (below) —
+the same number appears in the prompt label `[3]`, in the tool arguments and on
+the stream, so no second index exists to drift. The tool's `execute` passes the
+arguments through a pure resolver, which never trusts the model's placement:
+
+| Asked | Resolved to |
+|---|---|
+| `replace_selection`, no selection | `cursor` |
+| `after_block`, no `document` or `block` out of range | `cursor` |
+| `after_block` on a heading | the last block of that heading's **section** — the block before the next heading of the same or a higher level, else the end of the document. A first heading that holds every other (deeper) heading is the article's **title** and snaps only past its intro, so a new section does not land at the very end under a title |
+| `replace_blocks`, missing `toBlock` / reversed range | `toBlock = fromBlock` / the two swapped |
+| `replace_blocks` over any block not shown in full to the model, or clipped | `after_block(toBlock)` if that is in range, else `cursor` — **the model can never replace a block it could not see** |
+
+**The provider gets a lenient schema.** Groq validates every tool call
+against the JSON schema itself, and a mismatch fails the whole turn. In the
+first live run the model sent `block: null` plus a stray `after_block` key,
+and the writer saw "Something went wrong". So the provider is given a
+hand-written schema in which block numbers are `["integer", "null"]` (a type
+list rather than `anyOf`) and extra keys are allowed. The call is then parsed
+with the zod schema and normalised: `null` is "not given", and a number filed
+under the placement's own name is used. The resolver above is what decides a
+call is unusable, and it degrades rather than failing.
+
+**The router is shown the selection.** Before 2026-10-22 only the inner,
+writing call saw the selected passage. The routing call was told to use
+`replace_selection` "when the request is about the selected text" without being
+told there was any. With block targets, "make this punchier" over one selected
+paragraph came back as `replace_blocks` over every paragraph. The routing prompt
+now quotes the selection (up to 1,500 characters), and says that "this", "it" and
+"the selection", or a request naming no other part, refer to it.
+
+**One write per turn.** A second `write_to_article` call in the same turn is
+refused with an error result and streams nothing. Previously the client kept the
+first write on seeing a second start, which approved text the writer had not
+approved.
 
 The outer call carries a lean prompt (guidelines, the current article, the
 style profile) and the tool. A question is answered as text — one call, no
@@ -171,8 +214,8 @@ never persisted into the message history):
 |---|---|
 | `data-status` | `{ step, state, detail?, chunks? }` — `step ∈ draft \| profile \| documents \| thinking \| retrieval \| writing \| done`, `state ∈ active \| done \| failed`; retrieval's `done` carries the passages. *`documents` added 2026-09-17 (§9.5) — emitted only when the article has attached, `ready` documents.* |
 | `text` | the answer, or the recap after a write |
-| `tool-write_to_article` | the decision (`placement`, `brief`) |
-| `data-article-start` | `{ id, placement, brief }` — the client opens its insertion range |
+| `tool-write_to_article` | the decision (`placement`, the block numbers when the placement has them, `brief`) |
+| `data-article-start` | `{ id, brief, placement }` plus `block` for `after_block` or `fromBlock` / `toBlock` for `replace_blocks` (1-based numbers in the request's `document.blocks`; no positions, no text) — the client opens its insertion range |
 | `data-article-delta` | `{ id, text }` — plain-text chunk of the article |
 | `data-article-done` | `{ id, words, headings }` — written even when the inner stream fails, so the client can always close the range |
 
@@ -206,6 +249,68 @@ sentence before the end must not make the article free.
 the whole top-level block(s) the selection touches, since a rewrite always
 replaces whole blocks; the inner prompt bounds the output to that passage.
 Document positions never leave the client.
+
+**Request body also gains `document?`** *(2026-10-22)* — the live editor
+document as an ordered list of its top-level blocks:
+
+```
+document: { blocks: { type, level?, text, clipped? }[], cursorBlock? }
+```
+
+`text` is at most 4,000 characters (lists and quotes as one block with one line
+per item; images and rules as empty-text atoms; blank paragraphs skipped);
+at most 500 blocks and 40,000 characters in all; `cursorBlock` is the 1-based
+block holding the cursor or selection start. The client sends no `cursorBlock`
+when the cursor was never placed, and sends no `document` at all above 500
+blocks. A block the client had to cut is marked `clipped` and is never
+replaceable. Unknown keys are rejected by the global whitelist, so the client
+builds each block field by field.
+
+*Trust.* `document` is read only after the existing ownership check on
+`articleId` (the writer's own, not soft-deleted). If it is malformed across
+fields (total length, `cursorBlock` past the end) it is **ignored and the saved
+copy is used** — a bad payload must never break chat. When accepted it replaces
+the saved text as the article context: the live copy is meant to differ from
+the saved one. Without it (an older client, an editor not yet ready) the saved,
+flat text is used and only `cursor` and `replace_selection` are honoured.
+The API's JSON body limit is raised to 512 KB for all routes for this: the
+default 100 KB would reject a long article in a multi-byte script.
+
+**What the model is shown** *(windowing, 2026-10-22)*. The article is rendered
+as numbered blocks (`[4] ## Japan`, `[5] paragraph…`, `[6] (list)` with `- `
+items, `(image)`, `(divider)`, `(excerpt)` for clipped text). If it fits in
+**6,000 characters** every block is shown in full. Otherwise the full text is a
+contiguous window centred on `cursorBlock` (else the last block, since "add X"
+usually goes at the end); headings outside the window are listed as an outline
+(at most 1,500 characters, the farthest from the focus folded first); other
+hidden runs collapse to one line, `[7–19] (13 blocks not shown)`. A block is
+**replaceable** only if shown in full and unclipped, and the server takes this
+predicate from the same function that rendered the prompt, so the two cannot
+disagree.
+
+> *Superseded 2026-10-22.* Until then the article reached the model as flat
+> text — the saved copy, blocks joined by spaces, cut at 6,000 characters, with
+> no structure to point at. That path remains for clients that send no
+> `document`, but the block-aware path above is the one the editor uses.
+
+**The writer prompt names its target.** For `after_block` it quotes the block
+(and the first line of the next) and says to write only the new material,
+opening a new section with a heading at the level the article's sections use;
+for `replace_blocks` it quotes exactly the blocks replaced and nothing around
+them; for `cursor` it states that the output is inserted as new text and that
+the article below is already in the document — never to repeat it or return a
+revised copy. That last sentence is the fix for a defect where "add a section"
+came back as the whole article again and landed under the original; see
+`10-requirements.md` §6 (2026-10-22).
+
+**The client verifies before it writes.** The stream carries only block
+numbers, so before deleting or inserting the client checks them against the
+live document it snapshotted at send time: the same blocks in the same place,
+else one unique moved run of identical text — and never when that text was
+already duplicated at send time, where a match proves nothing. A replacement
+that cannot be verified is written beside its target, not over it; an insertion
+whose target was edited goes just after it. Every such degradation sets a
+notice on the run card and raises a toast.
 
 ---
 
@@ -340,10 +445,20 @@ See [`6-database-schema.md`](./6-database-schema.md) section 5.3 — `user_ai_me
 - `tone_preferences` (formality, energy, persona)
 - `style_examples` (array of representative excerpts from the writer's articles)
 - `vocabulary_patterns` (common terms, phrasing patterns)
-- `topics` (domains the writer covers)
+- `topics` (domains the writer covers) — stored and used by Portfolio Insights, but **not injected into the assistant's prompts** since 2026-10-22
 
 ### 9.3 Usage
 - Injected into prompts for writer-facing AI calls as a compact system-prompt block
+- *Voice, not subject (2026-10-22).* The block describes how the writer writes,
+  not what about. `topics` is no longer injected (it is pure subject matter and
+  buys no voice); `vocabulary_patterns` is injected as "characteristic
+  constructions and terms", to be used only where they belong to the current
+  article's subject; and the block ends with a rule never to carry imagery,
+  metaphors, terminology or examples from the writer's usual subjects into an
+  article on another one. The excerpt-matching instruction in the voice block
+  asks for sentence rhythm, register and structural habits, not the excerpts'
+  subject matter. The extraction job is unchanged, so no profile was
+  re-extracted. This fixed fishing vocabulary appearing in a food article.
 - Used as input to Portfolio Insights generation
 - Refreshed by a background job when the writer publishes a new article
 

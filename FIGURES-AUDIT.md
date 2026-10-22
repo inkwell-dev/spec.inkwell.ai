@@ -122,7 +122,7 @@ Following the set's existing convention of one use case and one class diagram pe
 | `fig-7-2-classes-sprint-7` | `CommentLike`, `Save`, `Block`, and the two new notification types |
 | `fig-7-3-use-case-sprint-8` | card controls, Reposted tab, recent comments, byline preview, assistant writes, status, voice (FR-66…68, FR-77…83) |
 | `fig-7-4-sequence-assistant-turn` | the routing tool on a typed stream, status steps, retrieval, the Markdown reply |
-| `fig-7-5-sequence-in-document-write` | the protected range, block-by-block streaming, Keep or Discard as one undo step (FR-79) |
+| `fig-7-5-sequence-in-document-write` | the protected range, block-by-block streaming, Keep or Discard as one undo step (FR-79). *Note 2026-10-22: predates block targeting (FR-92) — it shows the cursor and selection placements only. Not redrawn; the text beside it carries the after-block and over-blocks placements.* |
 | `fig-7-6-sequence-voice-round-trip` | record ≤ 5 min → transcribe → reply → speak, billed at 200 tokens a minute (FR-82/83) |
 | `fig-7-7-use-case-sprint-9` | upload, attach, cite (FR-84…87) |
 | `fig-7-8-classes-sprint-9` | `Document`, `DocumentChunk`, `ArticleDocument`, `DocumentStatus` |
@@ -176,7 +176,7 @@ a prompt box"*. Repair the harness before booking a sitting.
 | Proposed figure | Route / surface | Requirement |
 |---|---|---|
 | the assistant panel, Chat tab, docked | `/editor/:id` | FR-81 |
-| a write awaiting Keep or Discard | `/editor/:id` | FR-79 |
+| a write awaiting Keep or Discard | `/editor/:id` | FR-79 *(predates block targeting, FR-92; the capture of a cursor write is still valid)* |
 | the live step on the collapsed rail | `/editor/:id` | FR-80/81 |
 | the Sources tab with attachments | `/editor/:id` | FR-85 |
 | a reply citing `[Title, p. N]` | `/editor/:id` | FR-86 |

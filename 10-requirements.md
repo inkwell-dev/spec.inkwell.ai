@@ -129,7 +129,7 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-29 | See which passages the assistant retrieved, grouped by source article | Should | 4 |
 | FR-30 | Insert an AI response into the document at the cursor | Must | 2 |
 | FR-78 | The assistant decides, per message, whether to answer in the panel or write into the document — *superseding the manual insert of FR-30 (2026-09-14)* | Must | 8 |
-| FR-79 | Written text streams into the document at the cursor or over the selection, marked and protected until the writer keeps or discards it. Keep is one undo step, and Discard restores what it replaced | Must | 8 |
+| FR-79 | Written text streams into the document at the cursor, after or over the blocks the request names, or over the selection *(amended 2026-10-22; was the cursor or the selection only)*, marked and protected until the writer keeps or discards it. Keep is one undo step, and Discard restores what it replaced | Must | 8 |
 | FR-80 | Show the pipeline's real steps as they run, with counts, and a one-line recap after a write | Must | 8 |
 | FR-81 | The assistant is a panel docked beside the editor with Chat and Sources tabs. It collapses to a rail that carries the live step, and opens as a bottom sheet below desktop width *(amended 2026-09-20; was a floating dock)* | Should | 8 |
 | FR-82 | Record a prompt with the microphone (≤ 5 min) and have it transcribed into the assistant's input, editable, billed at 200 tokens a minute against the daily allowance | Should | 8 |
@@ -138,6 +138,10 @@ report's sprint numbering (§5), not the calendar sprint.
 | FR-85 | Attach library documents to an article from the assistant and detach them. Attachments are saved immediately | Must | 9 |
 | FR-86 | The assistant draws on attached documents for both answers and writes, cites passages inline as [Title, p. N], and shows the passages used with a link opening the file at the page | Must | 9 |
 | FR-87 | A document is the writer's alone: it never feeds writer memory, Portfolio Insights or search, and another account cannot read, attach or discover it | Must | 9 |
+| FR-92 | The assistant targets the blocks a request is about: new material is inserted after the block it belongs to and a rewrite replaces only the blocks named, verified against the live document before anything is replaced. A write is made once per message | Must | 8 |
+| FR-93 | The assistant reads the article as it stands in the editor, unsaved edits included | Must | 8 |
+| FR-94 | Leaving the editor with AI text neither kept nor discarded asks first; nothing unapproved is saved and nothing kept is lost | Must | 8 |
+| FR-95 | The style profile shapes the writer's voice, not the subject of what is written | Should | 8 |
 | FR-31 | See the remaining AI token balance, updated after each action | Must | 2 |
 | FR-32 | View per-article analytics: views, unique readers, average read time, completion, engagement, retention curve | Must | 3 |
 | FR-33 | Rank own articles by views or engagement, server-side across the whole body of work | Should | 3 |
@@ -341,6 +345,7 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-70 | Upload the documents I am working from so that the assistant can use their facts without my retyping them | A3 | Must | 8 | 9 |
 | US-71 | Choose which documents apply to an article so that a piece on tides is not fed my notes on fermentation | A3 | Must | 3 | 9 |
 | US-72 | See which document and page a claim came from so that I can check it before it goes out under my name | A3 | Should | 5 | 9 |
+| US-79 | Ask the assistant to add or rewrite one section so that the rest of my article stays exactly as I wrote it | A3 | Must | 5 | 8 |
 
 ### E4: Discovery and search
 
@@ -423,7 +428,7 @@ Points are Fibonacci, relative to US-01 = 1. "Sprint" refers to §5.
 | US-54 | Lower the eligibility thresholds under a flag so that the gate can be crossed live | Must | 2 | 6 |
 | US-55 | Serve the product at a public URL over TLS | Must | 8 | 6 |
 
-**78 stories, 9 epics, 368 points** (recounted 2026-10-21 after US-78, 5 points, was added to E2; recounted 2026-10-14 after US-75…US-77, 13 points, were added to E8; recounted 2026-10-11: US-66…US-72 moved from E5 to E3, where the assistant's stories belong; US-73 and US-74 added, because FR-60 and FR-61 had no story).
+**79 stories, 9 epics, 373 points** (recounted 2026-10-22 after US-79, 5 points, was added to E3; recounted 2026-10-21 after US-78, 5 points, was added to E2; recounted 2026-10-14 after US-75…US-77, 13 points, were added to E8; recounted 2026-10-11: US-66…US-72 moved from E5 to E3, where the assistant's stories belong; US-73 and US-74 added, because FR-60 and FR-61 had no story).
 
 ---
 
@@ -443,7 +448,7 @@ design track (23/02–03/04) sit between them but are not sprints; see below.
 | **R3 — Marketplace, testing and deployment** | Ch.6 | Sprint 5 | 18/05–29/05 | Phase 5 | Marketplace, subscriptions, premium, moderation, admin |
 | | | Sprint 6 | 01/06–12/06 | Phase 6 | Tests, demo mode, deployment, CI/CD |
 | **R4 — Social depth, assistant and documents** | Ch.7 | Sprint 7 | 15/06–26/06 | — | Comment likes, follower and following lists, block, save, share (FR-60…FR-65) |
-| | | Sprint 8 | 29/06–10/07 | — | Live card controls, Reposted tab, byline preview, assistant routing and in-document writes, docked panel, voice in and out (FR-66…FR-68, FR-77…FR-83) |
+| | | Sprint 8 | 29/06–10/07 | — | Live card controls, Reposted tab, byline preview, assistant routing and in-document writes, docked panel, voice in and out (FR-66…FR-68, FR-77…FR-83, FR-92…FR-95) |
 | | | Sprint 9 | 13/07–24/07 | — | Document library, ingestion, per-article attachment, citations (FR-84…FR-87) |
 
 **Work that is not a sprint.** Phase 0 (foundation), Phase D (design track,
@@ -619,6 +624,28 @@ it.
   query cache's lifetime loaded the cached copy, which predated the last autosaves,
   and autosave then wrote that older text over the newer work. Each autosave now
   writes into the editor's cache.
+- **Delivered 2026-10-22 — the assistant could not point at a place, and two
+  defects lost or duplicated writers' text.** FR-79 promised text "at the cursor or
+  over the selection", and that was all the model could name. Asked to "add
+  Tunisia" with nothing selected, it could only choose the cursor, and the
+  writing prompt for the cursor case never said to write only the new material.
+  (a) **Duplication.** The model answered with a revised copy of the whole
+  article, which was inserted below the original: every section appeared twice.
+  The cursor prompt now forbids re-emitting the article, and the tool can name a
+  block to insert after or a run of blocks to replace (FR-92, US-79,
+  `5-ai-design.md` §5.1). The assistant also read the saved copy, flattened and
+  cut at 6,000 characters, so it could neither see structure nor unsaved edits
+  (FR-93). (b) **Silent discard on navigation.** Following a link inside the app
+  while AI text awaited Keep or Discard destroyed the text without a word, since
+  the editor discarded it on unmount; and Keep followed by a link within the
+  autosave delay lost even the kept text, because the unmount cleared the
+  pending save instead of flushing it. A link click now asks Stay / Discard and
+  leave / Keep and leave, and Keep and leave saves before navigating (FR-94);
+  Back and Forward, which cannot be intercepted, discard with a toast. Also
+  recorded: the style profile injected the writer's "usual subjects", which
+  leaked a fishing writer's imagery into an unrelated article (FR-95), and the
+  JSON body limit (100 KB by default) was raised to 512 KB for the live
+  document.
 - **NFR-37** (Lighthouse, `axe-core`) is the only unsatisfied requirement.
 - **Open:** the AI token top-up (US absent by design — the decision and the column
   shape to build are recorded on the item in `0-phase-plan.md` Phase 5).
