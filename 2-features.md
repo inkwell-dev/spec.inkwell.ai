@@ -338,9 +338,15 @@ assistant does changed — only where its parts live.)*
 
 **The model decides where a reply goes.** A question is answered in the panel.
 A request to produce or change article text is **written into the document**:
-the text streams in after the block the cursor is in — or replaces the whole
-block(s) a selection touches when the request was about it — block by block, so a heading becomes a heading the moment it is
-complete. The written range is tinted, a caret blinks at its end, and the
+the text streams in at the place the request is about, block by block, so a
+heading becomes a heading the moment it is complete. There are four places
+(2026-10-22): **after the block the cursor is in**; **after a named block** — a
+new section lands after the last block of the section it follows, so asking for
+"Tunisia" in an article of Italy, Japan and Mexico sections adds it after
+Mexico's text, never between Mexico's heading and its paragraph; **over named
+blocks** — a rewrite of "the Japan section" replaces its heading and paragraphs
+and nothing else, while every other block stays exactly as the writer left it;
+and **over the selection**, whole blocks, when the request was about it. The written range is tinted, a caret blinks at its end, and the
 writer's own edits inside it are refused with "Finish or discard the AI text
 first" until they decide. A **Stop** control ends the stream where it is. When
 the write ends, a **Keep / Discard** bar appears under it in the document:
@@ -349,6 +355,40 @@ Keep accepts it as one undo step, so a single Ctrl+Z afterwards takes the whole
 write back. The panel refuses a new message while a write awaits that decision,
 and autosave is suspended for the same span so a half-written article is never
 persisted (autosave runs on drafts only; a published article is saved by Update, §2.3). Closing the tab mid-write asks first.
+
+*Targeted writes (2026-10-22).* Three rules keep a write from touching what the
+writer did not ask about.
+
+- **The assistant reads the article as it stands in the editor**, unsaved edits
+  included, not the last autosaved copy. A long article is shown around the
+  cursor in full, with its headings as an outline elsewhere; the assistant can
+  replace only blocks it was shown in full, and says so in the card when it
+  could not (the text then goes after the range instead). It writes **once per
+  message**: "rewrite Japan and add Tunisia" is done as two messages, because a
+  second write would have kept the first without the writer's decision.
+- **A target that changed is never silently replaced.** Several seconds can pass
+  between sending and the first word, and the writer can edit meanwhile. The
+  editor checks that the blocks to replace are still there, unchanged, before it
+  deletes anything; if they moved it follows them, and if they were edited it
+  writes the new version beside them, not over them. Whenever a write lands
+  anywhere other than where the assistant asked, the run card says so and a
+  toast repeats it. A replaced range that held images shows a notice, and
+  Discard brings the images back; a rewrite of the whole document is restored
+  byte for byte on Discard, or on Keep followed by Undo.
+- **Leaving with an undecided write asks first.** Clicking a link inside the app
+  while AI text is neither kept nor discarded opens a dialog: *Stay* (the
+  default), *Discard and leave*, or, on a draft, *Keep and leave*, which keeps
+  the text, saves, and only then navigates; if the save fails the writer stays.
+  A published article is saved only by Update, so there the dialog offers no
+  Keep-and-leave: keep the text, then press Update. The browser's Back and
+  Forward buttons cannot be intercepted; they discard the unkept text and show a
+  toast saying so. **Publish** is disabled while a write is open.
+
+*The style profile shapes voice, not subject (2026-10-22).* The profile tells
+the writer how the writer writes — rhythm, register, structural habits. It no
+longer lists the writer's usual subjects, and its characteristic terms are
+offered only for use where they belong to the article's own subject, so a
+fishing writer's piece on couscous carries no tide imagery.
 
 **The panel shows what is happening, not a spinner.** Each turn is a card
 listing the pipeline's real steps as they run — reading the draft, loading the
