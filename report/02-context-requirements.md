@@ -131,9 +131,12 @@ Scrum is designed for a team of 10 or fewer people holding 3 accountabilities
 (Product Owner, Scrum Master and Developers) [@scrumguide2020], and this project has one
 person. The adaptation, and its limits, were the following.
 
-- **Roles.** The author held the Developer and Scrum Master accountabilities. The
-  academic supervisor acted as Product Owner at sprint boundaries, accepting or
-  returning each increment against the backlog. The limit is that one person both
+- **Roles.** The professional supervisor, Mr. Ramzy Chridi, acted as Product Owner
+  and as the stakeholder for the host company: the backlog's priorities were set by the
+  Product Owner, and each increment was accepted or returned against the backlog at the sprint
+  review. The academic supervisor, Mr. Bilel Zemzem, acted as Scrum Master, holding the
+  cadence and the definition of done across reviews and retrospectives. The author held
+  the Developer accountability. The limit is that one person both
   estimates and executes the work: there is no team discussion to correct an
   optimistic estimate, which shows in the uneven sprint loads discussed in
   @sec:velocity.

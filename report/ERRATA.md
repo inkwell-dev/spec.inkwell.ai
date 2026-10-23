@@ -19,7 +19,7 @@ code it describes. A corrected PDF is available.
 | Page | Printed | Correct |
 |:--------|:--------------------------|:--------------------------|
 | 5, Fig. 1.2 | "74 user stories" | 77 user stories |
-| 5, Fig. 1.2 | Role note: all 3 roles held by one person, followed by a writing note | The author holds Scrum Master and Developer; the academic supervisor is Product Owner at sprint boundaries (as in §1.2.2). The writing note is removed |
+| 5, Fig. 1.2 and §1.2.2 | Role note: all 3 roles held by one person, followed by a writing note; the author as Scrum Master and the academic supervisor as Product Owner | Product Owner and stakeholder: the professional supervisor. Scrum Master: the academic supervisor. Developer: the author. The writing note is removed |
 | 7 | "The administrator carries the fewest (5)" | The administrator carries 8; the cross-cutting requirements are the fewest (4) |
 | 14 | AI epic 21%, marketplace 18%, E9 12% | 20%, 17%, 11%, as in Table 1.4 |
 | 14 | A purchase records "2 or 3" Transaction rows (p. 63: "writes 3") | Up to 3: each row is written only when its amount is above zero |
