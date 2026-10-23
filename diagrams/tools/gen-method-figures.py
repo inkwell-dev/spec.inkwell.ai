@@ -70,10 +70,10 @@ c = [
          900, 150, 200, 110, BOX + GREEN),
     cell("review", "Sprint review", 640, 300, 220, 60, BOX + BLUE),
     cell("retro", "Retrospective", 900, 300, 200, 60, BOX + BLUE),
-    cell("roles", "The 3 Scrum roles, and how they collapse here&lt;br&gt;&lt;br&gt;"
-                  "Product Owner · Scrum Master · Developers: the author holds the Scrum Master "
-                  "and Developer accountabilities. The academic supervisor acts as Product Owner "
-                  "at sprint boundaries, accepting or returning each increment against the backlog.",
+    cell("roles", "The 3 Scrum roles, as held here&lt;br&gt;&lt;br&gt;"
+                  "Product Owner and stakeholder: the professional supervisor, who accepts or returns "
+                  "each increment against the backlog. Scrum Master: the academic supervisor, who keeps the "
+                  "cadence and the definition of done. Developer: the author.",
          60, 470, 1080, 130, NOTE + AMBER),
     edge("a1", "pb", "plan", "highest priority first", EH),
     edge("a2", "plan", "sb", "commit", EV),
